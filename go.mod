@@ -1,6 +1,6 @@
 module github.com/metalblueberry/acnil-bot
 
-go 1.17
+go 1.18
 
 require (
 	golang.org/x/oauth2 v0.0.0-20220630143837-2104d58473e0
@@ -22,4 +22,5 @@ require (
 	google.golang.org/genproto v0.0.0-20220714152414-ccd2914cffd4 // indirect
 	google.golang.org/grpc v1.48.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
+	gopkg.in/telebot.v3 v3.1.2 // indirect
 )
