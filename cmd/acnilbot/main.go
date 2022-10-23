@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -13,12 +14,24 @@ import (
 )
 
 const (
-	SheetID = "***REMOVED***"
+	TstSheetID = "***REMOVED***"
 )
 
 func main() {
+
+	credentialsFile := GetEnv("CREDENTIALS_FILE", "credentials.json")
+	sheetID := os.Getenv("SHEET_ID")
+	if sheetID == "" {
+		log.Fatal("SHEET_ID must be defined")
+	}
+
+	botToken := os.Getenv("TOKEN")
+	if botToken == "" {
+		log.Fatal("TOKEN must be defined")
+	}
+
 	pref := tele.Settings{
-		Token:  os.Getenv("TOKEN"),
+		Token:  botToken,
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
 	}
 
@@ -28,29 +41,16 @@ func main() {
 		return
 	}
 
-	srv, err := acnil.CreateClientFromCredentals(context.TODO(), "credentials.json")
+	srv, err := acnil.CreateClientFromCredentals(context.TODO(), credentialsFile)
 	if err != nil {
 		panic(err)
 	}
 	db := acnil.GameDatabase{
 		SRV:       srv,
-		ReadRange: "A:J",
+		ReadRange: "A:L",
 		Sheet:     "Juegos de mesa",
-		SheetID:   SheetID,
+		SheetID:   sheetID,
 	}
-
-	var (
-	// Universal markup builders.
-
-	// Inline buttons.
-	//
-	// Pressing it will cause the client to
-	// send the bot a callback.
-	//
-	// Make sure Unique stays unique as per button kind
-	// since it's required for callback routing to work.
-	//
-	)
 
 	b.Handle("/start", func(c tele.Context) error {
 		log.Println(c.Text())
@@ -69,10 +69,35 @@ Si algo va mal, habla con @MetalBlueberry`)
 	})
 
 	b.Handle(tele.OnText, func(c tele.Context) error {
+		if c.Message().FromGroup() {
+			log.Print(c.Chat())
+			log.Println("skip group")
+			return nil
+		}
+
 		log.Println(c.Text())
 
 		if c.Sender().Username == "" {
 			return c.Send("El bot necesita que tengas un nombre de usuario definido. Puedes elegir uno desde la configuración de tu perfil de Telegram")
+		}
+
+		_, err := strconv.Atoi(c.Text())
+		if err == nil {
+			getResult, err := db.Get(context.TODO(), c.Text(), "")
+			if err != nil {
+				c.Send(err.Error())
+				return c.Respond()
+			}
+			if getResult == nil {
+				c.Send("No he podido encontrar un juego con ese ID")
+				return c.Respond()
+			}
+
+			err = c.Send(getResult.Card(), getResult.Buttons(c))
+			if err != nil {
+				log.Println(err)
+			}
+			return c.Respond()
 		}
 
 		list, err := db.Find(context.TODO(), c.Text())
@@ -106,29 +131,37 @@ Si algo va mal, habla con @MetalBlueberry`)
 	b.Handle("\ftake", func(c tele.Context) error {
 		log.Println("take")
 		g := acnil.NewGameFromData(c.Data())
+
+		getResult, err := db.Get(context.TODO(), g.ID, g.Name)
+		if err != nil {
+			c.Edit(err.Error())
+			return c.Respond()
+		}
+		if getResult == nil {
+			c.Edit("No he podido encontrar el juego. Intenta volver a buscarlo, tal vez se ha modificado el excel")
+			return c.Respond()
+		}
+
+		g = *getResult
+
+		if g.Holder != "" {
+			err := c.Edit("Parece que alguien ha modificado los datos, te envío los últimos actualizados")
+			if err != nil {
+				log.Print(err)
+			}
+			err = c.Send(g.Card(), g.Buttons(c))
+			if err != nil {
+				log.Print(err)
+			}
+			return c.Respond()
+		}
 		g.Holder = c.Sender().Username
 
-		err := db.Update(context.TODO(), g)
+		err = db.Update(context.TODO(), g)
 		if err != nil {
 			c.Edit(err.Error())
 			return c.Respond()
 		}
-
-		list, err := db.Get(context.TODO(), g.Name)
-		if err != nil {
-			c.Edit(err.Error())
-			return c.Respond()
-		}
-		if len(list) == 0 {
-			c.Edit("No he podido encontrar el juego, inténtalo de nuevo")
-			return c.Respond()
-		}
-
-		if len(list) != 1 {
-			c.Edit("Wops! Parece que hay mas de un juego con este nombre, modifica el excel manualmente para asegurar que no hay nombres identicos.")
-			return c.Respond()
-		}
-		g = list[0]
 
 		c.Edit(g.Card(), g.Buttons(c))
 		return c.Respond()
@@ -136,29 +169,38 @@ Si algo va mal, habla con @MetalBlueberry`)
 	b.Handle("\freturn", func(c tele.Context) error {
 		log.Println("return")
 		g := acnil.NewGameFromData(c.Data())
+
+		getResult, err := db.Get(context.TODO(), g.ID, g.Name)
+		if err != nil {
+			c.Edit(err.Error())
+			return c.Respond()
+		}
+		if getResult == nil {
+			c.Edit("No he podido encontrar el juego. Intenta volver a buscarlo, tal vez se ha modificado el excel")
+			return c.Respond()
+		}
+
+		g = *getResult
+
+		if g.Holder != c.Sender().Username {
+			err := c.Edit("Parece que alguien ha modificado los datos, te envío los últimos actualizados")
+			if err != nil {
+				log.Print(err)
+			}
+			err = c.Send(g.Card(), g.Buttons(c))
+			if err != nil {
+				log.Print(err)
+			}
+			return c.Respond()
+		}
+
 		g.Holder = ""
 
-		err := db.Update(context.TODO(), g)
+		err = db.Update(context.TODO(), g)
 		if err != nil {
 			c.Edit(err.Error())
 			return c.Respond()
 		}
-
-		list, err := db.Get(context.TODO(), g.Name)
-		if err != nil {
-			c.Edit(err.Error())
-			return c.Respond()
-		}
-		if len(list) == 0 {
-			c.Edit("No he podido encontrar el juego, inténtalo de nuevo")
-			return c.Respond()
-		}
-
-		if len(list) != 1 {
-			c.Edit("Wops! Parece que hay mas de un juego con este nombre, modifica el excel manualmente para asegurar que no hay nombres identicos.")
-			return c.Respond()
-		}
-		g = list[0]
 
 		c.Edit(g.Card(), g.Buttons(c))
 		return c.Respond()
@@ -188,4 +230,12 @@ func SendList[T fmt.Stringer](items []T) []string {
 		msgs = append(msgs, strings.Join(msgFragments, "\n"))
 	}
 	return msgs
+}
+
+func GetEnv(key string, def string) string {
+	v, ok := os.LookupEnv(key)
+	if !ok {
+		return def
+	}
+	return v
 }
