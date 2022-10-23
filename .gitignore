@@ -1,3 +1,5 @@
 secret.json
 credentials.json
 acnilbot
+deploy/acnilbottest.service
+.env
