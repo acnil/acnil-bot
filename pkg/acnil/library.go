@@ -136,15 +136,14 @@ func (db *GameDatabase) Update(ctx context.Context, game Game) error {
 const (
 	ColumnID         = 0
 	ColumnName       = 1
-	ColumnPrice      = 2
-	ColumnHolder     = 3
-	ColumnLocation   = 4
-	ColumnTakeDate   = 5
-	ColumnReturnDate = 6
+	ColumnHolder     = 2
+	ColumnLocation   = 3
+	ColumnTakeDate   = 4
+	ColumnReturnDate = 5
+	ColumnComments   = 6
+	ColumnPrice      = 7
 	ColumnPublisher  = 8
-	ColumnQuarantine = 9
-	ColumnComments   = 10
-	ColumnBGG        = 11
+	ColumnBGG        = 9
 	NCols            = ColumnPublisher
 	MaxCols          = ColumnBGG + 1
 )
@@ -174,8 +173,8 @@ func (g Game) ToRow() (range_ string, row []interface{}) {
 	return g.Row, []interface{}{
 		g.ID,
 		g.Name,
-		nil,
 		g.Holder,
+		g.Location,
 	}
 }
 
@@ -192,19 +191,26 @@ func (g Game) Data() string {
 	return strings.Join([]string{g.ID, g.Row, g.Name}, "|")
 }
 
-func (g Game) Buttons(c tele.Context) *tele.ReplyMarkup {
+func (g Game) Buttons(member *Member) *tele.ReplyMarkup {
 	selector := &tele.ReplyMarkup{}
 	data := g.Data()
+	rows := []tele.Row{}
 	switch {
 	case g.Holder == "":
-		selector.Inline(selector.Row(
+		rows = append(rows, selector.Row(
 			selector.Data("Tomar Prestado", "take", data),
 		))
-	case c.Sender().Username == g.Holder:
-		selector.Inline(selector.Row(
+	case member.Nickname == g.Holder:
+		rows = append(rows, selector.Row(
 			selector.Data("Devolver", "return", data),
 		))
 	}
+	rows = append(rows, selector.Row(
+		selector.Data("Mas información", "more", data),
+	))
+
+	selector.Inline(rows...)
+
 	return selector
 }
 
@@ -225,6 +231,25 @@ var (
 			return bggClient.ResolveHref(st.Href)
 		},
 	}).Parse(`
+{{ define "card" }}
+{{if .ID }}ID: {{ .ID }}{{end}}
+{{ .Name }}
+{{ .Location }}
+
+{{ if .Available -}}
+🟢 Disponible
+{{- else -}}
+🔴 Ocupado: {{ .Holder -}}
+{{ end }}
+
+{{ if .Comments }}
+Notas: 
+{{ .Comments }}
+{{ end }}
+
+{{ end }}
+
+{{ define "morecard" }}
 {{if .ID }}ID: {{ .ID }}{{end}}
 {{ .Name }}
 {{ .Publisher}} ({{ .Price }})
@@ -240,17 +265,25 @@ var (
 Notas: 
 {{ .Comments }}
 {{ end }}
+
 {{ if .BGG }} 
 {{ .BGG}}
 {{ else }}
 {{ .Name | bgg }}
+{{ end }}
 {{ end }}
 `))
 )
 
 func (g Game) Card() string {
 	b := &bytes.Buffer{}
-	tmpl.Execute(b, g)
+	tmpl.ExecuteTemplate(b, "card", g)
+	return b.String()
+}
+
+func (g Game) MoreCard() string {
+	b := &bytes.Buffer{}
+	tmpl.ExecuteTemplate(b, "morecard", g)
 	return b.String()
 }
 
