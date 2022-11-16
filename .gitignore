@@ -3,3 +3,5 @@ credentials.json
 acnilbot
 deploy/acnilbottest.service
 .env
+deploy/acnilbot.service
+credentials.prod.json
