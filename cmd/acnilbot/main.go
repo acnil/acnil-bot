@@ -140,9 +140,11 @@ func (h *Handler) IsAuthorized(log *logrus.Entry, c tele.Context) (*acnil.Member
 		h.MembersDB.Append(context.Background(), newMember)
 	}
 
-	if m.Permissions != "si" {
-		log.WithField(ilog.FieldName, m.Nickname).Info("Permission denied")
-		return nil, c.Send(fmt.Sprintf("Hola, Antes de nada, has de ir al documento de inventaro.\nEn la pestaña de miembros habrá aparecido tu nobmre al final.\nTienes que cambiar tus permisos para poder empezar a usar este bot\n\nCuando tengas permiso, vuelve a enviar /start para recibir instrucciones"))
+	if !strings.EqualFold(m.Permissions, "si") {
+		log.
+			WithField(ilog.FieldName, m.Nickname).
+			Info("Permission denied")
+		return nil, c.Send(fmt.Sprintf("Hola, Antes de nada, has de ir al documento de inventario.\nEn la pestaña de miembros habrá aparecido tu nombre al final.\nTienes que cambiar tus permisos para poder empezar a usar este bot\n\nCuando tengas permiso, vuelve a enviar /start para recibir instrucciones"))
 	}
 	return m, nil
 }
