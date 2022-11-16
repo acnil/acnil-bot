@@ -14,18 +14,15 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-const ()
+var (
+	mainMenu = &tele.ReplyMarkup{ResizeKeyboard: true}
+	// Reply buttons.
+	btnMyGames   = mainMenu.Text("🎲 Mis Juegos")
+	btnEnGamonal = mainMenu.Text("Lista de Gamonal")
+	btnEnCentro  = mainMenu.Text("Lista del Centro")
+)
 
 func main() {
-
-	// groupIDstr := os.Getenv("GROUP_ID")
-	// if groupIDstr == "" {
-	// 	log.Fatal("GROUP_ID must be defined")
-	// }
-	// groupID, err := strconv.Atoi(groupIDstr)
-	// if err != nil {
-	// 	log.Fatal("Failed to parse GROUP_ID: %s, %s", groupIDstr, err)
-	// }
 
 	credentialsFile := GetEnv("CREDENTIALS_FILE", "credentials.json")
 	sheetID := os.Getenv("SHEET_ID")
@@ -68,6 +65,9 @@ func main() {
 	b.Handle("\ftake", handler.OnTake)
 	b.Handle("\freturn", handler.OnReturn)
 	b.Handle("\fmore", handler.OnMore)
+	b.Handle(&btnMyGames, handler.MyGames)
+	b.Handle(&btnEnGamonal, handler.EnGamonal)
+	b.Handle(&btnEnCentro, handler.EnCentro)
 
 	b.Start()
 }
@@ -161,6 +161,11 @@ func (h *Handler) Start(c tele.Context) error {
 		return nil
 	}
 
+	mainMenu.Reply(
+		mainMenu.Row(btnMyGames),
+		mainMenu.Row(btnEnGamonal, btnEnCentro),
+	)
+
 	return c.Send(`Bienvenido al bot de Acnil,
 Por ahora puedo ayudarte a tomar prestados y devolver los juegos de forma mas sencilla. Simplemente mándame el nombre del juego y yo lo buscaré por ti.
 
@@ -168,7 +173,7 @@ También puedo buscar por parte del nombre. por ejemplo, Intenta decir "Explodin
 
 Por último, si me mandas el ID de un juego, también puedo encontrarlo.
 
-Si algo va mal, habla con @MetalBlueberry`)
+Si algo va mal, habla con @MetalBlueberry`, mainMenu)
 
 }
 
@@ -380,5 +385,90 @@ func (h *Handler) OnMore(c tele.Context) error {
 	}
 	log.Info("Details requested")
 	return c.Respond()
+}
 
+func (h *Handler) MyGames(c tele.Context) error {
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "MyGames"), c.Sender())
+
+	member, err := h.IsAuthorized(log, c)
+	if err != nil {
+		return err
+	}
+	if member == nil {
+		return nil
+	}
+
+	gameList, err := h.GameDB.List(context.TODO())
+	if err != nil {
+		return c.Send(err.Error())
+	}
+
+	myGames := []acnil.Game{}
+	for _, game := range gameList {
+		if game.Holder == member.Nickname {
+			myGames = append(myGames, game)
+		}
+	}
+
+	if len(myGames) == 0 {
+		return c.Send("No tienes ningun juego a tu nombre")
+	}
+
+	for _, g := range myGames {
+		log.WithField("Game", g.Name).Info("Found Game owned by user")
+		err := c.Send(g.Card(), g.Buttons(member))
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	return nil
+}
+
+func (h *Handler) EnCentro(c tele.Context) error {
+	return h.inLocation(c, "Centro")
+}
+
+func (h *Handler) EnGamonal(c tele.Context) error {
+	return h.inLocation(c, "Gamonal")
+}
+
+func (h *Handler) inLocation(c tele.Context, location string) error {
+	log := ilog.WithTelegramUser(logrus.
+		WithField(ilog.FieldHandler, "inLocation").
+		WithField(ilog.FieldLocation, location),
+		c.Sender())
+
+	member, err := h.IsAuthorized(log, c)
+	if err != nil {
+		return err
+	}
+	if member == nil {
+		return nil
+	}
+
+	gameList, err := h.GameDB.List(context.TODO())
+	if err != nil {
+		return c.Send(err.Error())
+	}
+
+	inLocation := []acnil.Game{}
+	for _, game := range gameList {
+		if strings.EqualFold(game.Location, "Centro") {
+			inLocation = append(inLocation, game)
+		}
+	}
+
+	if len(inLocation) == 0 {
+		return c.Send("No se han encontrado juegos")
+	}
+
+	for _, block := range SendList(inLocation) {
+		err := c.Send(block)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	return nil
 }
