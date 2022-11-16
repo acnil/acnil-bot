@@ -48,7 +48,7 @@ type MultipleMatchesError struct {
 }
 
 func (err MultipleMatchesError) Error() string {
-	return "Wops! Parece que hay mas de un juego con este nombre, modifica el excel manualmente para asegurar que no hay nombres identicos."
+	return "Wops! Parece que hay mas de un juego con este id y nombre, modifica el excel manualmente para asegurar que no hay nombres idénticos."
 }
 
 func (db *GameDatabase) Get(ctx context.Context, id string, name string) (*Game, error) {

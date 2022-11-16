@@ -1,7 +1,6 @@
 secret.json
-credentials.json
 acnilbot
-deploy/acnilbottest.service
 .env
-deploy/acnilbot.service
+deploy/*
 credentials.prod.json
+credentials.json
