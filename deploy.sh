@@ -1,5 +1,6 @@
 #!/bin/bash
 
+mkdir bin
 env CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=5 go build -o acnilbot cmd/acnilbot/main.go
 
 ssh pi@192.168.1.139 sudo systemctl stop acnilbottest.service
