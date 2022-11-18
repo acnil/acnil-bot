@@ -3,3 +3,4 @@ secret.json
 deploy/*
 credentials.prod.json
 credentials.json
+bin/*
