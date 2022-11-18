@@ -454,7 +454,7 @@ func (h *Handler) inLocation(c tele.Context, location string) error {
 
 	inLocation := []acnil.Game{}
 	for _, game := range gameList {
-		if strings.EqualFold(game.Location, "Centro") {
+		if strings.EqualFold(game.Location, location) {
 			inLocation = append(inLocation, game)
 		}
 	}
