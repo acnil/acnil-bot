@@ -10,7 +10,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-type MembersDatabase struct {
+type SheetMembersDatabase struct {
 	SRV       *sheets.Service
 	ReadRange string
 	Sheet     string
@@ -24,8 +24,8 @@ type Member struct {
 	Permissions string
 }
 
-func NewMembersDatabase(srv *sheets.Service, sheetID string) *MembersDatabase {
-	return &MembersDatabase{
+func NewMembersDatabase(srv *sheets.Service, sheetID string) *SheetMembersDatabase {
+	return &SheetMembersDatabase{
 		SRV:       srv,
 		ReadRange: "A:C",
 		Sheet:     "Miembros",
@@ -47,14 +47,14 @@ func NewMemberFromTelegram(user *tele.User) Member {
 	}
 }
 
-func (db *MembersDatabase) fullReadRange() string {
+func (db *SheetMembersDatabase) fullReadRange() string {
 	return fmt.Sprintf("%s!%s", db.Sheet, db.ReadRange)
 }
-func (db *MembersDatabase) rowReadRange(row int) string {
+func (db *SheetMembersDatabase) rowReadRange(row int) string {
 	return fmt.Sprintf("%s!%d:%d", db.Sheet, row, row)
 }
 
-func (db *MembersDatabase) Get(ctx context.Context, telegramID int64) (*Member, error) {
+func (db *SheetMembersDatabase) Get(ctx context.Context, telegramID int64) (*Member, error) {
 	members, err := db.List(ctx)
 	if err != nil {
 		return nil, err
@@ -67,7 +67,7 @@ func (db *MembersDatabase) Get(ctx context.Context, telegramID int64) (*Member, 
 	return nil, nil
 }
 
-func (db *MembersDatabase) List(ctx context.Context) ([]Member, error) {
+func (db *SheetMembersDatabase) List(ctx context.Context) ([]Member, error) {
 	resp, err := db.SRV.Spreadsheets.Values.Get(db.SheetID, db.fullReadRange()).Do()
 	if err != nil {
 		log.Fatalf("Unable to retrieve data from sheet: %v", err)
@@ -87,7 +87,7 @@ func (db *MembersDatabase) List(ctx context.Context) ([]Member, error) {
 	return members, nil
 }
 
-func (db *MembersDatabase) Append(ctx context.Context, member Member) error {
+func (db *SheetMembersDatabase) Append(ctx context.Context, member Member) error {
 	values := []interface{}{}
 
 	values = append(values, member.Nickname, member.TelegramID, member.Permissions)

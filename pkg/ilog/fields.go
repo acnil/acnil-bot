@@ -6,4 +6,5 @@ const (
 	FieldHandler  = "handler"
 	FieldLocation = "location"
 	FieldID       = "id"
+	FieldMessage  = "message"
 )

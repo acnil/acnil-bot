@@ -27,7 +27,7 @@ func main() {
 
 	ctx := context.Background()
 
-	db := acnil.GameDatabase{
+	db := acnil.SheetGameDatabase{
 		SRV:       srv,
 		ReadRange: "A:H",
 		Sheet:     "Juegos de mesa",
