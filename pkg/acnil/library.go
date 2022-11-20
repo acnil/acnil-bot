@@ -7,6 +7,7 @@ import (
 	"log"
 	"strings"
 	"text/template"
+	"time"
 	"unicode"
 
 	"github.com/metalblueberry/acnil-bot/pkg/bgg"
@@ -17,29 +18,40 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-type GameDatabase struct {
+type SheetGameDatabase struct {
 	SRV       *sheets.Service
 	ReadRange string
 	Sheet     string
 	SheetID   string
 }
 
-type Game struct {
-	ID        string
-	Row       string
-	Name      string
-	Price     string
-	Holder    string
-	Location  string
-	Publisher string
-	Comments  string
-	BGG       string
+func NewGameDatabase(srv *sheets.Service, sheetID string) *SheetGameDatabase {
+	return &SheetGameDatabase{
+		SRV:       srv,
+		ReadRange: "A:L",
+		Sheet:     "Juegos de mesa",
+		SheetID:   sheetID,
+	}
 }
 
-func (db *GameDatabase) fullReadRange() string {
+type Game struct {
+	ID         string
+	Row        string
+	Name       string
+	Price      string
+	Holder     string
+	TakeDate   time.Time
+	ReturnDate time.Time
+	Location   string
+	Publisher  string
+	Comments   string
+	BGG        string
+}
+
+func (db *SheetGameDatabase) fullReadRange() string {
 	return fmt.Sprintf("%s!%s", db.Sheet, db.ReadRange)
 }
-func (db *GameDatabase) rowReadRange(row int) string {
+func (db *SheetGameDatabase) rowReadRange(row int) string {
 	return fmt.Sprintf("%s!%d:%d", db.Sheet, row, row)
 }
 
@@ -51,7 +63,7 @@ func (err MultipleMatchesError) Error() string {
 	return "Wops! Parece que hay mas de un juego con este id y nombre, modifica el excel manualmente para asegurar que no hay nombres idénticos."
 }
 
-func (db *GameDatabase) Get(ctx context.Context, id string, name string) (*Game, error) {
+func (db *SheetGameDatabase) Get(ctx context.Context, id string, name string) (*Game, error) {
 	games, err := db.List(ctx)
 	if err != nil {
 		return nil, err
@@ -77,7 +89,7 @@ func (db *GameDatabase) Get(ctx context.Context, id string, name string) (*Game,
 	return &matches[0], nil
 }
 
-func (db *GameDatabase) List(ctx context.Context) ([]Game, error) {
+func (db *SheetGameDatabase) List(ctx context.Context) ([]Game, error) {
 	resp, err := db.SRV.Spreadsheets.Values.Get(db.SheetID, db.fullReadRange()).Do()
 	if err != nil {
 		log.Fatalf("Unable to retrieve data from sheet: %v", err)
@@ -97,7 +109,7 @@ func (db *GameDatabase) List(ctx context.Context) ([]Game, error) {
 	return games, nil
 }
 
-func (db *GameDatabase) Find(ctx context.Context, name string) ([]Game, error) {
+func (db *SheetGameDatabase) Find(ctx context.Context, name string) ([]Game, error) {
 	games, err := db.List(ctx)
 	if err != nil {
 		return nil, err
@@ -116,7 +128,7 @@ func (db *GameDatabase) Find(ctx context.Context, name string) ([]Game, error) {
 	return matches, nil
 }
 
-func (db *GameDatabase) Update(ctx context.Context, game Game) error {
+func (db *SheetGameDatabase) Update(ctx context.Context, game Game) error {
 	range_, row := game.ToRow()
 
 	request := db.SRV.Spreadsheets.Values.Update(db.SheetID, game.Row, &sheets.ValueRange{
@@ -156,16 +168,27 @@ func NewGameFromRow(range_ string, row []interface{}) Game {
 	for i := range row {
 		fullrow[i] = row[i].(string)
 	}
+
+	takeDate, err := time.Parse("2/1/2006", fullrow[ColumnTakeDate])
+	if err != nil && fullrow[ColumnTakeDate] != "" {
+		log.Print("Failed to parse take date", fullrow[ColumnTakeDate])
+	}
+	returnDate, err := time.Parse("2/1/2006", fullrow[ColumnReturnDate])
+	if err != nil {
+		log.Println("Failed to parse return date", fullrow[ColumnReturnDate])
+	}
 	return Game{
-		Row:       range_, // Exclude header and set index to 1 based
-		ID:        fullrow[ColumnID],
-		Name:      fullrow[ColumnName],
-		Price:     fullrow[ColumnPrice],
-		Holder:    fullrow[ColumnHolder],
-		Location:  fullrow[ColumnLocation],
-		Publisher: fullrow[ColumnPublisher],
-		Comments:  fullrow[ColumnComments],
-		BGG:       fullrow[ColumnBGG],
+		Row:        range_, // Exclude header and set index to 1 based
+		ID:         fullrow[ColumnID],
+		Name:       fullrow[ColumnName],
+		Price:      fullrow[ColumnPrice],
+		Holder:     fullrow[ColumnHolder],
+		TakeDate:   takeDate,
+		ReturnDate: returnDate,
+		Location:   fullrow[ColumnLocation],
+		Publisher:  fullrow[ColumnPublisher],
+		Comments:   fullrow[ColumnComments],
+		BGG:        fullrow[ColumnBGG],
 	}
 }
 
@@ -175,6 +198,7 @@ func (g Game) ToRow() (range_ string, row []interface{}) {
 		g.Name,
 		g.Holder,
 		g.Location,
+		g.TakeDate.Format("2/1/2006"),
 	}
 }
 
@@ -191,7 +215,7 @@ func (g Game) Data() string {
 	return strings.Join([]string{g.ID, g.Row, g.Name}, "|")
 }
 
-func (g Game) Buttons(member *Member) *tele.ReplyMarkup {
+func (g Game) Buttons(member Member) *tele.ReplyMarkup {
 	selector := &tele.ReplyMarkup{}
 	data := g.Data()
 	rows := []tele.Row{}
