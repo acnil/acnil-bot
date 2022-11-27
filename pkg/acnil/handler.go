@@ -20,6 +20,19 @@ var (
 	btnEnCentro  = mainMenu.Text("Lista del Centro")
 )
 
+func addMainMenuReplyMarkup(rm *tele.ReplyMarkup) {
+	rm.Reply(
+		rm.Row(btnMyGames),
+		rm.Row(btnEnGamonal, btnEnCentro),
+	)
+	rm.ResizeKeyboard = true
+	rm.Inline()
+}
+
+func init() {
+	addMainMenuReplyMarkup(mainMenu)
+}
+
 type MembersDatabase interface {
 	Get(ctx context.Context, telegramID int64) (*Member, error)
 	List(ctx context.Context) ([]Member, error)
@@ -45,6 +58,7 @@ type Handler struct {
 }
 
 func (h *Handler) Register(b *tele.Bot) {
+
 	b.Handle("/start", h.Start)
 	b.Handle(tele.OnText, h.OnText)
 	b.Handle("\ftake", h.OnTake)
@@ -162,11 +176,6 @@ func (h *Handler) start(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Start"), c.Sender())
 	log.Info(c.Text())
 
-	mainMenu.Reply(
-		mainMenu.Row(btnMyGames),
-		mainMenu.Row(btnEnGamonal, btnEnCentro),
-	)
-
 	return c.Send(`Bienvenido al bot de Acnil,
 Por ahora puedo ayudarte a tomar prestados y devolver los juegos de forma mas sencilla. Simplemente mándame el nombre del juego y yo lo buscaré por ti.
 
@@ -202,11 +211,11 @@ func (h *Handler) onText(c tele.Context, member Member) error {
 		getResult, err := h.GameDB.Get(context.TODO(), c.Text(), "")
 		if err != nil {
 			log.WithError(err).Error("Failed to connect to GameDB")
-			return c.Send(err.Error())
+			return c.Send(err.Error(), mainMenu)
 		}
 		if getResult == nil {
 			log.Info("Unable to find game by ID")
-			return c.Send("No he podido encontrar un juego con ese ID")
+			return c.Send("No he podido encontrar un juego con ese ID", mainMenu)
 		}
 		log.WithField("Game", getResult.Name).Info("Found Game by ID")
 		return c.Send(getResult.Card(), getResult.Buttons(member))
@@ -220,7 +229,7 @@ func (h *Handler) onText(c tele.Context, member Member) error {
 	switch {
 	case len(list) == 0:
 		log.Info("Unable to find game")
-		return c.Send("No he podido encontrar ningún juego con ese nombre")
+		return c.Send("No he podido encontrar ningún juego con ese nombre", mainMenu)
 	case len(list) <= 3:
 		for _, g := range list {
 			log.WithField("Game", g.Name).Info("Found Game")
@@ -231,9 +240,9 @@ func (h *Handler) onText(c tele.Context, member Member) error {
 		}
 	default:
 		log.WithField("count", len(list)).Info("Found multiple games")
-		c.Send("He encontrado varios juegos, intenta darme mas detalles del juego que buscas. Esta es una lista de todo lo que he encontrado")
+		c.Send("He encontrado varios juegos, intenta darme mas detalles del juego que buscas. Esta es una lista de todo lo que he encontrado", mainMenu)
 		for _, block := range SendList(list) {
-			err := c.Send(block)
+			err := c.Send(block, mainMenu)
 			if err != nil {
 				log.Error(err)
 			}
@@ -434,7 +443,7 @@ func (h *Handler) inLocation(c tele.Context, member Member, location string) err
 	}
 
 	for _, block := range SendList(inLocation) {
-		err := c.Send(block)
+		err := c.Send(block, mainMenu)
 		if err != nil {
 			log.Error(err)
 		}
