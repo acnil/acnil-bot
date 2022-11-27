@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"google.golang.org/api/sheets/v4"
 	tele "gopkg.in/telebot.v3"
@@ -17,16 +18,47 @@ type SheetMembersDatabase struct {
 	SheetID   string
 }
 
+type MemberPermissions string
+
+const (
+	PermissionNo  MemberPermissions = "no"
+	PermissionYes MemberPermissions = "si"
+	// PermissionAdmin will be notified of new user logins so they can approve them from the app
+	// This should not be used to restrict admin actions as it can be modified manually by any user
+	PermissionAdmin MemberPermissions = "admin"
+)
+
+func (p MemberPermissions) IsAuthorised() bool {
+	switch p {
+	case PermissionYes, PermissionAdmin:
+		return true
+	default:
+		return false
+	}
+}
+
 type Member struct {
 	Row         string
 	Nickname    string
 	TelegramID  string
-	Permissions string
+	Permissions MemberPermissions
 }
 
 func (m *Member) TelegramIDInt() int64 {
 	i, _ := strconv.Atoi(m.TelegramID)
 	return int64(i)
+}
+
+func (m *Member) Recipient() string {
+	return m.TelegramID
+}
+
+func (m *Member) ToRow() (string, []interface{}) {
+	return m.Row, []interface{}{
+		m.Nickname,
+		m.TelegramID,
+		m.Permissions,
+	}
 }
 
 func NewMembersDatabase(srv *sheets.Service, sheetID string) *SheetMembersDatabase {
@@ -48,7 +80,7 @@ func NewMemberFromTelegram(user *tele.User) Member {
 		Row:         "",
 		Nickname:    nickname,
 		TelegramID:  strconv.Itoa(int(user.ID)),
-		Permissions: "no",
+		Permissions: PermissionNo,
 	}
 }
 
@@ -104,6 +136,23 @@ func (db *SheetMembersDatabase) Append(ctx context.Context, member Member) error
 	return nil
 }
 
+func (db *SheetMembersDatabase) Update(ctx context.Context, member Member) error {
+	range_, row := member.ToRow()
+
+	request := db.SRV.Spreadsheets.Values.Update(db.SheetID, member.Row, &sheets.ValueRange{
+		Range: range_,
+		Values: [][]interface{}{
+			row,
+		},
+	})
+	request.ValueInputOption("USER_ENTERED")
+	_, err := request.Do()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 const (
 	MemberColumns          = 3
 	MemberColumnNickname   = 0
@@ -123,6 +172,17 @@ func NewMemberFromRow(range_ string, row []interface{}) Member {
 		Row:         range_,
 		Nickname:    fullrow[MemberColumnNickname],
 		TelegramID:  fullrow[MemberColumnTelegramID],
-		Permissions: fullrow[MemberColumnPermission],
+		Permissions: ParseMemberPermissions(fullrow[MemberColumnPermission]),
+	}
+}
+
+func ParseMemberPermissions(p string) MemberPermissions {
+	switch {
+	case strings.EqualFold(p, string(PermissionYes)):
+		return PermissionYes
+	case strings.EqualFold(p, string(PermissionAdmin)):
+		return PermissionAdmin
+	default:
+		return PermissionNo
 	}
 }

@@ -24,6 +24,7 @@ type MembersDatabase interface {
 	Get(ctx context.Context, telegramID int64) (*Member, error)
 	List(ctx context.Context) ([]Member, error)
 	Append(ctx context.Context, member Member) error
+	Update(ctx context.Context, member Member) error
 }
 
 type GameDatabase interface {
@@ -33,9 +34,14 @@ type GameDatabase interface {
 	Update(ctx context.Context, game Game) error
 }
 
+type Sender interface {
+	Send(to tele.Recipient, what interface{}, opts ...interface{}) (*tele.Message, error)
+}
+
 type Handler struct {
 	MembersDB MembersDatabase
 	GameDB    GameDatabase
+	Bot       Sender
 }
 
 func (h *Handler) Register(b *tele.Bot) {
@@ -44,17 +50,17 @@ func (h *Handler) Register(b *tele.Bot) {
 	b.Handle("\ftake", h.OnTake)
 	b.Handle("\freturn", h.OnReturn)
 	b.Handle("\fmore", h.IsAuthorized(h.OnMore))
+	b.Handle("\fauthorise", h.IsAuthorized(h.onAuthorise))
 	b.Handle(&btnMyGames, h.IsAuthorized(h.MyGames))
 	b.Handle(&btnEnGamonal, h.IsAuthorized(h.InGamonal))
 	b.Handle(&btnEnCentro, h.IsAuthorized(h.InCentro))
+	h.Bot = b
 }
 
 func (h *Handler) IsAuthorized(next func(tele.Context, Member) error) func(tele.Context) error {
 	return func(c tele.Context) error {
 		log := ilog.WithTelegramUser(
-			logrus.
-				WithField(ilog.FieldHandler, "Authorization").
-				WithField(ilog.FieldMessage, c.Message()),
+			logrus.WithField(ilog.FieldHandler, "Authorization"),
 			c.Sender(),
 		)
 		m, err := h.MembersDB.Get(context.Background(), c.Sender().ID)
@@ -67,16 +73,76 @@ func (h *Handler) IsAuthorized(next func(tele.Context, Member) error) func(tele.
 			log.WithField(ilog.FieldName, newMember.Nickname).Info("Registering new user")
 			m = &newMember
 			h.MembersDB.Append(context.Background(), newMember)
+			h.notifyAdminsOfNewLogin(newMember)
 		}
 
-		if !strings.EqualFold(m.Permissions, "si") {
+		if !m.Permissions.IsAuthorised() {
 			log.
 				WithField(ilog.FieldName, m.Nickname).
 				Info("Permission denied")
-			return c.Send(fmt.Sprintf("Hola, Antes de nada, has de ir al documento de inventario.\nEn la pestaña de miembros habrá aparecido tu nombre al final.\nTienes que cambiar tus permisos para poder empezar a usar este bot\n\nCuando tengas permiso, vuelve a enviar /start para recibir instrucciones"))
+			return c.Send(fmt.Sprintf(`Hola,
+He notificado a un administrador de que necesitas acceso. Te avisaré cuando lo tengas.
+
+También puedes hacerlo tu mismo.
+Has de ir al documento de inventario.  En la pestaña de miembros habrá aparecido tu nombre al final. Tienes que cambiar tus permisos para poder empezar a usar este bot.
+
+Cuando tengas permiso a PermissionYes, vuelve a enviar /start para recibir instrucciones`))
 		}
 		return next(c, *m)
 	}
+}
+
+func (h *Handler) notifyAdminsOfNewLogin(newMember Member) error {
+	members, err := h.MembersDB.List(context.Background())
+	if err != nil {
+		return err
+	}
+
+	selector := &tele.ReplyMarkup{}
+	rows := []tele.Row{}
+	rows = append(rows, selector.Row(
+		selector.Data("Dar acceso", "authorise", newMember.TelegramID),
+	))
+	selector.Inline(rows...)
+
+	for _, m := range members {
+		if m.Permissions == PermissionAdmin {
+			h.Bot.Send(&m, "Nuevo usuario registrado", selector)
+		}
+		return nil
+	}
+	return nil
+}
+
+func (h Handler) OnAuthorise(c tele.Context) error {
+	return h.IsAuthorized(h.onAuthorise)(c)
+}
+
+func (h Handler) onAuthorise(c tele.Context, _ Member) error {
+	newMemberID, err := strconv.Atoi(c.Data())
+	if err != nil {
+		c.Edit("No he podido leer el ID de usuario, " + err.Error())
+		return nil
+	}
+	newMember, err := h.MembersDB.Get(context.Background(), int64(newMemberID))
+	if err != nil {
+		c.Send("Intentalo de nuevo, " + err.Error())
+		return err
+	}
+
+	if newMember == nil {
+		c.Send("Parece que el nuevo usuario no está en el excel")
+		return nil
+	}
+
+	newMember.Permissions = PermissionYes
+	err = h.MembersDB.Update(context.Background(), *newMember)
+	if err != nil {
+		c.Send("Parece que algo ha ido mal, " + err.Error())
+		return nil
+	}
+	c.Edit("Se ha dado acceso al usuario de forma correcta")
+	return nil
 }
 
 func (h *Handler) Start(c tele.Context) error {
@@ -102,7 +168,7 @@ Por último, si me mandas el ID de un juego, también puedo encontrarlo.
 Si algo va mal, habla con @MetalBlueberry`, mainMenu)
 }
 
-func (h *Handler) skipGrop(next func(c tele.Context) error) func(c tele.Context) error {
+func (h *Handler) skipGroup(next func(c tele.Context) error) func(c tele.Context) error {
 	return func(c tele.Context) error {
 		if c.Message().FromGroup() {
 			log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "GroupSkip"), c.Sender())
@@ -120,7 +186,7 @@ func (h *Handler) OnText(c tele.Context) error {
 func (h *Handler) onText(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Text"), c.Sender())
 
-	log = log.WithField("Text", c.Text())
+	log = log.WithField(ilog.FieldText, c.Text())
 
 	_, err := strconv.Atoi(c.Text())
 	if err == nil {
