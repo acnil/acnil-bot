@@ -50,7 +50,7 @@ func (h *Handler) Register(b *tele.Bot) {
 	b.Handle("\ftake", h.OnTake)
 	b.Handle("\freturn", h.OnReturn)
 	b.Handle("\fmore", h.IsAuthorized(h.OnMore))
-	b.Handle("\fauthorise", h.IsAuthorized(h.onAuthorise))
+	b.Handle("\fauthorise", h.OnAuthorise)
 	b.Handle(&btnMyGames, h.IsAuthorized(h.MyGames))
 	b.Handle(&btnEnGamonal, h.IsAuthorized(h.InGamonal))
 	b.Handle(&btnEnCentro, h.IsAuthorized(h.InCentro))
@@ -73,7 +73,7 @@ func (h *Handler) IsAuthorized(next func(tele.Context, Member) error) func(tele.
 			log.WithField(ilog.FieldName, newMember.Nickname).Info("Registering new user")
 			m = &newMember
 			h.MembersDB.Append(context.Background(), newMember)
-			h.notifyAdminsOfNewLogin(newMember)
+			h.notifyAdminsOfNewLogin(log, newMember)
 		}
 
 		if !m.Permissions.IsAuthorised() {
@@ -92,7 +92,7 @@ Cuando tengas permiso a PermissionYes, vuelve a enviar /start para recibir instr
 	}
 }
 
-func (h *Handler) notifyAdminsOfNewLogin(newMember Member) error {
+func (h *Handler) notifyAdminsOfNewLogin(log *logrus.Entry, newMember Member) error {
 	members, err := h.MembersDB.List(context.Background())
 	if err != nil {
 		return err
@@ -107,18 +107,23 @@ func (h *Handler) notifyAdminsOfNewLogin(newMember Member) error {
 
 	for _, m := range members {
 		if m.Permissions == PermissionAdmin {
-			h.Bot.Send(&m, "Nuevo usuario registrado", selector)
+			log.WithField("Admin", m.Nickname).Info("Notifying admin")
+			_, err = h.Bot.Send(&m, "Nuevo usuario registrado", selector)
+			if err != nil {
+				log.WithError(err).Error("Failed to notify admin")
+			}
 		}
-		return nil
 	}
 	return nil
 }
 
-func (h Handler) OnAuthorise(c tele.Context) error {
+func (h *Handler) OnAuthorise(c tele.Context) error {
 	return h.IsAuthorized(h.onAuthorise)(c)
 }
 
-func (h Handler) onAuthorise(c tele.Context, _ Member) error {
+func (h *Handler) onAuthorise(c tele.Context, _ Member) error {
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Authorise"), c.Sender())
+
 	newMemberID, err := strconv.Atoi(c.Data())
 	if err != nil {
 		c.Edit("No he podido leer el ID de usuario, " + err.Error())
@@ -126,7 +131,7 @@ func (h Handler) onAuthorise(c tele.Context, _ Member) error {
 	}
 	newMember, err := h.MembersDB.Get(context.Background(), int64(newMemberID))
 	if err != nil {
-		c.Send("Intentalo de nuevo, " + err.Error())
+		c.Send("Inténtalo de nuevo, " + err.Error())
 		return err
 	}
 
@@ -141,8 +146,12 @@ func (h Handler) onAuthorise(c tele.Context, _ Member) error {
 		c.Send("Parece que algo ha ido mal, " + err.Error())
 		return nil
 	}
-	c.Edit("Se ha dado acceso al usuario de forma correcta")
-	return nil
+	_, err = h.Bot.Send(newMember, "Ya tienes acceso! di /start para recibir el mensaje de bienvenida")
+	if err != nil {
+		log.Errorf("Error sending message to new member, %s", err)
+	}
+
+	return c.Edit("Se ha dado acceso al usuario de forma correcta")
 }
 
 func (h *Handler) Start(c tele.Context) error {
