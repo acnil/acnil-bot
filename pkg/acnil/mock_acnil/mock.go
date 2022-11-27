@@ -10,6 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	acnil "github.com/metalblueberry/acnil-bot/pkg/acnil"
+	telebot "gopkg.in/telebot.v3"
 )
 
 // MockMembersDatabase is a mock of MembersDatabase interface.
@@ -77,6 +78,20 @@ func (m *MockMembersDatabase) List(ctx context.Context) ([]acnil.Member, error) 
 func (mr *MockMembersDatabaseMockRecorder) List(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockMembersDatabase)(nil).List), ctx)
+}
+
+// Update mocks base method.
+func (m *MockMembersDatabase) Update(ctx context.Context, member acnil.Member) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, member)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockMembersDatabaseMockRecorder) Update(ctx, member interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockMembersDatabase)(nil).Update), ctx, member)
 }
 
 // MockGameDatabase is a mock of GameDatabase interface.
@@ -159,4 +174,47 @@ func (m *MockGameDatabase) Update(ctx context.Context, game acnil.Game) error {
 func (mr *MockGameDatabaseMockRecorder) Update(ctx, game interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockGameDatabase)(nil).Update), ctx, game)
+}
+
+// MockSender is a mock of Sender interface.
+type MockSender struct {
+	ctrl     *gomock.Controller
+	recorder *MockSenderMockRecorder
+}
+
+// MockSenderMockRecorder is the mock recorder for MockSender.
+type MockSenderMockRecorder struct {
+	mock *MockSender
+}
+
+// NewMockSender creates a new mock instance.
+func NewMockSender(ctrl *gomock.Controller) *MockSender {
+	mock := &MockSender{ctrl: ctrl}
+	mock.recorder = &MockSenderMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockSender) EXPECT() *MockSenderMockRecorder {
+	return m.recorder
+}
+
+// Send mocks base method.
+func (m *MockSender) Send(to telebot.Recipient, what interface{}, opts ...interface{}) (*telebot.Message, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{to, what}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Send", varargs...)
+	ret0, _ := ret[0].(*telebot.Message)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Send indicates an expected call of Send.
+func (mr *MockSenderMockRecorder) Send(to, what interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{to, what}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockSender)(nil).Send), varargs...)
 }

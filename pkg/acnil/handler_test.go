@@ -1,6 +1,8 @@
 package acnil_test
 
 import (
+	"context"
+
 	"github.com/golang/mock/gomock"
 	"github.com/metalblueberry/acnil-bot/pkg/acnil"
 	"github.com/metalblueberry/acnil-bot/pkg/acnil/mock_acnil"
@@ -18,6 +20,7 @@ var _ = Describe("Handler", func() {
 		ctrl                *gomock.Controller
 		mockMembersDatabase *mock_acnil.MockMembersDatabase
 		mockGameDatabase    *mock_acnil.MockGameDatabase
+		mockSender          *mock_acnil.MockSender
 		mockTeleContext     *mock_telebot_v3.MockContext
 		h                   acnil.Handler
 	)
@@ -26,16 +29,80 @@ var _ = Describe("Handler", func() {
 		ctrl = gomock.NewController(GinkgoT())
 		mockMembersDatabase = mock_acnil.NewMockMembersDatabase(ctrl)
 		mockGameDatabase = mock_acnil.NewMockGameDatabase(ctrl)
+		mockSender = mock_acnil.NewMockSender(ctrl)
 		mockTeleContext = mock_telebot_v3.NewMockContext(ctrl)
 
 		h = acnil.Handler{
 			MembersDB: mockMembersDatabase,
 			GameDB:    mockGameDatabase,
+			Bot:       mockSender,
 		}
 	})
 
 	AfterEach(func() {
 		ctrl.Finish()
+	})
+
+	Describe("A new member", func() {
+		var (
+			newMember *acnil.Member
+			admin     *acnil.Member
+			sender    *tele.User
+		)
+		BeforeEach(func() {
+			admin = &acnil.Member{
+				Nickname:    "MetalBlueberry",
+				TelegramID:  "12345",
+				Permissions: acnil.PermissionAdmin,
+			}
+			sender = &tele.User{
+				ID:        1,
+				FirstName: "New",
+				LastName:  "User",
+				Username:  "NewUser",
+			}
+			newMember = &acnil.Member{
+				TelegramID:  "1",
+				Nickname:    "New User",
+				Permissions: "no",
+			}
+			mockMembersDatabase.EXPECT().Get(gomock.Any(), sender.ID).Return(nil, nil)
+			mockMembersDatabase.EXPECT().Append(gomock.Any(), gomock.AssignableToTypeOf(acnil.Member{})).Return(nil).Do(func(_ context.Context, member acnil.Member) {
+				Expect(member.Nickname).To(Equal(newMember.Nickname))
+				Expect(member.TelegramID).To(Equal(newMember.TelegramID))
+				Expect(member.Permissions).To(Equal(acnil.PermissionNo))
+			})
+			mockMembersDatabase.EXPECT().List(gomock.Any()).Return([]acnil.Member{
+				*admin,
+				*newMember,
+			}, nil)
+			mockSender.EXPECT().Send(gomock.Any(), gomock.Any(), gomock.Any()).Do(func(r tele.Recipient, msg interface{}, opts ...interface{}) {
+				Expect(r.Recipient()).To(Equal(admin.TelegramID))
+			})
+
+			mockTeleContext.EXPECT().Sender().Return(sender).AnyTimes()
+		})
+		Describe("calls /start", func() {
+			BeforeEach(func() {
+				text := "/start"
+				mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
+				mockTeleContext.EXPECT().Message().Return(&tele.Message{
+					Sender: sender,
+					Text:   text,
+					Chat: &tele.Chat{
+						Type: tele.ChatPrivate,
+					},
+				}).AnyTimes()
+			})
+			It("Should notify admins and register the user in the table", func() {
+				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+					Expect(sent).To(ContainSubstring("Hola,"))
+					return nil
+				})
+				err := h.Start(mockTeleContext)
+				Expect(err).To(BeNil())
+			})
+		})
 	})
 
 	Describe("An authorised member", func() {
@@ -48,7 +115,7 @@ var _ = Describe("Handler", func() {
 			member = &acnil.Member{
 				Nickname:    "MetalBlueberry",
 				TelegramID:  "12345",
-				Permissions: "si",
+				Permissions: acnil.PermissionYes,
 			}
 			mockMembersDatabase.EXPECT().Get(gomock.Any(), member.TelegramIDInt()).Return(member, nil)
 			sender = &tele.User{
@@ -265,7 +332,6 @@ var _ = Describe("Handler", func() {
 				Expect(err).To(BeNil())
 			})
 		})
-
 		Describe("When an user returns a game that is owned not owned by himself", func() {
 			BeforeEach(func() {
 				mockGameDatabase.EXPECT().Get(gomock.Any(), "1", "Game1").Return(&acnil.Game{
