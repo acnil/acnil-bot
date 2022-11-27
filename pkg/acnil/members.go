@@ -24,6 +24,11 @@ type Member struct {
 	Permissions string
 }
 
+func (m *Member) TelegramIDInt() int64 {
+	i, _ := strconv.Atoi(m.TelegramID)
+	return int64(i)
+}
+
 func NewMembersDatabase(srv *sheets.Service, sheetID string) *SheetMembersDatabase {
 	return &SheetMembersDatabase{
 		SRV:       srv,
