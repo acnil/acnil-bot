@@ -39,8 +39,8 @@ type Handler struct {
 }
 
 func (h *Handler) Register(b *tele.Bot) {
-	b.Handle("/start", h.IsAuthorized(h.Start))
-	b.Handle(tele.OnText, h.IsAuthorized(h.OnText))
+	b.Handle("/start", h.Start)
+	b.Handle(tele.OnText, h.OnText)
 	b.Handle("\ftake", h.IsAuthorized(h.OnTake))
 	b.Handle("\freturn", h.IsAuthorized(h.OnReturn))
 	b.Handle("\fmore", h.IsAuthorized(h.OnMore))
@@ -79,7 +79,11 @@ func (h *Handler) IsAuthorized(next func(tele.Context, Member) error) func(tele.
 	}
 }
 
-func (h *Handler) Start(c tele.Context, member Member) error {
+func (h *Handler) Start(c tele.Context) error {
+	return h.IsAuthorized(h.start)(c)
+}
+
+func (h *Handler) start(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Start"), c.Sender())
 	log.Info(c.Text())
 
@@ -96,16 +100,25 @@ También puedo buscar por parte del nombre. por ejemplo, Intenta decir "Explodin
 Por último, si me mandas el ID de un juego, también puedo encontrarlo.
 
 Si algo va mal, habla con @MetalBlueberry`, mainMenu)
-
 }
 
-func (h *Handler) OnText(c tele.Context, member Member) error {
-	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Text"), c.Sender())
-
-	if c.Message().FromGroup() {
-		log.WithField("Chat", c.Chat().FirstName).Debug("skip group")
-		return nil
+func (h *Handler) skipGrop(next func(c tele.Context) error) func(c tele.Context) error {
+	return func(c tele.Context) error {
+		if c.Message().FromGroup() {
+			log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "GroupSkip"), c.Sender())
+			log.WithField("Chat", c.Chat().FirstName).Debug("skip group")
+			return nil
+		}
+		return next(c)
 	}
+}
+
+func (h *Handler) OnText(c tele.Context) error {
+	return h.IsAuthorized(h.onText)(c)
+}
+
+func (h *Handler) onText(c tele.Context, member Member) error {
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Text"), c.Sender())
 
 	log = log.WithField("Text", c.Text())
 
