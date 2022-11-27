@@ -77,7 +77,7 @@ func (db *SheetGameDatabase) Get(ctx context.Context, id string, name string) (*
 		}
 	}
 	if len(matches) == 0 {
-		return nil, err
+		return nil, nil
 	}
 
 	if len(matches) != 1 {
