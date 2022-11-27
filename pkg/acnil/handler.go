@@ -240,7 +240,11 @@ func (h *Handler) onText(c tele.Context, member Member) error {
 		}
 	default:
 		log.WithField("count", len(list)).Info("Found multiple games")
-		c.Send("He encontrado varios juegos, intenta darme mas detalles del juego que buscas. Esta es una lista de todo lo que he encontrado", mainMenu)
+		c.Send(`He encontrado varios juegos, 
+intenta darme mas detalles del juego que buscas. 
+También puedes seleccionar un juego por su ID, solo dime el número de la lista.
+
+Esto es todo lo que he encontrado`, mainMenu)
 		for _, block := range SendList(list) {
 			err := c.Send(block, mainMenu)
 			if err != nil {
