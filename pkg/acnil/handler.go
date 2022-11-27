@@ -41,8 +41,8 @@ type Handler struct {
 func (h *Handler) Register(b *tele.Bot) {
 	b.Handle("/start", h.Start)
 	b.Handle(tele.OnText, h.OnText)
-	b.Handle("\ftake", h.IsAuthorized(h.OnTake))
-	b.Handle("\freturn", h.IsAuthorized(h.OnReturn))
+	b.Handle("\ftake", h.OnTake)
+	b.Handle("\freturn", h.OnReturn)
 	b.Handle("\fmore", h.IsAuthorized(h.OnMore))
 	b.Handle(&btnMyGames, h.IsAuthorized(h.MyGames))
 	b.Handle(&btnEnGamonal, h.IsAuthorized(h.InGamonal))
@@ -168,7 +168,11 @@ func (h *Handler) onText(c tele.Context, member Member) error {
 	return nil
 }
 
-func (h *Handler) OnTake(c tele.Context, member Member) error {
+func (h *Handler) OnTake(c tele.Context) error {
+	return h.IsAuthorized(h.onTake)(c)
+}
+
+func (h *Handler) onTake(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Take"), c.Sender())
 
 	g := NewGameFromData(c.Data())
@@ -215,7 +219,11 @@ func (h *Handler) OnTake(c tele.Context, member Member) error {
 	return c.Respond()
 }
 
-func (h *Handler) OnReturn(c tele.Context, member Member) error {
+func (h *Handler) OnReturn(c tele.Context) error {
+	return h.IsAuthorized(h.onReturn)(c)
+}
+
+func (h *Handler) onReturn(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Return"), c.Sender())
 
 	g := NewGameFromData(c.Data())
@@ -236,11 +244,11 @@ func (h *Handler) OnReturn(c tele.Context, member Member) error {
 	g = *getResult
 
 	if g.Holder != member.Nickname {
-		err := c.Send("Parece que alguien ha modificado los datos, desde la última vez. te envío los últimos actualizados")
+		err := c.Edit("Parece que alguien ha modificado los datos. te envío los últimos actualizados")
 		if err != nil {
 			log.Print(err)
 		}
-		err = c.Edit(g.Card(), g.Buttons(member))
+		err = c.Send(g.Card(), g.Buttons(member))
 		if err != nil {
 			log.Print(err)
 		}

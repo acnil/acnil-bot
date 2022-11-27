@@ -73,7 +73,7 @@ var _ = Describe("Handler", func() {
 					},
 				}).AnyTimes()
 			})
-			It("Should reply with hello world message", func() {
+			It("Should reply with welcome message message", func() {
 				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
 					Expect(sent).To(ContainSubstring("Bienvenido al bot de Acnil"))
 					return nil
@@ -82,7 +82,7 @@ var _ = Describe("Handler", func() {
 				Expect(err).ToNot(HaveOccurred())
 			})
 		})
-		Describe("With a board game library", func() {
+		Describe("When Text is sent", func() {
 			BeforeEach(func() {
 				mockGameDatabase.EXPECT().Find(gomock.Any(), "Game1").Return([]acnil.Game{
 					{
@@ -90,29 +90,217 @@ var _ = Describe("Handler", func() {
 						Name: "Game1",
 					},
 				}, nil)
+				text := "Game1"
+				mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
+				mockTeleContext.EXPECT().Message().Return(&tele.Message{
+					Sender: sender,
+					Text:   text,
+					Chat: &tele.Chat{
+						Type: tele.ChatPrivate,
+					},
+				}).AnyTimes()
+			})
+			It("Should reply with game details", func() {
+				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+					Expect(sent).To(ContainSubstring("Game1"))
+					return nil
+				})
+				err := h.OnText(mockTeleContext)
+				Expect(err).ToNot(HaveOccurred())
+			})
+		})
+		Describe("When Text is an ID", func() {
+			BeforeEach(func() {
+				text := "1"
+				mockGameDatabase.EXPECT().Get(gomock.Any(), text, "").Return(&acnil.Game{
+					ID:   "1",
+					Name: "Game1",
+				}, nil)
+				mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
+				mockTeleContext.EXPECT().Message().Return(&tele.Message{
+					Sender: sender,
+					Text:   text,
+					Chat: &tele.Chat{
+						Type: tele.ChatPrivate,
+					},
+				}).AnyTimes()
+			})
+			It("Should reply with game details by ID", func() {
+				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+					Expect(sent).To(ContainSubstring("Game1"))
+					return nil
+				})
+				err := h.OnText(mockTeleContext)
+				Expect(err).ToNot(HaveOccurred())
+			})
+		})
+		Describe("When an user attempts to take a game that is available", func() {
+			BeforeEach(func() {
+				mockGameDatabase.EXPECT().Get(gomock.Any(), "1", "Game1").Return(&acnil.Game{
+					ID:   "1",
+					Name: "Game1",
+				}, nil)
+
+				mockTeleContext.EXPECT().Data().Return(acnil.Game{
+					ID:   "1",
+					Name: "Game1",
+				}.Data()).AnyTimes()
+				mockTeleContext.EXPECT().Message().Return(&tele.Message{
+					Sender: sender,
+					Chat: &tele.Chat{
+						Type: tele.ChatPrivate,
+					},
+				}).AnyTimes()
+				mockGameDatabase.EXPECT().Update(gomock.Any(), gomock.AssignableToTypeOf(acnil.Game{
+					ID:     "1",
+					Name:   "Game1",
+					Holder: member.Nickname,
+				}))
+			})
+			It("must allow the user to take the game", func() {
+				mockTeleContext.EXPECT().Edit(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+					Expect(sent).To(ContainSubstring("Game1"))
+					return nil
+				})
+				mockTeleContext.EXPECT().Respond(gomock.Any())
+
+				err := h.OnTake(mockTeleContext)
+				Expect(err).To(BeNil())
+			})
+		})
+		Describe("When an user attempts to take a game that is NOT available", func() {
+			BeforeEach(func() {
+				mockGameDatabase.EXPECT().Get(gomock.Any(), "1", "Game1").Return(&acnil.Game{
+					ID:     "1",
+					Name:   "Game1",
+					Holder: "Other Person",
+				}, nil)
+
+				mockTeleContext.EXPECT().Data().Return(acnil.Game{
+					ID:     "1",
+					Name:   "Game1",
+					Holder: "Other Person",
+				}.Data()).AnyTimes()
+				mockTeleContext.EXPECT().Message().Return(&tele.Message{
+					Sender: sender,
+					Chat: &tele.Chat{
+						Type: tele.ChatPrivate,
+					},
+				}).AnyTimes()
+			})
+			It("must not change the game ownership and send updated data", func() {
+				mockTeleContext.EXPECT().Edit(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+					Expect(sent).To(ContainSubstring("te envío los últimos actualizados"))
+					return nil
+				})
+				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+					Expect(sent).To(ContainSubstring("Game1"))
+					return nil
+				})
+
+				mockTeleContext.EXPECT().Respond(gomock.Any())
+
+				err := h.OnTake(mockTeleContext)
+				Expect(err).To(BeNil())
+			})
+		})
+		Describe("When an user attempts to take a game that doesn't exist", func() {
+			BeforeEach(func() {
+				mockTeleContext.EXPECT().Data().Return(acnil.Game{
+					ID:     "1",
+					Name:   "Game1",
+					Holder: "Other Person",
+				}.Data()).AnyTimes()
+				mockGameDatabase.EXPECT().Get(gomock.Any(), "1", "Game1").Return(nil, nil)
+				mockTeleContext.EXPECT().Message().Return(&tele.Message{
+					Sender: sender,
+					Chat: &tele.Chat{
+						Type: tele.ChatPrivate,
+					},
+				}).AnyTimes()
+			})
+			It("must notify the user by editing the message", func() {
+				mockTeleContext.EXPECT().Edit(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+					Expect(sent).To(ContainSubstring("No he podido encontrar el juego"))
+					return nil
+				})
+
+				mockTeleContext.EXPECT().Respond(gomock.Any())
+
+				err := h.OnTake(mockTeleContext)
+				Expect(err).To(BeNil())
+			})
+		})
+		Describe("When an user returns a game that is owned by himself", func() {
+			BeforeEach(func() {
+				mockGameDatabase.EXPECT().Get(gomock.Any(), "1", "Game1").Return(&acnil.Game{
+					ID:     "1",
+					Name:   "Game1",
+					Holder: member.Nickname,
+				}, nil)
+
+				mockTeleContext.EXPECT().Data().Return(acnil.Game{
+					ID:   "1",
+					Name: "Game1",
+				}.Data()).AnyTimes()
+				mockTeleContext.EXPECT().Message().Return(&tele.Message{
+					Sender: sender,
+					Chat: &tele.Chat{
+						Type: tele.ChatPrivate,
+					},
+				}).AnyTimes()
+				mockGameDatabase.EXPECT().Update(gomock.Any(), gomock.AssignableToTypeOf(acnil.Game{
+					ID:   "1",
+					Name: "Game1",
+				}))
+			})
+			It("the game must be updated with empty holder", func() {
+				mockTeleContext.EXPECT().Edit(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+					Expect(sent).To(ContainSubstring("Game1"))
+					return nil
+				})
+				mockTeleContext.EXPECT().Respond(gomock.Any())
+
+				err := h.OnReturn(mockTeleContext)
+				Expect(err).To(BeNil())
+			})
+		})
+
+		Describe("When an user returns a game that is owned not owned by himself", func() {
+			BeforeEach(func() {
+				mockGameDatabase.EXPECT().Get(gomock.Any(), "1", "Game1").Return(&acnil.Game{
+					ID:     "1",
+					Name:   "Game1",
+					Holder: "Other User",
+				}, nil)
+
+				mockTeleContext.EXPECT().Data().Return(acnil.Game{
+					ID:   "1",
+					Name: "Game1",
+				}.Data()).AnyTimes()
+				mockTeleContext.EXPECT().Message().Return(&tele.Message{
+					Sender: sender,
+					Chat: &tele.Chat{
+						Type: tele.ChatPrivate,
+					},
+				}).AnyTimes()
+
+			})
+			It("the game must not be updated and new data must be returned", func() {
+				mockTeleContext.EXPECT().Edit(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+					Expect(sent).To(ContainSubstring("te envío los últimos actualizados"))
+					return nil
+				})
+				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+					Expect(sent).To(ContainSubstring("Game1"))
+					return nil
+				})
+				mockTeleContext.EXPECT().Respond(gomock.Any())
+
+				err := h.OnReturn(mockTeleContext)
+				Expect(err).To(BeNil())
 			})
 
-			Describe("When Text is sent", func() {
-				BeforeEach(func() {
-					text := "Game1"
-					mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
-					mockTeleContext.EXPECT().Message().Return(&tele.Message{
-						Sender: sender,
-						Text:   text,
-						Chat: &tele.Chat{
-							Type: tele.ChatPrivate,
-						},
-					}).AnyTimes()
-				})
-				It("Should reply with game details", func() {
-					mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
-						Expect(sent).To(ContainSubstring("Game1"))
-						return nil
-					})
-					err := h.OnText(mockTeleContext)
-					Expect(err).ToNot(HaveOccurred())
-				})
-			})
 		})
 	})
 
