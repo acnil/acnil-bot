@@ -11,6 +11,7 @@ import (
 	"unicode"
 
 	"github.com/metalblueberry/acnil-bot/pkg/bgg"
+	"github.com/metalblueberry/acnil-bot/pkg/sheetsparser"
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
@@ -35,18 +36,24 @@ func NewGameDatabase(srv *sheets.Service, sheetID string) *SheetGameDatabase {
 }
 
 type Game struct {
-	ID         string
-	Row        string
-	Name       string
-	Price      string
-	Holder     string
-	TakeDate   time.Time
-	ReturnDate time.Time
-	Location   string
-	Publisher  string
-	Comments   string
-	BGG        string
+	// Row represents the row definition on google sheets
+	Row string
+
+	ID         string    `col:"0"`
+	Name       string    `col:"1"`
+	Location   string    `col:"2"`
+	Holder     string    `col:"3"`
+	Comments   string    `col:"4"`
+	TakeDate   time.Time `col:"5"`
+	ReturnDate time.Time `col:"6"`
+	Price      string    `col:"7"`
+	Publisher  string    `col:"8"`
+	BGG        string    `col:"9"`
 }
+
+const (
+	NCols = 8
+)
 
 func (db *SheetGameDatabase) fullReadRange() string {
 	return fmt.Sprintf("%s!%s", db.Sheet, db.ReadRange)
@@ -104,7 +111,15 @@ func (db *SheetGameDatabase) List(ctx context.Context) ([]Game, error) {
 		if len(row) < NCols {
 			continue
 		}
-		games = append(games, NewGameFromRow(db.rowReadRange(i+2), row))
+		g := Game{
+			Row: db.rowReadRange(i + 2),
+		}
+		err := sheetsparser.Unmarshal(row, &g)
+		if err != nil {
+			return nil, err
+		}
+		games = append(games, g)
+
 	}
 	return games, nil
 }
@@ -145,63 +160,12 @@ func (db *SheetGameDatabase) Update(ctx context.Context, game Game) error {
 	return nil
 }
 
-const (
-	ColumnID         = 0
-	ColumnName       = 1
-	ColumnLocation   = 2
-	ColumnHolder     = 3
-	ColumnComments   = 4
-	ColumnTakeDate   = 5
-	ColumnReturnDate = 6
-	ColumnPrice      = 7
-	ColumnPublisher  = 8
-	ColumnBGG        = 9
-	NCols            = ColumnPublisher
-	MaxCols          = ColumnBGG + 1
-)
-
-func NewGameFromRow(range_ string, row []interface{}) Game {
-	fullrow := make([]string, MaxCols)
-	for i := range fullrow {
-		fullrow[i] = ""
-	}
-	for i := range row {
-		fullrow[i] = row[i].(string)
-	}
-
-	takeDate, err := time.Parse("2/1/2006", fullrow[ColumnTakeDate])
-	if err != nil && fullrow[ColumnTakeDate] != "" {
-		log.Print("Failed to parse take date", fullrow[ColumnTakeDate])
-	}
-	returnDate, err := time.Parse("2/1/2006", fullrow[ColumnReturnDate])
-	if err != nil {
-		log.Println("Failed to parse return date", fullrow[ColumnReturnDate])
-	}
-	return Game{
-		Row:        range_, // Exclude header and set index to 1 based
-		ID:         fullrow[ColumnID],
-		Name:       fullrow[ColumnName],
-		Price:      fullrow[ColumnPrice],
-		Holder:     fullrow[ColumnHolder],
-		TakeDate:   takeDate,
-		ReturnDate: returnDate,
-		Location:   fullrow[ColumnLocation],
-		Publisher:  fullrow[ColumnPublisher],
-		Comments:   fullrow[ColumnComments],
-		BGG:        fullrow[ColumnBGG],
-	}
-}
-
 func (g Game) ToRow() (range_ string, row []interface{}) {
-	return g.Row, []interface{}{
-		g.ID,
-		g.Name,
-		g.Location,
-		g.Holder,
-		nil,
-		g.TakeDate.Format("2/1/2006"),
-		nil,
+	v, err := sheetsparser.Marshal(&g)
+	if err != nil {
+		panic(err)
 	}
+	return g.Row, v
 }
 
 func NewGameFromData(data string) Game {
