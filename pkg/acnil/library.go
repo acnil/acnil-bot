@@ -196,9 +196,11 @@ func (g Game) ToRow() (range_ string, row []interface{}) {
 	return g.Row, []interface{}{
 		g.ID,
 		g.Name,
-		g.Holder,
 		g.Location,
+		g.Holder,
+		nil,
 		g.TakeDate.Format("2/1/2006"),
+		nil,
 	}
 }
 
