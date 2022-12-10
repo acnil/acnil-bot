@@ -148,11 +148,11 @@ func (db *SheetGameDatabase) Update(ctx context.Context, game Game) error {
 const (
 	ColumnID         = 0
 	ColumnName       = 1
-	ColumnHolder     = 2
-	ColumnLocation   = 3
-	ColumnTakeDate   = 4
-	ColumnReturnDate = 5
-	ColumnComments   = 6
+	ColumnLocation   = 2
+	ColumnHolder     = 3
+	ColumnComments   = 4
+	ColumnTakeDate   = 5
+	ColumnReturnDate = 6
 	ColumnPrice      = 7
 	ColumnPublisher  = 8
 	ColumnBGG        = 9
