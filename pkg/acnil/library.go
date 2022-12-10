@@ -283,9 +283,9 @@ func (g Game) Available() bool {
 
 func (g Game) String() string {
 	if g.Available() {
-		return "🟢 " + g.ID + ":" + g.Name
+		return fmt.Sprintf("🟢 %04s: %s", g.ID, g.Name)
 	}
-	return "🔴 " + g.ID + ":" + g.Name
+	return fmt.Sprintf("🔴 %04s: %s", g.ID, g.Name)
 }
 
 //Norm normalises a string for comparison
