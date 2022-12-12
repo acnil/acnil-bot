@@ -20,7 +20,7 @@ func main() {
 	// readRange := "Historial de prestamos!A:C"
 	// insert := &sheets.ValueRange{}
 	// insert.Values = append(insert.Values, []interface{}{"hello", "testing", "insert"})
-	srv, err := acnil.CreateClientFromCredentals(context.Background(), "credentials.json")
+	srv, err := acnil.CreateClientFromCredentials(context.Background(), "credentials.json")
 	if err != nil {
 		panic(err)
 	}
