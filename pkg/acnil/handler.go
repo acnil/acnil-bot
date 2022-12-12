@@ -18,12 +18,17 @@ var (
 	btnMyGames   = mainMenu.Text("🎲 Mis Juegos")
 	btnEnGamonal = mainMenu.Text("Lista de Gamonal")
 	btnEnCentro  = mainMenu.Text("Lista del Centro")
+	btnRename    = mainMenu.Text("🧍 Cambiar Nombre")
+
+	renameMenu      = &tele.ReplyMarkup{ResizeKeyboard: true}
+	btnCancelRename = renameMenu.Text("Cancelar")
 )
 
 func addMainMenuReplyMarkup(rm *tele.ReplyMarkup) {
 	rm.Reply(
 		rm.Row(btnMyGames),
 		rm.Row(btnEnGamonal, btnEnCentro),
+		rm.Row(btnRename),
 	)
 	rm.ResizeKeyboard = true
 	rm.Inline()
@@ -31,6 +36,10 @@ func addMainMenuReplyMarkup(rm *tele.ReplyMarkup) {
 
 func init() {
 	addMainMenuReplyMarkup(mainMenu)
+	renameMenu.Reply(
+		renameMenu.Row(btnCancelRename),
+	)
+	renameMenu.RemoveKeyboard = true
 }
 
 type MembersDatabase interface {
@@ -68,6 +77,8 @@ func (h *Handler) Register(b *tele.Bot) {
 	b.Handle(&btnMyGames, h.IsAuthorized(h.MyGames))
 	b.Handle(&btnEnGamonal, h.IsAuthorized(h.InGamonal))
 	b.Handle(&btnEnCentro, h.IsAuthorized(h.InCentro))
+	b.Handle(&btnRename, h.Rename)
+	b.Handle(&btnCancelRename, h.CancelRename)
 	h.Bot = b
 }
 
@@ -176,14 +187,16 @@ func (h *Handler) start(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Start"), c.Sender())
 	log.Info(c.Text())
 
-	return c.Send(`Bienvenido al bot de Acnil,
+	return c.Send(fmt.Sprintf(`Bienvenido al bot de Acnil,
+Tu nombre es %s y se ha generado en base a tu nombre de Telegram. Es el nombre que aparecerá en el excel cuando reserves un juego. Si quieres cambiarlo, utiliza el teclado a continuación.
+
 Por ahora puedo ayudarte a tomar prestados y devolver los juegos de forma mas sencilla. Simplemente mándame el nombre del juego y yo lo buscaré por ti.
 
 También puedo buscar por parte del nombre. por ejemplo, Intenta decir "Exploding"
 
 Por último, si me mandas el ID de un juego, también puedo encontrarlo.
 
-Si algo va mal, habla con @MetalBlueberry`, mainMenu)
+Si algo va mal, habla con @MetalBlueberry`, member.Nickname), mainMenu)
 }
 
 func (h *Handler) skipGroup(next func(c tele.Context) error) func(c tele.Context) error {
@@ -205,6 +218,11 @@ func (h *Handler) onText(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Text"), c.Sender())
 
 	log = log.WithField(ilog.FieldText, c.Text())
+
+	switch member.State {
+	case "rename":
+		return h.onRename(c, member)
+	}
 
 	_, err := strconv.Atoi(c.Text())
 	if err == nil {
@@ -477,4 +495,69 @@ func SendList[T fmt.Stringer](items []T) []string {
 		msgs = append(msgs, strings.Join(msgFragments, "\n"))
 	}
 	return msgs
+}
+
+func (h *Handler) Rename(c tele.Context) error {
+	return h.IsAuthorized(h.rename)(c)
+}
+
+func (h *Handler) rename(c tele.Context, member Member) error {
+	member.State = "rename"
+
+	err := h.MembersDB.Update(context.Background(), member)
+	if err != nil {
+		return err
+	}
+	c.Send("Dime el nombre que quieres tener, Tu nombre actual es "+member.Nickname, renameMenu)
+	return nil
+}
+
+func (h *Handler) CancelRename(c tele.Context) error {
+	return h.IsAuthorized(h.cancelRename)(c)
+}
+
+func (h *Handler) cancelRename(c tele.Context, member Member) error {
+	member.State = ""
+	err := h.MembersDB.Update(context.Background(), member)
+	if err != nil {
+		return err
+	}
+
+	return c.Send("Okey, Te llamas "+member.Nickname, mainMenu)
+}
+
+func (h *Handler) onRename(c tele.Context, member Member) error {
+	defer func() {
+		err := h.MembersDB.Update(context.Background(), member)
+		if err != nil {
+			c.Send(err.Error())
+		}
+	}()
+
+	newName := strings.TrimSpace(c.Text())
+	if len(newName) > 25 {
+		return c.Send("No puedes usar un nombre tan largo...", renameMenu)
+	}
+
+	members, err := h.MembersDB.List(context.Background())
+	if err != nil {
+		c.Send(err.Error())
+		return err
+	}
+
+	if newName == member.Nickname {
+		member.State = ""
+		return c.Send("Okey, te dejo el mismo nombre", mainMenu)
+	}
+
+	for _, other := range members {
+		if other.Nickname == newName {
+			return c.Send("Wops! Parece que ya hay otra persona usando este nombre.", renameMenu)
+		}
+	}
+
+	member.State = ""
+	member.Nickname = newName
+	c.Send("Listo! ahora te llamas "+member.Nickname, mainMenu)
+	return nil
 }
