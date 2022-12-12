@@ -224,9 +224,9 @@ func (h *Handler) onText(c tele.Context, member Member) error {
 		return h.onRename(c, member)
 	}
 
-	_, err := strconv.Atoi(c.Text())
+	id, err := strconv.Atoi(c.Text())
 	if err == nil {
-		getResult, err := h.GameDB.Get(context.TODO(), c.Text(), "")
+		getResult, err := h.GameDB.Get(context.TODO(), strconv.Itoa(id), "")
 		if err != nil {
 			log.WithError(err).Error("Failed to connect to GameDB")
 			return c.Send(err.Error(), mainMenu)
