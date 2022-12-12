@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/metalblueberry/acnil-bot/pkg/sheetsparser"
 	"google.golang.org/api/sheets/v4"
 	tele "gopkg.in/telebot.v3"
 )
@@ -39,10 +40,15 @@ func (p MemberPermissions) IsAuthorised() bool {
 
 type Member struct {
 	Row         string
-	Nickname    string
-	TelegramID  string
-	Permissions MemberPermissions
+	Nickname    string            `col:"0"`
+	TelegramID  string            `col:"1"`
+	Permissions MemberPermissions `col:"2"`
+	State       string            `col:"3"`
 }
+
+const (
+	MemberColumns = 3
+)
 
 func (m *Member) TelegramIDInt() int64 {
 	i, _ := strconv.Atoi(m.TelegramID)
@@ -54,17 +60,19 @@ func (m *Member) Recipient() string {
 }
 
 func (m *Member) ToRow() (string, []interface{}) {
-	return m.Row, []interface{}{
-		m.Nickname,
-		m.TelegramID,
-		m.Permissions,
+
+	v, err := sheetsparser.Marshal(m)
+	if err != nil {
+		panic(err)
 	}
+
+	return m.Row, v
 }
 
 func NewMembersDatabase(srv *sheets.Service, sheetID string) *SheetMembersDatabase {
 	return &SheetMembersDatabase{
 		SRV:       srv,
-		ReadRange: "A:C",
+		ReadRange: "A:D",
 		Sheet:     "Miembros",
 		SheetID:   sheetID,
 	}
@@ -81,6 +89,7 @@ func NewMemberFromTelegram(user *tele.User) Member {
 		Nickname:    nickname,
 		TelegramID:  strconv.Itoa(int(user.ID)),
 		Permissions: PermissionNo,
+		State:       "",
 	}
 }
 
@@ -119,7 +128,12 @@ func (db *SheetMembersDatabase) List(ctx context.Context) ([]Member, error) {
 		if len(row) < MemberColumns {
 			continue
 		}
-		members = append(members, NewMemberFromRow(db.rowReadRange(i+2), row))
+		m := Member{
+			Row: db.rowReadRange(i + 2),
+		}
+		sheetsparser.Unmarshal(row, &m)
+
+		members = append(members, m)
 	}
 	return members, nil
 }
@@ -151,29 +165,6 @@ func (db *SheetMembersDatabase) Update(ctx context.Context, member Member) error
 		return err
 	}
 	return nil
-}
-
-const (
-	MemberColumns          = 3
-	MemberColumnNickname   = 0
-	MemberColumnTelegramID = 1
-	MemberColumnPermission = 2
-)
-
-func NewMemberFromRow(range_ string, row []interface{}) Member {
-	fullrow := make([]string, MemberColumns)
-	for i := range fullrow {
-		fullrow[i] = ""
-	}
-	for i := range row {
-		fullrow[i] = row[i].(string)
-	}
-	return Member{
-		Row:         range_,
-		Nickname:    fullrow[MemberColumnNickname],
-		TelegramID:  fullrow[MemberColumnTelegramID],
-		Permissions: ParseMemberPermissions(fullrow[MemberColumnPermission]),
-	}
 }
 
 func ParseMemberPermissions(p string) MemberPermissions {

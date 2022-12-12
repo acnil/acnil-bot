@@ -68,7 +68,8 @@ func (p *SheetParser) Unmarshal(in []interface{}, out interface{}) error {
 				elfield.Set(reflect.ValueOf(""))
 				continue
 			}
-			elfield.Set(reflect.ValueOf(in[index]))
+			val := reflect.ValueOf(in[index])
+			elfield.Set(val.Convert(elfield.Type()))
 		}
 	}
 	return nil
