@@ -34,7 +34,7 @@ func main() {
 		return
 	}
 
-	srv, err := acnil.CreateClientFromCredentals(context.TODO(), credentialsFile)
+	srv, err := acnil.CreateClientFromCredentials(context.TODO(), credentialsFile)
 	if err != nil {
 		panic(err)
 	}

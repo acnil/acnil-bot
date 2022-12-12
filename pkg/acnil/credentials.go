@@ -25,7 +25,7 @@ type CredentialsFile struct {
 	Scopes                  []string `json:"scopes"`
 }
 
-func CreateClientFromCredentals(ctx context.Context, file string) (*sheets.Service, error) {
+func CreateClientFromCredentials(ctx context.Context, file string) (*sheets.Service, error) {
 	f, err := os.Open(file)
 	if err != nil {
 		panic(err)
