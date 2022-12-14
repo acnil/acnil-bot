@@ -23,6 +23,11 @@ func main() {
 		logrus.Fatal("TOKEN must be defined")
 	}
 
+	auditSheetID := os.Getenv("AUDIT_SHEET_ID")
+	if auditSheetID == "" {
+		logrus.Fatal("AUDIT_SHEET_ID must be defined")
+	}
+
 	pref := tele.Settings{
 		Token:  botToken,
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
@@ -46,7 +51,7 @@ func main() {
 	handler.Register(b)
 
 	audit := &acnil.Audit{
-		AuditDB: acnil.NewSheetAuditDatabase(srv, sheetID),
+		AuditDB: acnil.NewSheetAuditDatabase(srv, auditSheetID),
 		GameDB:  acnil.NewGameDatabase(srv, sheetID),
 	}
 
