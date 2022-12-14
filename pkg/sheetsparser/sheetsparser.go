@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -44,7 +45,9 @@ func (p *SheetParser) Unmarshal(in []interface{}, out interface{}) error {
 			continue
 		}
 
-		index, err := strconv.Atoi(v)
+		fields := strings.Split(v, ",")
+
+		index, err := strconv.Atoi(fields[0])
 		if err != nil {
 			return fmt.Errorf("Cannot parse column index, field %s, reason %s", field.Name, err)
 		}
@@ -76,8 +79,9 @@ func (p *SheetParser) Unmarshal(in []interface{}, out interface{}) error {
 }
 
 type ref struct {
-	Index int
-	Field reflect.Value
+	Index      int
+	Field      reflect.Value
+	IsReadOnly bool
 }
 
 func (p *SheetParser) Marshal(in interface{}) ([]interface{}, error) {
@@ -98,7 +102,8 @@ func (p *SheetParser) Marshal(in interface{}) ([]interface{}, error) {
 		if !ok {
 			continue
 		}
-		index, err := strconv.Atoi(v)
+		fields := strings.Split(v, ",")
+		index, err := strconv.Atoi(fields[0])
 		if err != nil {
 			return nil, fmt.Errorf("Cannot parse column index, field %s, reason %s", field.Name, err)
 		}
@@ -106,13 +111,17 @@ func (p *SheetParser) Marshal(in interface{}) ([]interface{}, error) {
 			maxRef = index
 		}
 
-		refs = append(refs, ref{Index: index, Field: rv.Elem().Field(i)})
+		refs = append(refs, ref{Index: index, Field: rv.Elem().Field(i), IsReadOnly: strings.Contains(v, "ro")})
 	}
 
 	sort.Slice(refs, func(i, j int) bool { return refs[i].Index < refs[j].Index })
 
 	out := make([]interface{}, maxRef+1)
 	for _, r := range refs {
+		if r.IsReadOnly {
+			out[r.Index] = nil
+			continue
+		}
 		switch r.Field.Type() {
 		case reflect.TypeOf(time.Time{}):
 			t := r.Field.Interface().(time.Time)

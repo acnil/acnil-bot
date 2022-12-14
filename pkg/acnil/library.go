@@ -46,7 +46,7 @@ type Game struct {
 	Holder     string    `col:"3"`
 	Comments   string    `col:"4"`
 	TakeDate   time.Time `col:"5"`
-	ReturnDate time.Time `col:"6"`
+	ReturnDate time.Time `col:"6,ro"`
 	Price      string    `col:"7"`
 	Publisher  string    `col:"8"`
 	BGG        string    `col:"9"`
