@@ -45,6 +45,13 @@ func main() {
 
 	handler.Register(b)
 
+	audit := &acnil.Audit{
+		AuditDB: acnil.NewSheetAuditDatabase(srv, sheetID),
+		GameDB:  acnil.NewGameDatabase(srv, sheetID),
+	}
+
+	audit.Run(context.Background())
+
 	b.Start()
 }
 

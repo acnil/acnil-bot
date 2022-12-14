@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"reflect"
 	"strings"
 	"text/template"
 	"time"
@@ -79,7 +80,7 @@ func (db *SheetGameDatabase) Get(ctx context.Context, id string, name string) (*
 	matches := []Game{}
 
 	for _, g := range games {
-		if (Norm(g.Name) == Norm(name) || name == "") && (g.ID == id || id == "") {
+		if g.Matches(id, name) {
 			matches = append(matches, g)
 		}
 	}
@@ -166,6 +167,14 @@ func (g Game) ToRow() (range_ string, row []interface{}) {
 		panic(err)
 	}
 	return g.Row, v
+}
+
+func (g Game) Matches(id string, name string) bool {
+	return (Norm(g.Name) == Norm(name) || name == "") && (g.ID == id || id == "")
+}
+
+func (g Game) MatchesGame(game Game) bool {
+	return g.Matches(game.ID, game.Name)
 }
 
 func NewGameFromData(data string) Game {
@@ -298,4 +307,11 @@ func Norm(in string) string {
 		return strings.ToLower(in)
 	}
 	return strings.ToLower(string(dst[:ndst]))
+}
+
+func (g Game) Equals(other Game) bool {
+	// Row doesn't mater
+	g.Row = ""
+	other.Row = ""
+	return reflect.DeepEqual(g, other)
 }
