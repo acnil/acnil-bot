@@ -22,6 +22,9 @@ var (
 
 	renameMenu      = &tele.ReplyMarkup{ResizeKeyboard: true}
 	btnCancelRename = renameMenu.Text("Cancelar")
+
+	startMenu = &tele.ReplyMarkup{ResizeKeyboard: true}
+	btnStart  = renameMenu.Text("Empezar!")
 )
 
 func addMainMenuReplyMarkup(rm *tele.ReplyMarkup) {
@@ -40,6 +43,11 @@ func init() {
 		renameMenu.Row(btnCancelRename),
 	)
 	renameMenu.RemoveKeyboard = true
+
+	startMenu.Reply(
+		startMenu.Row(btnStart),
+	)
+	startMenu.RemoveKeyboard = true
 }
 
 type MembersDatabase interface {
@@ -69,6 +77,8 @@ type Handler struct {
 func (h *Handler) Register(b *tele.Bot) {
 
 	b.Handle("/start", h.Start)
+	b.Handle(&btnStart, h.Start)
+
 	b.Handle(tele.OnText, h.OnText)
 	b.Handle("\ftake", h.OnTake)
 	b.Handle("\freturn", h.OnReturn)
@@ -171,7 +181,7 @@ func (h *Handler) onAuthorise(c tele.Context, _ Member) error {
 		c.Send("Parece que algo ha ido mal, " + err.Error())
 		return nil
 	}
-	_, err = h.Bot.Send(newMember, "Ya tienes acceso! di /start para recibir el mensaje de bienvenida")
+	_, err = h.Bot.Send(newMember, "Ya tienes acceso! di /start o pulsa este botón para recibir el mensaje de bienvenida", startMenu)
 	if err != nil {
 		log.Errorf("Error sending message to new member, %s", err)
 	}
