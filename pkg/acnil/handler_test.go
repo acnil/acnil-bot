@@ -66,17 +66,9 @@ var _ = Describe("Handler", func() {
 				Nickname:    "New User",
 				Permissions: "no",
 			}
-			mockMembersDatabase.EXPECT().Get(gomock.Any(), sender.ID).Do(func(context.Context, int64) {
-				// List should only be called after Get is called
-				mockMembersDatabase.EXPECT().List(gomock.Any()).Return([]acnil.Member{
-					*admin,
-					*newMember,
-				}, nil)
-			}).Return(nil, nil)
-
 			mockTeleContext.EXPECT().Sender().Return(sender).AnyTimes()
 		})
-		Describe("calls /start", func() {
+		Describe("calls /start for the first time", func() {
 			BeforeEach(func() {
 				text := "/start"
 				mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
@@ -87,10 +79,20 @@ var _ = Describe("Handler", func() {
 						Type: tele.ChatPrivate,
 					},
 				}).AnyTimes()
+
+				mockMembersDatabase.EXPECT().Get(gomock.Any(), sender.ID).Do(func(context.Context, int64) {
+					// List should only be called after Get is called
+					mockMembersDatabase.EXPECT().List(gomock.Any()).Return([]acnil.Member{
+						*admin,
+						*newMember,
+					}, nil)
+				}).Return(nil, nil)
+
 			})
 			It("Should notify admins and register the user in the table", func() {
 				mockSender.EXPECT().Send(gomock.Any(), gomock.Any(), gomock.Any()).Do(func(r tele.Recipient, msg interface{}, opts ...interface{}) {
 					Expect(r.Recipient()).To(Equal(admin.TelegramID))
+					Expect(msg).To(ContainSubstring(newMember.Nickname))
 				})
 
 				mockMembersDatabase.EXPECT().Append(gomock.Any(), gomock.AssignableToTypeOf(acnil.Member{})).Return(nil).Do(func(_ context.Context, member acnil.Member) {
@@ -106,6 +108,69 @@ var _ = Describe("Handler", func() {
 				err := h.Start(mockTeleContext)
 				Expect(err).To(BeNil())
 			})
+		})
+	})
+	Describe("An administrator ", func() {
+		var (
+			newMember *acnil.Member
+			admin     *acnil.Member
+			sender    *tele.User
+		)
+		BeforeEach(func() {
+			admin = &acnil.Member{
+				Nickname:    "MetalBlueberry",
+				TelegramID:  "12345",
+				Permissions: acnil.PermissionAdmin,
+			}
+			sender = &tele.User{
+				ID:        12345,
+				FirstName: "Victor",
+				LastName:  "Perez",
+				Username:  "MetalBlueberry",
+			}
+			newMember = &acnil.Member{
+				TelegramID:  "1",
+				Nickname:    "New User",
+				Permissions: "no",
+			}
+			mockTeleContext.EXPECT().Sender().Return(sender).AnyTimes()
+		})
+		Describe("Authorises a new user to use the bot", func() {
+			BeforeEach(func() {
+				text := "/fauthorise"
+				mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
+				mockTeleContext.EXPECT().Message().Return(&tele.Message{
+					Sender: sender,
+					Text:   text,
+					Chat: &tele.Chat{
+						Type: tele.ChatPrivate,
+					},
+				}).AnyTimes()
+				mockTeleContext.EXPECT().Data().Return(newMember.TelegramID)
+
+				mockMembersDatabase.EXPECT().Get(gomock.Any(), admin.TelegramIDInt()).Return(admin, nil)
+				mockMembersDatabase.EXPECT().Get(gomock.Any(), newMember.TelegramIDInt()).Return(newMember, nil)
+
+			})
+
+			It("Should update excel and notify user about the granted access", func() {
+				mockMembersDatabase.EXPECT().Update(gomock.Any(), gomock.Any()).Do(func(_ context.Context, newMemberUpdate acnil.Member) {
+					Expect(newMemberUpdate.TelegramID).To(Equal(newMember.TelegramID))
+					Expect(newMemberUpdate.Permissions).To(Equal(acnil.PermissionYes))
+				})
+				mockSender.EXPECT().Send(gomock.Any(), gomock.Any(), gomock.Any()).Do(func(r tele.Recipient, msg interface{}, opts ...interface{}) {
+					Expect(r.Recipient()).To(Equal(newMember.TelegramID))
+					Expect(msg).To(ContainSubstring("Ya tienes acceso!"))
+				})
+				mockTeleContext.EXPECT().Edit(gomock.Any(), gomock.Any()).Do(func(msg string, any ...interface{}) {
+					Expect(msg).To(ContainSubstring("Se ha dado acceso al usuario"))
+					Expect(msg).To(ContainSubstring(newMember.Nickname))
+				}).Return(nil)
+
+				err := h.OnAuthorise(mockTeleContext)
+				Expect(err).To(BeNil())
+			})
+
 		})
 	})
 
