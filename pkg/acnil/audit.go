@@ -119,7 +119,7 @@ func (a *Audit) rebuildSnapshot(ctx context.Context, log *logrus.Entry) error {
 	}
 
 	for _, entry := range entries {
-		a.snapshot.UpdateOrInsert(entry.Game())
+		a.snapshot.ApplyEntry(entry)
 	}
 	log.WithField("len", len(a.snapshot)).Infof("Rebuilding snapshot from audit events")
 	return nil
@@ -129,7 +129,7 @@ func (a *Audit) calculateEntries(games []Game) []AuditEntry {
 	newEntries := a.snapshot.diff(games)
 
 	for _, entry := range newEntries {
-		a.snapshot.UpdateOrInsert(entry.Game())
+		a.snapshot.ApplyEntry(entry)
 	}
 
 	return newEntries
@@ -159,15 +159,29 @@ func (e AuditEntry) Game() *Game {
 	}
 }
 
-func (s *Snapshot) UpdateOrInsert(game *Game) {
-	for i, g := range *s {
-		if g.Matches(game.ID, game.Name) {
-			(*s)[i] = game
-			return
+func (s *Snapshot) ApplyEntry(entry AuditEntry) {
+	switch entry.Type {
+	case AuditEntryTypeNew:
+		(*s) = append((*s), entry.Game())
+
+	case AuditEntryTypeUpdate:
+		game := entry.Game()
+		for i, g := range *s {
+			if g.Matches(game.ID, game.Name) {
+				(*s)[i] = game
+				return
+			}
+		}
+	case AuditEntryTypeRemoved:
+		game := entry.Game()
+		for i, g := range *s {
+			if g.Matches(game.ID, game.Name) {
+				(*s)[i] = (*s)[len(*s)-1]
+				(*s) = (*s)[:len(*s)-1]
+				return
+			}
 		}
 	}
-
-	(*s) = append((*s), game)
 }
 
 func (s *Snapshot) Find(game Game) *Game {
