@@ -133,7 +133,7 @@ func (h *Handler) notifyAdminsOfNewLogin(log *logrus.Entry, newMember Member) er
 	for _, m := range members {
 		if m.Permissions == PermissionAdmin {
 			log.WithField("Admin", m.Nickname).Info("Notifying admin")
-			_, err = h.Bot.Send(&m, "Nuevo usuario registrado", selector)
+			_, err = h.Bot.Send(&m, fmt.Sprintf("Nuevo usuario %s registrado", newMember.Nickname), selector)
 			if err != nil {
 				log.WithError(err).Error("Failed to notify admin")
 			}
@@ -176,7 +176,7 @@ func (h *Handler) onAuthorise(c tele.Context, _ Member) error {
 		log.Errorf("Error sending message to new member, %s", err)
 	}
 
-	return c.Edit("Se ha dado acceso al usuario de forma correcta")
+	return c.Edit(fmt.Sprintf("Se ha dado acceso al usuario %s de forma correcta", newMember.Nickname))
 }
 
 func (h *Handler) Start(c tele.Context) error {
