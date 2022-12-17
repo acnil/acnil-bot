@@ -121,7 +121,7 @@ func (a *Audit) rebuildSnapshot(ctx context.Context, log *logrus.Entry) error {
 	for _, entry := range entries {
 		a.snapshot.ApplyEntry(entry)
 	}
-	log.WithField("len", len(a.snapshot)).Infof("Rebuilding snapshot from audit events")
+	log.WithField("len", len(a.snapshot)).Info("Rebuilding snapshot from audit events")
 	return nil
 }
 
