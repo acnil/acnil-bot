@@ -238,6 +238,13 @@ func (h *Handler) onText(c tele.Context, member Member) error {
 	if err == nil {
 		getResult, err := h.GameDB.Get(context.TODO(), strconv.Itoa(id), "")
 		if err != nil {
+			if mmErr, ok := err.(MultipleMatchesError); ok {
+				c.Send("Parece que hay varios juegos con el mismo ID")
+				for _, item := range SendList(mmErr.Matches) {
+					c.Send(item)
+				}
+				return nil
+			}
 			log.WithError(err).Error("Failed to connect to GameDB")
 			return c.Send(err.Error(), mainMenu)
 		}

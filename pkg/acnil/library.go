@@ -170,7 +170,7 @@ func (g Game) ToRow() (range_ string, row []interface{}) {
 }
 
 func (g Game) Matches(id string, name string) bool {
-	return (Norm(g.Name) == Norm(name) || name == "" || g.Name == "") && (g.ID == id || id == "" || g.ID == "")
+	return (Norm(g.Name) == Norm(name) || name == "" || g.Name == "") && (g.ID == id && id == "" && g.ID == "")
 }
 
 // Because IDs may not be unique, this function will return true is both name and ID are the same.
