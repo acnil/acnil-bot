@@ -600,4 +600,31 @@ var _ = Describe("Audit: ", func() {
 		})
 	})
 
+	// Describe("When an error file is provided", func() {
+
+	// 	BeforeEach(func() {
+	// 		f, err := os.Open("error.json")
+	// 		Expect(err).To(BeNil())
+
+	// 		aerr := &acnil.ApplyError{}
+	// 		Expect(
+	// 			json.NewDecoder(f).Decode(aerr),
+	// 		).To(Succeed())
+
+	// 		mockAuditDatabase.EXPECT().List(gomock.Any()).Return(aerr.Entries, nil).AnyTimes()
+	// 		mockGameDatabase.EXPECT().List(gomock.Any()).Return(aerr.Games, nil).AnyTimes()
+
+	// 	})
+	// 	It("Should reproduce the issue", func() {
+	// 		auditedEntries := []acnil.AuditEntry{}
+
+	// 		mockAuditDatabase.EXPECT().Append(gomock.Any(), gomock.Any()).Do(func(ctx context.Context, entries []acnil.AuditEntry) {
+	// 			auditedEntries = entries
+	// 		}).Return(nil).AnyTimes()
+
+	// 		err := audit.Do(context.Background())
+	// 		Expect(err).To(BeNil())
+	// 		Expect(auditedEntries).ToNot(BeEmpty())
+	// 	})
+	// })
 })

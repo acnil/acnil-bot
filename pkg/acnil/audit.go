@@ -2,7 +2,10 @@ package acnil
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os"
+	"sync"
 	"time"
 
 	"github.com/metalblueberry/acnil-bot/pkg/ilog"
@@ -69,6 +72,7 @@ func (a *Audit) Run(ctx context.Context) {
 		case <-ticker.C:
 			if lastUpdate.Before(time.Now().Add(time.Hour * -24)) {
 				log.Print("Update audit entry")
+				lastUpdate = time.Now()
 				err := a.Do(ctx)
 				if err != nil {
 					log.Printf("Failed to update audit!! %s", err)
@@ -85,7 +89,10 @@ func (a *Audit) Do(ctx context.Context) error {
 	log := logrus.WithField(ilog.FieldHandler, "Audit")
 
 	if a.snapshot == nil {
-		a.rebuildSnapshot(ctx, log)
+		err := a.rebuildSnapshot(ctx, log)
+		if err != nil {
+			return err
+		}
 	}
 
 	games, err := a.GameDB.List(ctx)
@@ -93,12 +100,15 @@ func (a *Audit) Do(ctx context.Context) error {
 		return fmt.Errorf("Failed to list game database, %w", err)
 	}
 
-	newEntries := a.calculateEntries(games)
+	newEntries, err := a.calculateEntries(games)
+	if err != nil {
+		return fmt.Errorf("Could not calculate entries, %w", err)
+	}
 
 	log.WithField("len", len(newEntries)).Info("New audit entries")
 
-	if !a.isAppliedSuccessfully(games) {
-		return fmt.Errorf("Failed to calculate diff, it reports changes after being applied twice")
+	if err := a.isAppliedSuccessfully(games); err != nil {
+		return fmt.Errorf("Failed to calculate diff, it reports changes after being applied twice, Error: %w", err)
 	}
 
 	err = a.AuditDB.Append(ctx, newEntries)
@@ -119,28 +129,68 @@ func (a *Audit) rebuildSnapshot(ctx context.Context, log *logrus.Entry) error {
 	}
 
 	for _, entry := range entries {
-		a.snapshot.ApplyEntry(entry)
+		if err := a.snapshot.ApplyEntry(entry); err != nil {
+			log.Error("Failed to Apply Entry, %w", err)
+			return err
+		}
 	}
 	log.WithField("len", len(a.snapshot)).Info("Rebuilding snapshot from audit events")
 	return nil
 }
 
-func (a *Audit) calculateEntries(games []Game) []AuditEntry {
+func (a *Audit) calculateEntries(games []Game) ([]AuditEntry, error) {
 	newEntries := a.snapshot.diff(games)
 
 	for _, entry := range newEntries {
-		a.snapshot.ApplyEntry(entry)
+		err := a.snapshot.ApplyEntry(entry)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to Apply Entry, %w", err)
+		}
 	}
 
-	return newEntries
+	return newEntries, nil
 }
 
-func (a *Audit) isAppliedSuccessfully(games []Game) bool {
-	safe := a.snapshot.diff(games)
-	if len(safe) != 0 {
-		return false
+type ApplyError struct {
+	Snapshot      Snapshot     `json:"snapshot,omitempty"`
+	Games         []Game       `json:"games,omitempty"`
+	Entries       []AuditEntry `json:"events,omitempty"`
+	FailedEntries []AuditEntry `json:"failed_entries,omitempty"`
+	once          sync.Once    `json:"_"`
+}
+
+func (aerr ApplyError) Error() string {
+	msg := ""
+	aerr.once.Do(func() {
+
+		f, err := os.CreateTemp("/tmp/", "apply_error")
+		if err != nil {
+			msg = err.Error()
+		}
+		defer f.Close()
+
+		err = json.NewEncoder(f).Encode(aerr)
+		if err != nil {
+			msg = err.Error()
+		}
+		msg = f.Name()
+	})
+
+	return fmt.Sprintf("Details stored in %s", msg)
+}
+
+func (a *Audit) isAppliedSuccessfully(games []Game) error {
+	failedEntries := a.snapshot.diff(games)
+	if len(failedEntries) != 0 {
+		entries, _ := a.AuditDB.List(context.Background())
+		return fmt.Errorf("Found erroneous diff applied, %w", ApplyError{
+			Snapshot:      a.snapshot,
+			Games:         games,
+			Entries:       entries,
+			FailedEntries: failedEntries,
+		})
 	}
-	return true
+	return nil
 }
 
 func (e AuditEntry) Game() *Game {
@@ -159,34 +209,39 @@ func (e AuditEntry) Game() *Game {
 	}
 }
 
-func (s *Snapshot) ApplyEntry(entry AuditEntry) {
+func (s *Snapshot) ApplyEntry(entry AuditEntry) error {
 	switch entry.Type {
 	case AuditEntryTypeNew:
 		(*s) = append((*s), entry.Game())
+		return nil
 
 	case AuditEntryTypeUpdate:
 		game := entry.Game()
 		for i, g := range *s {
-			if g.Matches(game.ID, game.Name) {
+			if g.IsTheSame(game.ID, game.Name) {
 				(*s)[i] = game
-				return
+				return nil
 			}
 		}
+		return fmt.Errorf("Failed to update entry, Could not find match for %+v", entry)
 	case AuditEntryTypeRemoved:
 		game := entry.Game()
 		for i, g := range *s {
-			if g.Matches(game.ID, game.Name) {
+			if g.IsTheSame(game.ID, game.Name) {
 				(*s)[i] = (*s)[len(*s)-1]
 				(*s) = (*s)[:len(*s)-1]
-				return
+				return nil
 			}
 		}
+
+		return fmt.Errorf("Failed to remove entry, Could not find match for %+v", entry)
 	}
+	return fmt.Errorf("Unknown audit entry type")
 }
 
 func (s *Snapshot) Find(game Game) *Game {
 	for _, g := range *s {
-		if g.Matches(game.ID, game.Name) {
+		if g.IsTheSame(game.ID, game.Name) {
 			return g
 		}
 	}
@@ -210,7 +265,7 @@ func (s Snapshot) diff(games []Game) []AuditEntry {
 	for _, snapshotGame := range s {
 		found := false
 		for _, game := range games {
-			if snapshotGame.MatchesGame(game) {
+			if snapshotGame.IsTheSameGame(game) {
 				found = true
 				break
 			}

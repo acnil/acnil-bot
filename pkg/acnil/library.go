@@ -170,11 +170,17 @@ func (g Game) ToRow() (range_ string, row []interface{}) {
 }
 
 func (g Game) Matches(id string, name string) bool {
-	return (Norm(g.Name) == Norm(name) || name == "") && (g.ID == id || id == "")
+	return (Norm(g.Name) == Norm(name) || name == "" || g.Name == "") && (g.ID == id || id == "" || g.ID == "")
 }
 
-func (g Game) MatchesGame(game Game) bool {
-	return g.Matches(game.ID, game.Name)
+// Because IDs may not be unique, this function will return true is both name and ID are the same.
+// Including the case where ID is empty
+func (g Game) IsTheSame(id string, name string) bool {
+	return g.ID == id && Norm(g.Name) == Norm(name)
+}
+
+func (g Game) IsTheSameGame(game Game) bool {
+	return g.IsTheSame(game.ID, game.Name)
 }
 
 func NewGameFromData(data string) Game {
