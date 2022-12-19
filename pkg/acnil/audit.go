@@ -53,6 +53,9 @@ type Audit struct {
 	AuditDB  AuditDatabase
 	GameDB   ROGameDatabase
 	snapshot Snapshot
+
+	MembersDB MembersDatabase
+	Bot       Sender
 }
 
 func (a *Audit) Run(ctx context.Context) {
@@ -75,6 +78,7 @@ func (a *Audit) Run(ctx context.Context) {
 				lastUpdate = time.Now()
 				err := a.Do(ctx)
 				if err != nil {
+					a.notifyAdmins(err)
 					log.Printf("Failed to update audit!! %s", err)
 				}
 			}
@@ -83,6 +87,15 @@ func (a *Audit) Run(ctx context.Context) {
 			return
 		}
 	}()
+}
+
+func (a *Audit) notifyAdmins(err error) {
+	members, err := a.MembersDB.List(context.Background())
+	for _, m := range members {
+		if m.Permissions == PermissionAdmin {
+			a.Bot.Send(&m, fmt.Sprintf("Failed to run Audit, %s", err.Error()))
+		}
+	}
 }
 
 func (a *Audit) Do(ctx context.Context) error {
@@ -130,7 +143,7 @@ func (a *Audit) rebuildSnapshot(ctx context.Context, log *logrus.Entry) error {
 
 	for _, entry := range entries {
 		if err := a.snapshot.ApplyEntry(entry); err != nil {
-			log.Error("Failed to Apply Entry, %w", err)
+			log.Errorf("Failed to Apply Entry, %w", err)
 			return err
 		}
 	}
