@@ -143,7 +143,7 @@ func (a *Audit) rebuildSnapshot(ctx context.Context, log *logrus.Entry) error {
 
 	for _, entry := range entries {
 		if err := a.snapshot.ApplyEntry(entry); err != nil {
-			log.Errorf("Failed to Apply Entry, %w", err)
+			log.Errorf("Failed to Apply Entry, %s", err)
 			return err
 		}
 	}
