@@ -10,8 +10,9 @@ import (
 )
 
 type Client struct {
-	Address string
-	Client  Doer
+	Address    string
+	XMLAddress string
+	Client     Doer
 }
 
 type Doer interface {
@@ -24,8 +25,9 @@ const (
 
 func NewClient() *Client {
 	return &Client{
-		Address: "https://boardgamegeek.com/",
-		Client:  http.DefaultClient,
+		Address:    "https://boardgamegeek.com/",
+		XMLAddress: "https://api.geekdo.com/xmlapi/",
+		Client:     http.DefaultClient,
 	}
 }
 
@@ -56,6 +58,10 @@ type Item struct {
 	Href          string     `json:"href"`
 }
 
+func (i Item) Label() string {
+	return i.Name
+}
+
 type Objecttype string
 
 const (
@@ -65,17 +71,21 @@ const (
 type Subtype string
 
 const (
-	Boardgame Subtype = "boardgame"
+	SubtypeBoardgame Subtype = "boardgame"
 )
 
 type Type string
 
 const (
-	Things Type = "things"
+	TypeThings Type = "things"
 )
 
 func (c *Client) ResolveHref(ref string) string {
 	return c.Address + ref
+}
+
+func (c *Client) ResolveXMLHref(ref string) string {
+	return c.XMLAddress + ref
 }
 
 func (c *Client) Search(ctx context.Context, query string) (*SearchResponse, error) {
