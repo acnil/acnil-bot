@@ -30,7 +30,7 @@ type SheetGameDatabase struct {
 func NewGameDatabase(srv *sheets.Service, sheetID string) *SheetGameDatabase {
 	return &SheetGameDatabase{
 		SRV:       srv,
-		ReadRange: "A:L",
+		ReadRange: "A:T",
 		Sheet:     "Juegos de mesa",
 		SheetID:   sheetID,
 	}
@@ -40,29 +40,27 @@ type Game struct {
 	// Row represents the row definition on google sheets
 	Row string
 
-	ID                 string    `col:"0,ro"`
-	Name               string    `col:"1,ro"`
-	Location           string    `col:"2,ro"`
-	Holder             string    `col:"3"`
-	Comments           string    `col:"4"`
-	TakeDate           time.Time `col:"5"`
-	ReturnDate         time.Time `col:"6,ro"`
-	Price              string    `col:"7"`
-	Publisher          string    `col:"8"`
-	BGG                string    `col:"9"`
+	ID         string    `col:"0,ro"`
+	Name       string    `col:"1,ro"`
+	Location   string    `col:"2,ro"`
+	Holder     string    `col:"3"`
+	Comments   string    `col:"4"`
+	TakeDate   time.Time `col:"5"`
+	ReturnDate time.Time `col:"6,ro"`
+	Price      string    `col:"7"`
+	Publisher  string    `col:"8"`
+	BGG        string    `col:"9"`
 
-	AvgRate            string    `col:"10"`
-	AvgWeight          string    `col:"11"`
-	Age                string    `col:"12"`
-	MinPlayers         string    `col:"13"`
-	MaxPlayers         string    `col:"14"`
-	Playingtime        string    `col:"15"`
-	MinPlaytime        string    `col:"16"`
-	MaxPlaytime        string    `col:"17"`
-	Yearpublished      string    `col:"18"`
-	LanguageDependence string    `col:"19"`
-
-
+	AvgRate            string `col:"10"`
+	AvgWeight          string `col:"11"`
+	Age                string `col:"12"`
+	MinPlayers         string `col:"13"`
+	MaxPlayers         string `col:"14"`
+	Playingtime        string `col:"15"`
+	MinPlaytime        string `col:"16"`
+	MaxPlaytime        string `col:"17"`
+	Yearpublished      string `col:"18"`
+	LanguageDependence string `col:"19"`
 }
 
 const (
@@ -278,20 +276,22 @@ Notas:
 {{ .Publisher}} {{if .Price}}({{ .Price }}){{end}}
 {{ .Location }}
 {{- if .BGG }}
+Puntuación: {{ .AvgRate }}
+Dificultad: {{ .AvgWeight }}
+Edad: {{ .Age }}
 Nº Jugadores: {{ .MinPlayers }}-{{.MaxPlayers}}
+Tiempo de juego : {{ .Playingtime }}m
+{{ if .LanguageDependence}}Dependencia del idioma:  {{ .LanguageDependence }} {{ end }}
 {{ end }}
-
 {{ if .Available -}}
 🟢 Disponible
 {{- else -}}
 🔴 Ocupado: {{ .Holder -}}
 {{ end }}
-
-{{ if .Comments }}
+{{- if .Comments }}
 Notas: 
 {{ .Comments }}
 {{ end }}
-
 {{ if .BGG -}} 
 {{ bgg . }}
 {{- end }}
