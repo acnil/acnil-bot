@@ -61,7 +61,7 @@ type GameDatabase interface {
 	Find(ctx context.Context, name string) ([]Game, error)
 	List(ctx context.Context) ([]Game, error)
 	Get(ctx context.Context, id string, name string) (*Game, error)
-	Update(ctx context.Context, game Game) error
+	Update(ctx context.Context, game ...Game) error
 }
 
 type Sender interface {

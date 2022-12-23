@@ -15,26 +15,27 @@ import (
 	"github.com/metalblueberry/acnil-bot/pkg/bgg"
 	"github.com/pkg/browser"
 	"github.com/sirupsen/logrus"
+	"github.com/urfave/cli/v2"
 )
 
 type ExtendedData struct {
-	GameID             string `json:"game_id,omitempty"`
-	GameName           string `json:"game_name,omitempty"`
+	Name               string `json:"name,omitempty"`
 	BGGID              string `json:"bggid,omitempty"`
 	MinPlayers         string `json:"min_players,omitempty"`
-	MaxPlayer          string `json:"max_player,omitempty"`
+	MaxPlayers         string `json:"max_player,omitempty"`
 	Age                string `json:"age,omitempty"`
 	MinPlaytime        string `json:"min_playtime,omitempty"`
 	MaxPlaytime        string `json:"max_playtime,omitempty"`
 	Playingtime        string `json:"playingtime,omitempty"`
 	Yearpublished      string `json:"yearpublished,omitempty"`
 	LanguageDependence string `json:"language_dependence,omitempty"`
+	AvgRate            string `json:"avg_rate,omitempty"`
+	AvgWeight          string `json:"avg_weight,omitempty"`
 }
 
 type ExtendedDataDB struct {
-	Games        []ExtendedData
-	IndexBGGID   map[string]int
-	IndexAcnilID map[string]int
+	Games      []ExtendedData
+	IndexBGGID map[string]int
 }
 
 func (db *ExtendedDataDB) LoadFile(filename string) error {
@@ -52,10 +53,8 @@ func (db *ExtendedDataDB) Load(r io.Reader) error {
 		return err
 	}
 	db.IndexBGGID = map[string]int{}
-	db.IndexAcnilID = map[string]int{}
 	for i, g := range db.Games {
 		db.IndexBGGID[g.BGGID] = i
-		db.IndexAcnilID[g.GameID+g.GameName] = len(db.Games) - 1
 	}
 	return nil
 }
@@ -76,24 +75,22 @@ func (db *ExtendedDataDB) Save(w io.Writer) error {
 func (db *ExtendedDataDB) Append(new ExtendedData) {
 	if db.IndexBGGID == nil {
 		db.IndexBGGID = map[string]int{}
-		db.IndexAcnilID = map[string]int{}
 	}
 	db.Games = append(db.Games, new)
 	db.IndexBGGID[new.BGGID] = len(db.Games) - 1
-	db.IndexAcnilID[new.GameID+new.GameName] = len(db.Games) - 1
+}
+
+func (db *ExtendedDataDB) Update(update ExtendedData) bool {
+	i, ok := db.IndexBGGID[update.BGGID]
+	if !ok {
+		return false
+	}
+	db.Games[i] = update
+	return true
 }
 
 func (db *ExtendedDataDB) GetByBGGID(ID string) (ExtendedData, bool) {
 	v, ok := db.IndexBGGID[ID]
-	if !ok {
-		return ExtendedData{}, false
-	}
-
-	return db.Games[v], true
-}
-
-func (db *ExtendedDataDB) GetByAcnilID(ID string, Name string) (ExtendedData, bool) {
-	v, ok := db.IndexAcnilID[ID+Name]
 	if !ok {
 		return ExtendedData{}, false
 	}
@@ -116,15 +113,10 @@ func main() {
 
 	GameDB := acnil.NewGameDatabase(srv, sheetID)
 	bggapi := bgg.NewClient()
-	extended := ExtendedDataDB{}
+	extended := &ExtendedDataDB{}
 	err = extended.LoadFile("extended.db.json")
 	if err != nil {
 		logrus.Warn("Failed to load db %s", err.Error)
-	}
-
-	games, err := GameDB.List(context.Background())
-	if err != nil {
-		logrus.Fatalf("couldn't list games, %s", err)
 	}
 
 	c := make(chan os.Signal, 1)
@@ -135,10 +127,114 @@ func main() {
 		os.Exit(1)
 	}()
 
+	app := cli.App{
+		Name: "acnil-bgg",
+		Commands: []*cli.Command{
+			{
+				Name:  "manual",
+				Usage: "manually go over the game list and see if the links are correct",
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name: "refresh",
+					},
+				},
+				Action: func(ctx *cli.Context) error {
+					return Manual(ctx, GameDB, bggapi, extended)
+				},
+			},
+			{
+				Name:  "fill-inventory",
+				Usage: "Based on the current extended database, it will go to the inventory and fill the column with the IDs",
+				Action: func(ctx *cli.Context) error {
+					return FillInventory(ctx, GameDB, bggapi, extended)
+				},
+			},
+		},
+	}
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
+
+}
+func FillInventory(ctx *cli.Context, GameDB acnil.GameDatabase, bggapi *bgg.Client, extended *ExtendedDataDB) error {
+	games, err := GameDB.List(ctx.Context)
+	if err != nil {
+		logrus.Fatalf("couldn't list games, %s", err)
+	}
+
+	for i := range games {
+		ex, ok := extended.GetByBGGID(games[i].BGG)
+		if !ok {
+			logrus.Warn("Failed to find game in database")
+			continue
+		}
+		logrus.Infof("Found info for game %s: %s", ex.Name, ex.BGGID)
+
+		games[i].BGG = ex.BGGID
+		games[i].LanguageDependence = ex.LanguageDependence
+		games[i].MinPlayers = ex.MinPlayers
+		games[i].MaxPlayers = ex.MaxPlayers
+		games[i].Age = ex.Age
+		games[i].MinPlaytime = ex.MinPlaytime
+		games[i].MaxPlaytime = ex.MaxPlaytime
+		games[i].Playingtime = ex.Playingtime
+		games[i].Yearpublished = ex.Yearpublished
+		games[i].AvgRate = ex.AvgRate
+		games[i].AvgWeight = ex.AvgWeight
+	}
+
+	return GameDB.Update(ctx.Context, games...)
+}
+
+func Manual(ctx *cli.Context, GameDB acnil.GameDatabase, bggapi *bgg.Client, extended *ExtendedDataDB) error {
+	defer extended.SaveFile("extended.db.json")
+
+	games, err := GameDB.List(ctx.Context)
+	if err != nil {
+		logrus.Fatalf("couldn't list games, %s", err)
+	}
+
 	for _, game := range games {
-		if _, ok := extended.GetByAcnilID(game.ID, game.Name); ok {
+		if _, ok := extended.GetByBGGID(game.BGG); ok && !ctx.Bool("refresh") {
 			logrus.Infof("Already found %s, continue", game.Name)
 			continue
+		}
+
+		if game.BGG == "-" {
+			logrus.Infof("Skip game due to manual nil value, %s", game.Name)
+			continue
+		}
+
+		if game.BGG != "" {
+			_, ok := extended.GetByBGGID(game.BGG)
+			if ok {
+				logrus.Infof("Found game in extended data, Updating information, %s", game.Name)
+			} else {
+				logrus.Infof("ID found in game database but not in Extended data, Fetching updated information, %s", game.Name)
+			}
+
+			bggGames, err := bggapi.Get(ctx.Context, game.BGG)
+			if err != nil {
+				logrus.Errorf("Failed to fetch game by ID in database, %s %s", game.Name, game.BGG)
+				continue
+			}
+			if len(bggGames.Boardgame) != 1 {
+				logrus.Errorf("Failed to find game by ID in database, %s %s", game.Name, game.BGG)
+				continue
+			}
+
+			bggGame := bggGames.Boardgame[0]
+
+			if ok {
+				ok := extended.Update(NewExtendedDataFromBGGGame(bggGame))
+				if !ok {
+					logrus.Errorf("Failed to update extended data for game, %s", game.Name)
+				}
+			} else {
+				extended.Append(NewExtendedDataFromBGGGame(bggGame))
+			}
+			continue
+
 		}
 
 		logrus.Infof("Not found %s", game.Name)
@@ -156,28 +252,26 @@ func main() {
 			}
 
 		}
+
 		if bggGame == nil {
+			if Confirm("Set manual skip?") {
+				game.BGG = "-"
+				if err := GameDB.Update(ctx.Context, game); err != nil {
+					logrus.WithError(err).Error("Failed to update game")
+				}
+			}
 			if !Confirm("Continue?") {
 				extended.SaveFile("extended.db.json")
 				break
 			}
 			continue
 		}
-		extended.Append(ExtendedData{
-			GameID:             game.ID,
-			GameName:           game.Name,
-			BGGID:              bggGame.Objectid,
-			LanguageDependence: bggGame.Poll.ByName("language_dependence").SingleResult().Value,
-			MinPlayers:         bggGame.Minplayers,
-			MaxPlayer:          bggGame.Maxplayers,
-			Age:                bggGame.Age,
-			MinPlaytime:        bggGame.Minplayers,
-			MaxPlaytime:        bggGame.Maxplaytime,
-			Playingtime:        bggGame.Playingtime,
-			Yearpublished:      bggGame.Yearpublished,
-		})
-	}
 
+		extended.Append(NewExtendedDataFromBGGGame(*bggGame))
+
+		extended.SaveFile("extended.db.json")
+	}
+	return nil
 }
 
 func GetEnv(key string, def string) string {
@@ -191,7 +285,7 @@ func GetEnv(key string, def string) string {
 func FindGame(bggapi *bgg.Client, game acnil.Game) (*bgg.Boardgame, error) {
 	search, err := bggapi.Search(context.Background(), game.Name)
 	if err != nil {
-
+		return nil, fmt.Errorf("Failed to search: %w", err)
 	}
 
 	if len(search.Items) == 0 {
@@ -240,7 +334,7 @@ func FindGame(bggapi *bgg.Client, game acnil.Game) (*bgg.Boardgame, error) {
 		return &resp.Boardgame[0], nil
 	}
 
-	logrus.Info(game.Name)
+	logrus.Infof("%s by %s", game.Name, game.Publisher)
 	browser.OpenURL(bggapi.ResolveHref(first.Href))
 	if Confirm("Is this game the right one?") {
 		resp, err := bggapi.Get(context.Background(), first.ID)
@@ -309,4 +403,21 @@ func Confirm(promt string) bool {
 	}
 	return false
 
+}
+
+func NewExtendedDataFromBGGGame(bggGame bgg.Boardgame) ExtendedData {
+	return ExtendedData{
+		Name:               bggGame.Name.Principal().Text,
+		BGGID:              bggGame.Objectid,
+		LanguageDependence: bggGame.Poll.ByName("language_dependence").SingleResult().Value,
+		MinPlayers:         bggGame.Minplayers,
+		MaxPlayers:         bggGame.Maxplayers,
+		Age:                bggGame.Age,
+		MinPlaytime:        bggGame.Minplaytime,
+		MaxPlaytime:        bggGame.Maxplaytime,
+		Playingtime:        bggGame.Playingtime,
+		Yearpublished:      bggGame.Yearpublished,
+		AvgRate:            bggGame.Statistics.Ratings.Average,
+		AvgWeight:          bggGame.Statistics.Ratings.Averageweight,
+	}
 }
