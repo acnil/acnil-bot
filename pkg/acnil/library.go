@@ -70,8 +70,13 @@ const (
 func (db *SheetGameDatabase) fullReadRange() string {
 	return fmt.Sprintf("%s!%s", db.Sheet, db.ReadRange)
 }
+
 func (db *SheetGameDatabase) rowReadRange(row int) string {
 	return fmt.Sprintf("%s!%d:%d", db.Sheet, row, row)
+}
+
+func (g Game) ContainsBGGData() bool {
+	return g.BGG != "-" && g.BGG != ""
 }
 
 type MultipleMatchesError struct {
@@ -275,7 +280,7 @@ Notas:
 {{ .Name }}
 {{ .Publisher}} {{if .Price}}({{ .Price }}){{end}}
 {{ .Location }}
-{{- if .BGG }}
+{{- if .ContainsBGGData }}
 Puntuación: {{ .AvgRate }}
 Dificultad: {{ .AvgWeight }}
 Edad: {{ .Age }}
