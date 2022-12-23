@@ -59,7 +59,7 @@ type Item struct {
 }
 
 func (i Item) Label() string {
-	return i.Name
+	return fmt.Sprintf("%s (%d)", i.Name, i.Yearpublished)
 }
 
 type Objecttype string
@@ -82,6 +82,10 @@ const (
 
 func (c *Client) ResolveHref(ref string) string {
 	return c.Address + ref
+}
+
+func (c *Client) ResolveGameHref(id string) string {
+	return c.Address + EndpointGet + id
 }
 
 func (c *Client) ResolveXMLHref(ref string) string {
@@ -121,7 +125,7 @@ func (c *Client) Search(ctx context.Context, query string) (*SearchResponse, err
 	sr := &SearchResponse{}
 	err = json.Unmarshal(d, sr)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to Unmarshal, %w, %s", err, string(d))
 	}
 	return sr, nil
 }

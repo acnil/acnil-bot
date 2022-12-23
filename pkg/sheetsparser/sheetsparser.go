@@ -125,9 +125,20 @@ func (p *SheetParser) Marshal(in interface{}) ([]interface{}, error) {
 		switch r.Field.Type() {
 		case reflect.TypeOf(time.Time{}):
 			t := r.Field.Interface().(time.Time)
+			if t.IsZero() {
+				out[r.Index] = nil
+				continue
+			}
 			out[r.Index] = t.Format(p.dateFormat())
 		default:
-			out[r.Index] = r.Field.String()
+			if f, err := strconv.ParseFloat(r.Field.String(), 64); err == nil {
+				// replace . by , on float point numbers... Just calc issues
+				// it is provably better to use specific types, but I'm feeling lazy
+				out[r.Index] = strings.Replace(strconv.FormatFloat(f, 'f', 2, 64), ".", ",", 1)
+			} else {
+
+				out[r.Index] = r.Field.String()
+			}
 		}
 	}
 

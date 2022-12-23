@@ -163,17 +163,22 @@ func (mr *MockGameDatabaseMockRecorder) List(ctx interface{}) *gomock.Call {
 }
 
 // Update mocks base method.
-func (m *MockGameDatabase) Update(ctx context.Context, game acnil.Game) error {
+func (m *MockGameDatabase) Update(ctx context.Context, game ...acnil.Game) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, game)
+	varargs := []interface{}{ctx}
+	for _, a := range game {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "Update", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockGameDatabaseMockRecorder) Update(ctx, game interface{}) *gomock.Call {
+func (mr *MockGameDatabaseMockRecorder) Update(ctx interface{}, game ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockGameDatabase)(nil).Update), ctx, game)
+	varargs := append([]interface{}{ctx}, game...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockGameDatabase)(nil).Update), varargs...)
 }
 
 // MockSender is a mock of Sender interface.

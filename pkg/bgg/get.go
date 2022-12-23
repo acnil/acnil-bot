@@ -54,7 +54,41 @@ type Boardgame struct {
 		Objectid string `xml:"objectid,attr"`
 		Inbound  string `xml:"inbound,attr"`
 	} `xml:"boardgameimplementation"`
-	Poll Polls `xml:"poll"`
+	Poll       Polls      `xml:"poll"`
+	Statistics Statistics `xml:"statistics"`
+}
+
+type Statistics struct {
+	XMLName xml.Name `xml:"statistics"`
+	Text    string   `xml:",chardata"`
+	Page    string   `xml:"page,attr"`
+	Ratings struct {
+		Text         string `xml:",chardata"`
+		Usersrated   string `xml:"usersrated"`
+		Average      string `xml:"average"`
+		Bayesaverage string `xml:"bayesaverage"`
+		Ranks        struct {
+			Text string `xml:",chardata"`
+			Rank []struct {
+				Text         string `xml:",chardata"`
+				Type         string `xml:"type,attr"`
+				ID           string `xml:"id,attr"`
+				Name         string `xml:"name,attr"`
+				Friendlyname string `xml:"friendlyname,attr"`
+				Value        string `xml:"value,attr"`
+				Bayesaverage string `xml:"bayesaverage,attr"`
+			} `xml:"rank"`
+		} `xml:"ranks"`
+		Stddev        string `xml:"stddev"`
+		Median        string `xml:"median"`
+		Owned         string `xml:"owned"`
+		Trading       string `xml:"trading"`
+		Wanting       string `xml:"wanting"`
+		Wishing       string `xml:"wishing"`
+		Numcomments   string `xml:"numcomments"`
+		Numweights    string `xml:"numweights"`
+		Averageweight string `xml:"averageweight"`
+	} `xml:"ratings"`
 }
 
 type Link struct {
@@ -72,6 +106,11 @@ func (c *Client) Get(ctx context.Context, ids ...string) (*Boardgames, error) {
 		return nil, err
 	}
 	u.Path += strings.Join(ids, ",")
+
+	query := url.Values{}
+	query.Set("stats", "1")
+
+	u.RawQuery = query.Encode()
 
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
@@ -154,6 +193,9 @@ func (p Polls) ByName(name string) Poll {
 
 func (p Poll) SingleResult() PollResult {
 
+	if len(p.Results) == 0 {
+		return PollResult{}
+	}
 	result := PollResult{
 		Numvotes: "0",
 	}

@@ -40,16 +40,29 @@ type Game struct {
 	// Row represents the row definition on google sheets
 	Row string
 
-	ID         string    `col:"0"`
-	Name       string    `col:"1"`
-	Location   string    `col:"2"`
-	Holder     string    `col:"3"`
-	Comments   string    `col:"4"`
-	TakeDate   time.Time `col:"5"`
-	ReturnDate time.Time `col:"6,ro"`
-	Price      string    `col:"7"`
-	Publisher  string    `col:"8"`
-	BGG        string    `col:"9"`
+	ID                 string    `col:"0,ro"`
+	Name               string    `col:"1,ro"`
+	Location           string    `col:"2,ro"`
+	Holder             string    `col:"3"`
+	Comments           string    `col:"4"`
+	TakeDate           time.Time `col:"5"`
+	ReturnDate         time.Time `col:"6,ro"`
+	Price              string    `col:"7"`
+	Publisher          string    `col:"8"`
+	BGG                string    `col:"9"`
+
+	AvgRate            string    `col:"10"`
+	AvgWeight          string    `col:"11"`
+	Age                string    `col:"12"`
+	MinPlayers         string    `col:"13"`
+	MaxPlayers         string    `col:"14"`
+	Playingtime        string    `col:"15"`
+	MinPlaytime        string    `col:"16"`
+	MaxPlaytime        string    `col:"17"`
+	Yearpublished      string    `col:"18"`
+	LanguageDependence string    `col:"19"`
+
+
 }
 
 const (
@@ -144,16 +157,28 @@ func (db *SheetGameDatabase) Find(ctx context.Context, name string) ([]Game, err
 	return matches, nil
 }
 
-func (db *SheetGameDatabase) Update(ctx context.Context, game Game) error {
-	range_, row := game.ToRow()
+func (db *SheetGameDatabase) Update(ctx context.Context, games ...Game) error {
 
-	request := db.SRV.Spreadsheets.Values.Update(db.SheetID, game.Row, &sheets.ValueRange{
-		Range: range_,
-		Values: [][]interface{}{
-			row,
-		},
-	})
-	request.ValueInputOption("USER_ENTERED")
+	batchUpdate := &sheets.BatchUpdateValuesRequest{
+		Data:             []*sheets.ValueRange{},
+		ValueInputOption: "USER_ENTERED",
+	}
+
+	for _, game := range games {
+
+		rows := [][]interface{}{}
+		row, err := sheetsparser.Marshal(&game)
+		if err != nil {
+			return fmt.Errorf("Failed to marshal game, %w", err)
+		}
+		rows = append(rows, row)
+		batchUpdate.Data = append(batchUpdate.Data, &sheets.ValueRange{
+			Range:  game.Row,
+			Values: rows,
+		})
+	}
+
+	request := db.SRV.Spreadsheets.Values.BatchUpdate(db.SheetID, batchUpdate)
 	_, err := request.Do()
 	if err != nil {
 		return err
@@ -222,18 +247,11 @@ func (g Game) Buttons(member Member) *tele.ReplyMarkup {
 var (
 	bggClient = bgg.NewClient()
 	tmpl      = template.Must(template.New("game").Funcs(template.FuncMap{
-		"bgg": func(name string) string {
-			sr, err := bggClient.Search(context.Background(), name)
-			if err != nil {
-				log.Println("failed to search", err)
-				return ""
+		"bgg": func(game Game) string {
+			if game.BGG != "" && game.BGG != "-" {
+				return bggClient.ResolveGameHref(game.BGG)
 			}
-			st := sr.First()
-			if st == nil {
-				log.Println("not found")
-				return ""
-			}
-			return bggClient.ResolveHref(st.Href)
+			return ""
 		},
 	}).Parse(`
 {{ define "card" }}
@@ -257,8 +275,11 @@ Notas:
 {{ define "morecard" }}
 {{if .ID }}ID: {{ .ID }}{{end}}
 {{ .Name }}
-{{ .Publisher}} ({{ .Price }})
+{{ .Publisher}} {{if .Price}}({{ .Price }}){{end}}
 {{ .Location }}
+{{- if .BGG }}
+Nº Jugadores: {{ .MinPlayers }}-{{.MaxPlayers}}
+{{ end }}
 
 {{ if .Available -}}
 🟢 Disponible
@@ -271,11 +292,9 @@ Notas:
 {{ .Comments }}
 {{ end }}
 
-{{ if .BGG }} 
-{{ .BGG}}
-{{ else }}
-{{ .Name | bgg }}
-{{ end }}
+{{ if .BGG -}} 
+{{ bgg . }}
+{{- end }}
 {{ end }}
 `))
 )
