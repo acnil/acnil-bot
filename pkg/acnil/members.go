@@ -80,7 +80,7 @@ func NewMembersDatabase(srv *sheets.Service, sheetID string) *SheetMembersDataba
 
 func NewMemberFromTelegram(user *tele.User) Member {
 	nickname := fmt.Sprintf("%s %s", user.FirstName, user.LastName)
-	if user.Username == "" {
+	if strings.TrimSpace(user.Username) == "" {
 		nickname = user.Username
 	}
 
