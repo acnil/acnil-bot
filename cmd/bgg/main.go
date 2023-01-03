@@ -116,7 +116,7 @@ func main() {
 	extended := &ExtendedDataDB{}
 	err = extended.LoadFile("extended.db.json")
 	if err != nil {
-		logrus.Warn("Failed to load db %s", err.Error)
+		logrus.Warnf("Failed to load db %s", err.Error())
 	}
 
 	c := make(chan os.Signal, 1)
@@ -359,7 +359,7 @@ retry:
 		return nil, err
 	}
 
-	logrus.Infof("Selected %s", search.Items[resultIndex])
+	logrus.Infof("Selected %v", search.Items[resultIndex])
 
 	browser.OpenURL(bggapi.ResolveHref(search.Items[resultIndex].Href))
 
