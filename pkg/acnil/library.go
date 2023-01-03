@@ -3,7 +3,6 @@ package acnil
 import (
 	"bytes"
 	"context"
-	"encoding/hex"
 	"fmt"
 	"log"
 	"reflect"
@@ -14,7 +13,6 @@ import (
 
 	"github.com/metalblueberry/acnil-bot/pkg/bgg"
 	"github.com/metalblueberry/acnil-bot/pkg/sheetsparser"
-	"github.com/sirupsen/logrus"
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
@@ -214,20 +212,17 @@ func (g Game) IsTheSameGame(game Game) bool {
 }
 
 func NewGameFromData(data string) Game {
-	fields := strings.SplitN(data, "|", 3)
-	name, err := hex.DecodeString(fields[2])
-	if err != nil {
-		logrus.Warn("couldn't decode", fields)
-	}
+	fields := strings.SplitN(data, "|", 2)
 	return Game{
 		ID:   fields[0],
-		Row:  fields[1],
-		Name: string(name),
+		Name: fields[1],
 	}
 }
 
 func (g Game) Data() string {
-	return strings.Join([]string{g.ID, g.Row, hex.EncodeToString([]byte(g.Name))}, "|")
+	data := strings.Join([]string{g.ID, g.Name}, "|")
+	log.Println(data)
+	return data
 }
 
 func (g Game) Buttons(member Member) *tele.ReplyMarkup {
