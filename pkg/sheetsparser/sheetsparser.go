@@ -66,6 +66,28 @@ func (p *SheetParser) Unmarshal(in []interface{}, out interface{}) error {
 			}
 			elfield.Set(reflect.ValueOf(t))
 
+		case reflect.TypeOf(int(1)):
+			if index >= len(in) {
+				elfield.Set(reflect.ValueOf(int(0)))
+				continue
+			}
+			v := in[index].(string)
+			n, err := strconv.ParseInt(v, 10, 64)
+			if err != nil {
+				return fmt.Errorf("couldn't parse int value, %s, %s", in[index], err)
+			}
+			elfield.Set(reflect.ValueOf(int(n)))
+		case reflect.TypeOf(float64(1)):
+			if index >= len(in) {
+				elfield.Set(reflect.ValueOf(float64(0)))
+				continue
+			}
+			v := in[index].(string)
+			n, err := strconv.ParseFloat(strings.Replace(v, ",", ".", 1), 64)
+			if err != nil {
+				return fmt.Errorf("couldn't parse float value, %s, %s", in[index], err)
+			}
+			elfield.Set(reflect.ValueOf(n))
 		default:
 			if index >= len(in) {
 				elfield.Set(reflect.ValueOf(""))
@@ -130,15 +152,15 @@ func (p *SheetParser) Marshal(in interface{}) ([]interface{}, error) {
 				continue
 			}
 			out[r.Index] = t.Format(p.dateFormat())
+		case reflect.TypeOf(int(1)):
+			n := r.Field.Int()
+			out[r.Index] = strconv.FormatInt(n, 10)
+		case reflect.TypeOf(float64(1)):
+			n := r.Field.Float()
+			out[r.Index] = strings.Replace(strconv.FormatFloat(n, 'f', 2, 64), ".", ",", 1)
 		default:
-			if f, err := strconv.ParseFloat(r.Field.String(), 64); err == nil {
-				// replace . by , on float point numbers... Just calc issues
-				// it is provably better to use specific types, but I'm feeling lazy
-				out[r.Index] = strings.Replace(strconv.FormatFloat(f, 'f', 2, 64), ".", ",", 1)
-			} else {
 
-				out[r.Index] = r.Field.String()
-			}
+			out[r.Index] = r.Field.String()
 		}
 	}
 

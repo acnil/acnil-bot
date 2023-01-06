@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"reflect"
 	"strings"
 	"text/template"
 	"time"
@@ -51,16 +50,16 @@ type Game struct {
 	Publisher  string    `col:"8"`
 	BGG        string    `col:"9"`
 
-	AvgRate            string `col:"10"`
-	AvgWeight          string `col:"11"`
-	Age                string `col:"12"`
-	MinPlayers         string `col:"13"`
-	MaxPlayers         string `col:"14"`
-	Playingtime        string `col:"15"`
-	MinPlaytime        string `col:"16"`
-	MaxPlaytime        string `col:"17"`
-	Yearpublished      string `col:"18"`
-	LanguageDependence string `col:"19"`
+	AvgRate            float64 `col:"10"`
+	AvgWeight          float64 `col:"11"`
+	Age                int     `col:"12"`
+	MinPlayers         int     `col:"13"`
+	MaxPlayers         int     `col:"14"`
+	Playingtime        float64 `col:"15"`
+	MinPlaytime        float64 `col:"16"`
+	MaxPlaytime        float64 `col:"17"`
+	Yearpublished      int     `col:"18"`
+	LanguageDependence string  `col:"19"`
 }
 
 const (
@@ -344,5 +343,15 @@ func (g Game) Equals(other Game) bool {
 	// Row doesn't mater
 	g.Row = ""
 	other.Row = ""
-	return reflect.DeepEqual(g, other)
+
+	return g.ID == other.ID &&
+		g.Name == other.Name &&
+		g.Location == other.Location &&
+		g.Holder == other.Holder &&
+		g.Comments == other.Comments &&
+		g.TakeDate == other.TakeDate &&
+		g.ReturnDate == other.ReturnDate &&
+		g.Price == other.Price &&
+		g.Publisher == other.Publisher &&
+		g.BGG == other.BGG
 }
