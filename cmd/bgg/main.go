@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"github.com/manifoldco/promptui"
@@ -19,18 +20,18 @@ import (
 )
 
 type ExtendedData struct {
-	Name               string `json:"name,omitempty"`
-	BGGID              string `json:"bggid,omitempty"`
-	MinPlayers         string `json:"min_players,omitempty"`
-	MaxPlayers         string `json:"max_player,omitempty"`
-	Age                string `json:"age,omitempty"`
-	MinPlaytime        string `json:"min_playtime,omitempty"`
-	MaxPlaytime        string `json:"max_playtime,omitempty"`
-	Playingtime        string `json:"playingtime,omitempty"`
-	Yearpublished      string `json:"yearpublished,omitempty"`
-	LanguageDependence string `json:"language_dependence,omitempty"`
-	AvgRate            string `json:"avg_rate,omitempty"`
-	AvgWeight          string `json:"avg_weight,omitempty"`
+	Name               string  `json:"name,omitempty"`
+	BGGID              string  `json:"bggid,omitempty"`
+	MinPlayers         int     `json:"min_players,omitempty"`
+	MaxPlayers         int     `json:"max_player,omitempty"`
+	Age                int     `json:"age,omitempty"`
+	MinPlaytime        float64 `json:"min_playtime,omitempty"`
+	MaxPlaytime        float64 `json:"max_playtime,omitempty"`
+	Playingtime        float64 `json:"playingtime,omitempty"`
+	Yearpublished      int     `json:"yearpublished,omitempty"`
+	LanguageDependence string  `json:"language_dependence,omitempty"`
+	AvgRate            float64 `json:"avg_rate,omitempty"`
+	AvgWeight          float64 `json:"avg_weight,omitempty"`
 }
 
 type ExtendedDataDB struct {
@@ -406,18 +407,28 @@ func Confirm(promt string) bool {
 }
 
 func NewExtendedDataFromBGGGame(bggGame bgg.Boardgame) ExtendedData {
+
+	MustAtoi := func(s string) int {
+		v, _ := strconv.Atoi(s)
+		return v
+	}
+
+	MustFloat := func(s string) float64 {
+		v, _ := strconv.ParseFloat(s, 64)
+		return v
+	}
 	return ExtendedData{
 		Name:               bggGame.Name.Principal().Text,
 		BGGID:              bggGame.Objectid,
 		LanguageDependence: bggGame.Poll.ByName("language_dependence").SingleResult().Value,
-		MinPlayers:         bggGame.Minplayers,
-		MaxPlayers:         bggGame.Maxplayers,
-		Age:                bggGame.Age,
-		MinPlaytime:        bggGame.Minplaytime,
-		MaxPlaytime:        bggGame.Maxplaytime,
-		Playingtime:        bggGame.Playingtime,
-		Yearpublished:      bggGame.Yearpublished,
-		AvgRate:            bggGame.Statistics.Ratings.Average,
-		AvgWeight:          bggGame.Statistics.Ratings.Averageweight,
+		MinPlayers:         MustAtoi(bggGame.Minplayers),
+		MaxPlayers:         MustAtoi(bggGame.Maxplayers),
+		Age:                MustAtoi(bggGame.Age),
+		MinPlaytime:        MustFloat(bggGame.Minplaytime),
+		MaxPlaytime:        MustFloat(bggGame.Maxplaytime),
+		Playingtime:        MustFloat(bggGame.Playingtime),
+		Yearpublished:      MustAtoi(bggGame.Yearpublished),
+		AvgRate:            MustFloat(bggGame.Statistics.Ratings.Average),
+		AvgWeight:          MustFloat(bggGame.Statistics.Ratings.Averageweight),
 	}
 }
