@@ -220,7 +220,6 @@ func NewGameFromData(data string) Game {
 
 func (g Game) Data() string {
 	data := strings.Join([]string{g.ID, g.Name}, "|")
-	log.Println(data)
 	return data
 }
 

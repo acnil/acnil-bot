@@ -2,6 +2,7 @@ package acnil
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -105,7 +106,8 @@ func (h *Handler) IsAuthorized(next func(tele.Context, Member) error) func(tele.
 		}
 		if m == nil {
 			newMember := NewMemberFromTelegram(c.Sender())
-			log.WithField(ilog.FieldName, newMember.Nickname).Info("Registering new user")
+			sender, _ := json.Marshal(c.Sender())
+			log.WithField(ilog.FieldName, newMember.Nickname).WithField("sender", string(sender)).Info("Registering new user")
 			m = &newMember
 			h.MembersDB.Append(context.Background(), newMember)
 			h.notifyAdminsOfNewLogin(log, newMember)
