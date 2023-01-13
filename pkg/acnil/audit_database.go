@@ -52,7 +52,7 @@ func (db *SheetAuditDatabase) Append(ctx context.Context, entries []AuditEntry) 
 
 	_, err := db.SRV.Spreadsheets.Values.Append(db.SheetID, db.fullReadRange(), &sheets.ValueRange{Values: rows}).ValueInputOption("RAW").Context(ctx).Do()
 	if err != nil {
-		log.Fatalf("Unable to append data to sheet: %v", err)
+		return fmt.Errorf("Unable to append data to sheet: %v", err)
 	}
 	return nil
 }
