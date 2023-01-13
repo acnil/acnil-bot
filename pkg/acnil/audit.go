@@ -63,24 +63,21 @@ func (a *Audit) Run(ctx context.Context) {
 
 	err := a.Do(ctx)
 	if err != nil {
+		a.notifyAdmins(err)
 		log.Printf("Failed to update audit!! %s", err)
 	}
 
-	lastUpdate := time.Now()
-	ticker := time.NewTicker(time.Minute * 30)
+	ticker := time.NewTicker(time.Hour * 12)
 
 	go func() {
 		log.Print("Wait for ticket to track audit")
 		select {
 		case <-ticker.C:
-			if lastUpdate.Before(time.Now().Add(time.Hour * -24)) {
-				log.Print("Update audit entry")
-				lastUpdate = time.Now()
-				err := a.Do(ctx)
-				if err != nil {
-					a.notifyAdmins(err)
-					log.Printf("Failed to update audit!! %s", err)
-				}
+			log.Print("Update audit entry")
+			err := a.Do(ctx)
+			if err != nil {
+				a.notifyAdmins(err)
+				log.Printf("Failed to update audit!! %s", err)
 			}
 		case <-ctx.Done():
 			ticker.Stop()
