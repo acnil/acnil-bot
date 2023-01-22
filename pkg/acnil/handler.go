@@ -120,10 +120,8 @@ func (h *Handler) IsAuthorized(next func(tele.Context, Member) error) func(tele.
 			return c.Send(fmt.Sprintf(`Hola,
 He notificado a un administrador de que necesitas acceso. Te avisaré cuando lo tengas.
 
-También puedes hacerlo tu mismo.
-Has de ir al documento de inventario.  En la pestaña de miembros habrá aparecido tu nombre al final. Tienes que cambiar tus permisos para poder empezar a usar este bot.
-
-Cuando tengas permiso a PermissionYes, vuelve a enviar /start para recibir instrucciones`))
+Si no lo recibes en 24h, avisa a @metalblueberry. 
+`))
 		}
 		return next(c, *m)
 	}
