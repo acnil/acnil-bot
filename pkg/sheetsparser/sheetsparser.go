@@ -72,9 +72,13 @@ func (p *SheetParser) Unmarshal(in []interface{}, out interface{}) error {
 				continue
 			}
 			v := in[index].(string)
+			if len(v) == 0 {
+				elfield.Set(reflect.ValueOf(int(0)))
+				continue
+			}
 			n, err := strconv.ParseInt(v, 10, 64)
 			if err != nil {
-				return fmt.Errorf("couldn't parse int value, %s, %s", in[index], err)
+				return fmt.Errorf("couldn't parse int value, row: %#v, %s at %d, %s", in, in[index], index, err)
 			}
 			elfield.Set(reflect.ValueOf(int(n)))
 		case reflect.TypeOf(float64(1)):
@@ -83,6 +87,10 @@ func (p *SheetParser) Unmarshal(in []interface{}, out interface{}) error {
 				continue
 			}
 			v := in[index].(string)
+			if len(v) == 0 {
+				elfield.Set(reflect.ValueOf(float64(0)))
+				continue
+			}
 			n, err := strconv.ParseFloat(strings.Replace(v, ",", ".", 1), 64)
 			if err != nil {
 				return fmt.Errorf("couldn't parse float value, %s, %s", in[index], err)
