@@ -428,6 +428,11 @@ func (h *Handler) onMore(c tele.Context, member Member) error {
 func (h *Handler) MyGames(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "MyGames"), c.Sender())
 
+	if member.Nickname == "" {
+		c.Send("Wops! Parece que no tienen ningún nombre")
+		return h.rename(c, member)
+	}
+
 	gameList, err := h.GameDB.List(context.TODO())
 	if err != nil {
 		return c.Send(err.Error())
