@@ -25,8 +25,6 @@ type ExtendedData struct {
 	MinPlayers         int     `json:"min_players,omitempty"`
 	MaxPlayers         int     `json:"max_player,omitempty"`
 	Age                int     `json:"age,omitempty"`
-	MinPlaytime        float64 `json:"min_playtime,omitempty"`
-	MaxPlaytime        float64 `json:"max_playtime,omitempty"`
 	Playingtime        float64 `json:"playingtime,omitempty"`
 	Yearpublished      int     `json:"yearpublished,omitempty"`
 	LanguageDependence string  `json:"language_dependence,omitempty"`
@@ -176,8 +174,6 @@ func FillInventory(ctx *cli.Context, GameDB acnil.GameDatabase, bggapi *bgg.Clie
 		games[i].MinPlayers = ex.MinPlayers
 		games[i].MaxPlayers = ex.MaxPlayers
 		games[i].Age = ex.Age
-		games[i].MinPlaytime = ex.MinPlaytime
-		games[i].MaxPlaytime = ex.MaxPlaytime
 		games[i].Playingtime = ex.Playingtime
 		games[i].Yearpublished = ex.Yearpublished
 		games[i].AvgRate = ex.AvgRate
@@ -424,8 +420,6 @@ func NewExtendedDataFromBGGGame(bggGame bgg.Boardgame) ExtendedData {
 		MinPlayers:         MustAtoi(bggGame.Minplayers),
 		MaxPlayers:         MustAtoi(bggGame.Maxplayers),
 		Age:                MustAtoi(bggGame.Age),
-		MinPlaytime:        MustFloat(bggGame.Minplaytime),
-		MaxPlaytime:        MustFloat(bggGame.Maxplaytime),
 		Playingtime:        MustFloat(bggGame.Playingtime),
 		Yearpublished:      MustAtoi(bggGame.Yearpublished),
 		AvgRate:            MustFloat(bggGame.Statistics.Ratings.Average),
