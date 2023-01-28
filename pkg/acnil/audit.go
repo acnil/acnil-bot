@@ -70,18 +70,20 @@ func (a *Audit) Run(ctx context.Context) {
 	ticker := time.NewTicker(time.Hour * 12)
 
 	go func() {
-		log.Print("Wait for ticket to track audit")
-		select {
-		case <-ticker.C:
-			log.Print("Update audit entry")
-			err := a.Do(ctx)
-			if err != nil {
-				a.notifyAdmins(err)
-				log.Printf("Failed to update audit!! %s", err)
+		for {
+			log.Print("Wait for ticket to track audit")
+			select {
+			case <-ticker.C:
+				log.Print("Update audit entry")
+				err := a.Do(ctx)
+				if err != nil {
+					a.notifyAdmins(err)
+					log.Printf("Failed to update audit!! %s", err)
+				}
+			case <-ctx.Done():
+				ticker.Stop()
+				return
 			}
-		case <-ctx.Done():
-			ticker.Stop()
-			return
 		}
 	}()
 }

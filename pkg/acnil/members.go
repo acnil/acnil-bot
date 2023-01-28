@@ -86,7 +86,7 @@ func NewMemberFromTelegram(user *tele.User) Member {
 
 	return Member{
 		Row:         "",
-		Nickname:    nickname,
+		Nickname:    strings.TrimSpace(nickname),
 		TelegramID:  strconv.Itoa(int(user.ID)),
 		Permissions: PermissionNo,
 		State:       "",
