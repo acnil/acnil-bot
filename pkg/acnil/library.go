@@ -56,10 +56,8 @@ type Game struct {
 	MinPlayers         int     `col:"13"`
 	MaxPlayers         int     `col:"14"`
 	Playingtime        float64 `col:"15"`
-	MinPlaytime        float64 `col:"16"`
-	MaxPlaytime        float64 `col:"17"`
-	Yearpublished      int     `col:"18"`
-	LanguageDependence string  `col:"19"`
+	Yearpublished      int     `col:"16"`
+	LanguageDependence string  `col:"17"`
 }
 
 const (
