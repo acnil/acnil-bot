@@ -85,7 +85,7 @@ func (h *Handler) Register(b *tele.Bot) {
 	b.Handle("\freturn", h.OnReturn)
 	b.Handle("\fmore", h.OnMore)
 	b.Handle("\fauthorise", h.OnAuthorise)
-	b.Handle(&btnMyGames, h.IsAuthorized(h.MyGames))
+	b.Handle(&btnMyGames, h.MyGames)
 	b.Handle(&btnEnGamonal, h.IsAuthorized(h.InGamonal))
 	b.Handle(&btnEnCentro, h.IsAuthorized(h.InCentro))
 	b.Handle(&btnRename, h.Rename)
@@ -425,7 +425,11 @@ func (h *Handler) onMore(c tele.Context, member Member) error {
 	return c.Respond()
 }
 
-func (h *Handler) MyGames(c tele.Context, member Member) error {
+func (h *Handler) MyGames(c tele.Context) error {
+	return h.IsAuthorized(h.myGames)(c)
+}
+
+func (h *Handler) myGames(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "MyGames"), c.Sender())
 
 	if member.Nickname == "" {
