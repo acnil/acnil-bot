@@ -59,11 +59,77 @@ var _ = Describe("Handler", func() {
 				ID:        1,
 				FirstName: "New",
 				LastName:  "User",
-				Username:  "NewUser",
 			}
 			newMember = &acnil.Member{
 				TelegramID:  "1",
 				Nickname:    "New User",
+				Permissions: "no",
+			}
+			mockTeleContext.EXPECT().Sender().Return(sender).AnyTimes()
+		})
+		Describe("calls /start for the first time", func() {
+			BeforeEach(func() {
+				text := "/start"
+				mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
+				mockTeleContext.EXPECT().Message().Return(&tele.Message{
+					Sender: sender,
+					Text:   text,
+					Chat: &tele.Chat{
+						Type: tele.ChatPrivate,
+					},
+				}).AnyTimes()
+
+				mockMembersDatabase.EXPECT().Get(gomock.Any(), sender.ID).Do(func(context.Context, int64) {
+					// List should only be called after Get is called
+					mockMembersDatabase.EXPECT().List(gomock.Any()).Return([]acnil.Member{
+						*admin,
+						*newMember,
+					}, nil)
+				}).Return(nil, nil)
+
+			})
+			It("Should notify admins and register the user in the table", func() {
+				mockSender.EXPECT().Send(gomock.Any(), gomock.Any(), gomock.Any()).Do(func(r tele.Recipient, msg interface{}, opts ...interface{}) {
+					Expect(r.Recipient()).To(Equal(admin.TelegramID))
+					Expect(msg).To(ContainSubstring(newMember.Nickname))
+				})
+
+				mockMembersDatabase.EXPECT().Append(gomock.Any(), gomock.AssignableToTypeOf(acnil.Member{})).Return(nil).Do(func(_ context.Context, member acnil.Member) {
+					Expect(member.Nickname).To(Equal(newMember.Nickname))
+					Expect(member.TelegramID).To(Equal(newMember.TelegramID))
+					Expect(member.Permissions).To(Equal(acnil.PermissionNo))
+				})
+
+				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+					Expect(sent).To(ContainSubstring("Hola,"))
+					return nil
+				})
+				err := h.Start(mockTeleContext)
+				Expect(err).To(BeNil())
+			})
+		})
+	})
+	Describe("A new member with username", func() {
+		var (
+			newMember *acnil.Member
+			admin     *acnil.Member
+			sender    *tele.User
+		)
+		BeforeEach(func() {
+			admin = &acnil.Member{
+				Nickname:    "MetalBlueberry",
+				TelegramID:  "12345",
+				Permissions: acnil.PermissionAdmin,
+			}
+			sender = &tele.User{
+				ID:        1,
+				FirstName: "New",
+				LastName:  "User",
+				Username:  "NewUsername",
+			}
+			newMember = &acnil.Member{
+				TelegramID:  "1",
+				Nickname:    "NewUsername",
 				Permissions: "no",
 			}
 			mockTeleContext.EXPECT().Sender().Return(sender).AnyTimes()
