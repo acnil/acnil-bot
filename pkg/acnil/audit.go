@@ -168,10 +168,12 @@ type ApplyError struct {
 	Games         []Game       `json:"games,omitempty"`
 	Entries       []AuditEntry `json:"events,omitempty"`
 	FailedEntries []AuditEntry `json:"failed_entries,omitempty"`
-	once          sync.Once    `json:"_"`
+
+	once sync.Once
 }
 
 func (aerr ApplyError) Error() string {
+	// I know this is ugly, but it solves the problem . It will leave files with info behind that I can check later =)
 	msg := ""
 	aerr.once.Do(func() {
 
