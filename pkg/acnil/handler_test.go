@@ -2,6 +2,7 @@ package acnil_test
 
 import (
 	"context"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/metalblueberry/acnil-bot/pkg/acnil"
@@ -436,9 +437,10 @@ var _ = Describe("Handler", func() {
 		Describe("When an user returns a game that is owned by himself", func() {
 			BeforeEach(func() {
 				mockGameDatabase.EXPECT().Get(gomock.Any(), "1", "Game1").Return(&acnil.Game{
-					ID:     "1",
-					Name:   "Game1",
-					Holder: member.Nickname,
+					ID:       "1",
+					Name:     "Game1",
+					Holder:   member.Nickname,
+					TakeDate: time.Date(2023, 2, 11, 0, 0, 0, 0, time.UTC),
 				}, nil)
 
 				mockTeleContext.EXPECT().Data().Return(acnil.Game{
@@ -454,7 +456,11 @@ var _ = Describe("Handler", func() {
 				mockGameDatabase.EXPECT().Update(gomock.Any(), gomock.AssignableToTypeOf(acnil.Game{
 					ID:   "1",
 					Name: "Game1",
-				}))
+				})).Do(func(_ context.Context, g acnil.Game) {
+					Expect(g.Name).To(Equal("Game1"))
+					Expect(g.Holder).To(BeEmpty())
+					Expect(g.TakeDate).To(BeZero())
+				})
 			})
 			It("the game must be updated with empty holder", func() {
 				mockTeleContext.EXPECT().Edit(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {

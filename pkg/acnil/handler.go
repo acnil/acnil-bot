@@ -380,6 +380,7 @@ func (h *Handler) onReturn(c tele.Context, member Member) error {
 	}
 
 	g.Holder = ""
+	g.TakeDate = time.Time{}
 
 	err = h.GameDB.Update(context.TODO(), g)
 	if err != nil {
