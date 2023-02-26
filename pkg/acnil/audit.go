@@ -97,8 +97,13 @@ func (a *Audit) notifyAdmins(err error) {
 	}
 }
 
+func printDuration(log *logrus.Entry, start time.Time) {
+	log.Infof("Took %s", time.Now().Sub(start))
+}
+
 func (a *Audit) Do(ctx context.Context) error {
 	log := logrus.WithField(ilog.FieldHandler, "Audit")
+	defer printDuration(log, time.Now())
 
 	if a.snapshot == nil {
 		err := a.rebuildSnapshot(ctx, log)
@@ -146,7 +151,9 @@ func (a *Audit) rebuildSnapshot(ctx context.Context, log *logrus.Entry) error {
 			return err
 		}
 	}
-	log.WithField("len", len(a.snapshot)).Info("Rebuilding snapshot from audit events")
+	log.WithField("audit lenght", len(entries)).
+		WithField("snapshot_lenght", len(a.snapshot)).
+		Info("Rebuilding snapshot from audit events")
 	return nil
 }
 
