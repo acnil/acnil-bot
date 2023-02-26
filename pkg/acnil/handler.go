@@ -315,7 +315,7 @@ func (h *Handler) onTake(c tele.Context, member Member) error {
 
 	g = *getResult
 
-	if g.Holder != "" {
+	if !g.IsAvailable() {
 		err := c.Edit("Parece que alguien ha modificado los datos, te envío los últimos actualizados")
 		if err != nil {
 			log.Error(err)
@@ -445,7 +445,7 @@ func (h *Handler) myGames(c tele.Context, member Member) error {
 
 	myGames := []Game{}
 	for _, game := range gameList {
-		if game.Holder == member.Nickname {
+		if game.IsHoldedBy(member) {
 			myGames = append(myGames, game)
 		}
 	}

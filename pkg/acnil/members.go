@@ -39,7 +39,8 @@ func (p MemberPermissions) IsAuthorised() bool {
 }
 
 type Member struct {
-	Row         string
+	Row string
+	// Nickname Is the name used in the excel file and to set the Holder field on Games
 	Nickname    string            `col:"0"`
 	TelegramID  string            `col:"1"`
 	Permissions MemberPermissions `col:"2"`

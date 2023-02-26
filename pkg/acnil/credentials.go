@@ -1,10 +1,14 @@
 package acnil
 
 import (
+	"compress/gzip"
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
 	"os"
+	"strings"
 
 	"golang.org/x/oauth2/jwt"
 	"google.golang.org/api/sheets/v4"
@@ -49,5 +53,49 @@ func CreateClientFromCredentials(ctx context.Context, file string) (*sheets.Serv
 	}
 
 	client := conf.Client(ctx)
+
+	// not needed for now, Just an experiment
+	// client.Transport = &gzipTransport{
+	// 	RoundTripper: client.Transport,
+	// 	// Enabled:      true,
+	// }
+
+	// http.DefaultTransport.(*http.Transport).DisableCompression = true
 	return sheets.New(client)
+}
+
+// gzipTransport is a simple implementation to send gzip request, Just because I CAN
+type gzipTransport struct {
+	http.RoundTripper
+	Enabled bool
+}
+
+func (db gzipTransport) RoundTrip(r *http.Request) (*http.Response, error) {
+	// Ask for gzip content
+	if db.Enabled {
+		r.Header.Add("Accept-Encoding", "gzip")
+	}
+
+	resp, err := db.RoundTripper.RoundTrip(r)
+	if err != nil {
+		return resp, err
+	}
+
+	// if it is not gzip, just continue
+	if !strings.EqualFold(resp.Header.Get("Content-Encoding"), "gzip") || !db.Enabled {
+		log.Print("gzip not supported")
+		return resp, err
+	}
+
+	// prepare a gzip reader
+	resp.Body, err = gzip.NewReader(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	resp.Header.Del("Content-Encoding")
+	resp.Header.Del("Content-Length")
+	resp.ContentLength = -1
+	resp.Uncompressed = true
+
+	return resp, nil
 }

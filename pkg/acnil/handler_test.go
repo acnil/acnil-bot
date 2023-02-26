@@ -510,7 +510,7 @@ var _ = Describe("Handler", func() {
 
 		})
 		Describe("When an user list games held by him", func() {
-			BeforeEach(func() {
+			It("must list only games held", func() {
 				mockGameDatabase.EXPECT().List(gomock.Any()).Return([]acnil.Game{
 					{
 						ID:     "1",
@@ -528,8 +528,87 @@ var _ = Describe("Handler", func() {
 						Holder: "Other User",
 					},
 				}, nil)
+				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+					Expect(sent).To(ContainSubstring("Game2"))
+					Expect(sent).To(ContainSubstring("Ocupado"))
+					return nil
+				})
+
+				err := h.MyGames(mockTeleContext)
+				Expect(err).To(BeNil())
 			})
-			It("must list only games held", func() {
+			It("must be case insensitive", func() {
+				mockGameDatabase.EXPECT().List(gomock.Any()).Return([]acnil.Game{
+					{
+						ID:     "1",
+						Name:   "Game1",
+						Holder: "Other User",
+					},
+					{
+						ID:     "2",
+						Name:   "Game2",
+						Holder: "metalblueberry",
+					},
+					{
+						ID:     "3",
+						Name:   "Game3",
+						Holder: "Other User",
+					},
+				}, nil)
+				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+					Expect(sent).To(ContainSubstring("Game2"))
+					Expect(sent).To(ContainSubstring("Ocupado"))
+					return nil
+				})
+
+				err := h.MyGames(mockTeleContext)
+				Expect(err).To(BeNil())
+			})
+			It("must tolerate leading and trailing spaces on game holder field", func() {
+				mockGameDatabase.EXPECT().List(gomock.Any()).Return([]acnil.Game{
+					{
+						ID:     "1",
+						Name:   "Game1",
+						Holder: "Other User",
+					},
+					{
+						ID:     "2",
+						Name:   "Game2",
+						Holder: " metalblueberry ",
+					},
+					{
+						ID:     "3",
+						Name:   "Game3",
+						Holder: "Other User",
+					},
+				}, nil)
+				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+					Expect(sent).To(ContainSubstring("Game2"))
+					Expect(sent).To(ContainSubstring("Ocupado"))
+					return nil
+				})
+
+				err := h.MyGames(mockTeleContext)
+				Expect(err).To(BeNil())
+			})
+			It("must tolerate leading special chars such as tildes", func() {
+				mockGameDatabase.EXPECT().List(gomock.Any()).Return([]acnil.Game{
+					{
+						ID:     "1",
+						Name:   "Game1",
+						Holder: "Other User",
+					},
+					{
+						ID:     "2",
+						Name:   "Game2",
+						Holder: "métalblueberry",
+					},
+					{
+						ID:     "3",
+						Name:   "Game3",
+						Holder: "Other User",
+					},
+				}, nil)
 				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
 					Expect(sent).To(ContainSubstring("Game2"))
 					Expect(sent).To(ContainSubstring("Ocupado"))

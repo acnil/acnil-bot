@@ -12,6 +12,7 @@ import (
 
 	"github.com/metalblueberry/acnil-bot/pkg/bgg"
 	"github.com/metalblueberry/acnil-bot/pkg/sheetsparser"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
@@ -208,6 +209,10 @@ func (g Game) IsTheSameGame(game Game) bool {
 	return g.IsTheSame(game.ID, game.Name)
 }
 
+func (g Game) IsHoldedBy(member Member) bool {
+	return strings.TrimSpace(Norm(g.Holder)) == Norm(member.Nickname)
+}
+
 func NewGameFromData(data string) Game {
 	fields := strings.SplitN(data, "|", 2)
 	return Game{
@@ -226,11 +231,11 @@ func (g Game) Buttons(member Member) *tele.ReplyMarkup {
 	data := g.Data()
 	rows := []tele.Row{}
 	switch {
-	case g.Holder == "":
+	case g.IsAvailable():
 		rows = append(rows, selector.Row(
 			selector.Data("Tomar Prestado", "take", data),
 		))
-	case member.Nickname == g.Holder:
+	case g.IsHoldedBy(member):
 		rows = append(rows, selector.Row(
 			selector.Data("Devolver", "return", data),
 		))
@@ -259,7 +264,7 @@ var (
 {{ .Name }}
 {{ .Location }}
 
-{{ if .Available -}}
+{{ if .IsAvailable -}}
 🟢 Disponible
 {{- else -}}
 🔴 Ocupado: {{ .Holder -}}
@@ -285,7 +290,7 @@ Nº Jugadores: {{ .MinPlayers }}-{{.MaxPlayers}}
 Tiempo de juego : {{ .Playingtime }}m
 {{ if .LanguageDependence}}Dependencia del idioma:  {{ .LanguageDependence }} {{ end }}
 {{ end }}
-{{ if .Available -}}
+{{ if .IsAvailable -}}
 🟢 Disponible
 {{- else -}}
 🔴 Ocupado: {{ .Holder -}}
@@ -303,22 +308,28 @@ Notas:
 
 func (g Game) Card() string {
 	b := &bytes.Buffer{}
-	tmpl.ExecuteTemplate(b, "card", g)
+	err := tmpl.ExecuteTemplate(b, "card", g)
+	if err != nil {
+		logrus.Error("Unable to render template!!, ", err)
+	}
 	return b.String()
 }
 
 func (g Game) MoreCard() string {
 	b := &bytes.Buffer{}
-	tmpl.ExecuteTemplate(b, "morecard", g)
+	err := tmpl.ExecuteTemplate(b, "morecard", g)
+	if err != nil {
+		logrus.Error("Unable to render template!!, ", err)
+	}
 	return b.String()
 }
 
-func (g Game) Available() bool {
+func (g Game) IsAvailable() bool {
 	return g.Holder == ""
 }
 
 func (g Game) String() string {
-	if g.Available() {
+	if g.IsAvailable() {
 		return fmt.Sprintf("🟢 %04s: %s", g.ID, g.Name)
 	}
 	return fmt.Sprintf("🔴 %04s: %s", g.ID, g.Name)
