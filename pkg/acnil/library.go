@@ -235,7 +235,7 @@ func (g Game) Buttons(member Member) *tele.ReplyMarkup {
 		rows = append(rows, selector.Row(
 			selector.Data("Tomar Prestado", "take", data),
 		))
-	case g.IsHoldedBy(member):
+	case g.IsHoldedBy(member), member.Permissions == PermissionAdmin:
 		rows = append(rows, selector.Row(
 			selector.Data("Devolver", "return", data),
 		))
