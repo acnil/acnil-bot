@@ -366,7 +366,7 @@ func (h *Handler) onReturn(c tele.Context, member Member) error {
 
 	g = *getResult
 
-	if g.Holder != member.Nickname {
+	if !g.IsHoldedBy(member) {
 		err := c.Edit("Parece que alguien ha modificado los datos. te envío los últimos actualizados")
 		if err != nil {
 			log.Print(err)
