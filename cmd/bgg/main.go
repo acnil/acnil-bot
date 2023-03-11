@@ -68,7 +68,9 @@ func (db *ExtendedDataDB) SaveFile(filename string) error {
 }
 
 func (db *ExtendedDataDB) Save(w io.Writer) error {
-	return json.NewEncoder(w).Encode(&db.Games)
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", " ")
+	return enc.Encode(&db.Games)
 }
 
 func (db *ExtendedDataDB) Append(new ExtendedData) {
@@ -183,6 +185,19 @@ func FillInventory(ctx *cli.Context, GameDB acnil.GameDatabase, bggapi *bgg.Clie
 	return GameDB.Update(ctx.Context, games...)
 }
 
+func ExtendGameData(game *acnil.Game, ex ExtendedData) {
+	game.BGG = ex.BGGID
+	game.LanguageDependence = ex.LanguageDependence
+	game.MinPlayers = ex.MinPlayers
+	game.MaxPlayers = ex.MaxPlayers
+	game.Age = ex.Age
+	game.Playingtime = ex.Playingtime
+	game.Yearpublished = ex.Yearpublished
+	game.AvgRate = ex.AvgRate
+	game.AvgWeight = ex.AvgWeight
+
+}
+
 func Manual(ctx *cli.Context, GameDB acnil.GameDatabase, bggapi *bgg.Client, extended *ExtendedDataDB) error {
 	defer extended.SaveFile("extended.db.json")
 
@@ -264,8 +279,20 @@ func Manual(ctx *cli.Context, GameDB acnil.GameDatabase, bggapi *bgg.Client, ext
 			continue
 		}
 
-		extended.Append(NewExtendedDataFromBGGGame(*bggGame))
+		ex := NewExtendedDataFromBGGGame(*bggGame)
+		ExtendGameData(&game, ex)
+		if _, found := extended.GetByBGGID(bggGame.Objectid); found {
+			logrus.Infof("Game Extended data Already found %s", game.Name)
+		} else {
+			logrus.Infof("Appending data for %s", game.Name)
+			extended.Append(ex)
+		}
 
+		if err := GameDB.Update(ctx.Context, game); err != nil {
+			logrus.WithError(err).Error("Failed to update game")
+		} else {
+			logrus.Infof("Updated game %s in database with ID %s", ex.Name, ex.BGGID)
+		}
 		extended.SaveFile("extended.db.json")
 	}
 	return nil
