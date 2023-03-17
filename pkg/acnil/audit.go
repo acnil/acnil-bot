@@ -88,19 +88,6 @@ func (a *Audit) Run(ctx context.Context) {
 	}()
 }
 
-func (a *Audit) notifyAdmins(err error) {
-	members, err := a.MembersDB.List(context.Background())
-	for _, m := range members {
-		if m.Permissions == PermissionAdmin {
-			a.Bot.Send(&m, fmt.Sprintf("Failed to run Audit, %s", err.Error()))
-		}
-	}
-}
-
-func printDuration(log *logrus.Entry, start time.Time) {
-	log.Infof("Took %s", time.Now().Sub(start))
-}
-
 func (a *Audit) Do(ctx context.Context) error {
 	log := logrus.WithField(ilog.FieldHandler, "Audit")
 	defer printDuration(log, time.Now())
@@ -135,6 +122,66 @@ func (a *Audit) Do(ctx context.Context) error {
 		return fmt.Errorf("Failed to post audit update, %w", err)
 	}
 	return nil
+}
+
+type Query struct {
+	From, To time.Time
+	Game     *Game
+	Limit    int
+	Member   *Member
+}
+
+func (a *Audit) Find(ctx context.Context, query Query) ([]AuditEntry, error) {
+	entries, err := a.AuditDB.List(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to list audit entries, %w", err)
+	}
+
+	result := []AuditEntry{}
+	for i := len(entries) - 1; i >= 0; i-- {
+		e := entries[i]
+
+		if !query.From.IsZero() && e.Timestamp.Before(query.From) {
+			continue
+		}
+
+		if !query.To.IsZero() && e.Timestamp.After(query.To) {
+			continue
+		}
+
+		if query.Game != nil && !e.Game().IsTheSameGame(*query.Game) {
+			continue
+		}
+
+		if query.Member != nil && !e.Game().IsHoldedBy(*query.Member) {
+			continue
+		}
+
+		result = append(result, e)
+		if query.Limit != 0 && len(result) == query.Limit {
+			break
+		}
+	}
+	reverse(result)
+	return result, nil
+}
+
+func reverse[S ~[]E, E any](s S) {
+	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
+		s[i], s[j] = s[j], s[i]
+	}
+}
+func (a *Audit) notifyAdmins(err error) {
+	members, err := a.MembersDB.List(context.Background())
+	for _, m := range members {
+		if m.Permissions == PermissionAdmin {
+			a.Bot.Send(&m, fmt.Sprintf("Failed to run Audit, %s", err.Error()))
+		}
+	}
+}
+
+func printDuration(log *logrus.Entry, start time.Time) {
+	log.Infof("Took %s", time.Now().Sub(start))
 }
 
 func (a *Audit) rebuildSnapshot(ctx context.Context, log *logrus.Entry) error {

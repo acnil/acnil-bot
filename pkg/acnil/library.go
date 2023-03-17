@@ -240,8 +240,15 @@ func (g Game) Buttons(member Member) *tele.ReplyMarkup {
 			selector.Data("Devolver", "return", data),
 		))
 	}
+
+	if g.ContainsBGGData() {
+		rows = append(rows, selector.Row(
+			selector.Data("Mas información", "more", data),
+		))
+	}
+
 	rows = append(rows, selector.Row(
-		selector.Data("Mas información", "more", data),
+		selector.Data("Historial", "history", data),
 	))
 
 	selector.Inline(rows...)

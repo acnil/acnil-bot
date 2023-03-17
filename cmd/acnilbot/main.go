@@ -43,12 +43,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	handler := &acnil.Handler{
-		MembersDB: acnil.NewMembersDatabase(srv, sheetID),
-		GameDB:    acnil.NewGameDatabase(srv, sheetID),
-	}
-
-	handler.Register(b)
 
 	audit := &acnil.Audit{
 		AuditDB: acnil.NewSheetAuditDatabase(srv, auditSheetID),
@@ -56,6 +50,14 @@ func main() {
 	}
 
 	audit.Run(context.Background())
+
+	handler := &acnil.Handler{
+		MembersDB: acnil.NewMembersDatabase(srv, sheetID),
+		GameDB:    acnil.NewGameDatabase(srv, sheetID),
+		Audit:     audit,
+	}
+
+	handler.Register(b)
 
 	b.Start()
 }
