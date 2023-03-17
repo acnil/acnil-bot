@@ -69,9 +69,14 @@ type Sender interface {
 	Send(to tele.Recipient, what interface{}, opts ...interface{}) (*tele.Message, error)
 }
 
+type ROAudit interface {
+	Find(ctx context.Context, query Query) ([]AuditEntry, error)
+}
+
 type Handler struct {
 	MembersDB MembersDatabase
 	GameDB    GameDatabase
+	Audit     ROAudit
 	Bot       Sender
 }
 
@@ -85,6 +90,7 @@ func (h *Handler) Register(b *tele.Bot) {
 	b.Handle("\freturn", h.OnReturn)
 	b.Handle("\fmore", h.OnMore)
 	b.Handle("\fauthorise", h.OnAuthorise)
+	b.Handle("\fhistory", h.OnHistory)
 	b.Handle(&btnMyGames, h.MyGames)
 	b.Handle(&btnEnGamonal, h.IsAuthorized(h.InGamonal))
 	b.Handle(&btnEnCentro, h.IsAuthorized(h.InCentro))
@@ -424,6 +430,65 @@ func (h *Handler) onMore(c tele.Context, member Member) error {
 	}
 	log.Info("Details requested")
 	return c.Respond()
+}
+
+func (h *Handler) OnHistory(c tele.Context) error {
+	return h.IsAuthorized(h.onHistory)(c)
+}
+
+type PrettyAuditEntry struct {
+	AuditEntry
+	TimeFormat string
+}
+
+func (p PrettyAuditEntry) String() string {
+	if p.AuditEntry.Holder == "" {
+		return fmt.Sprintf("%s: %s", p.Timestamp.Format(p.TimeFormat), "devuelto")
+	}
+	return fmt.Sprintf("%s: %s", p.Timestamp.Format(p.TimeFormat), p.Holder)
+}
+
+func (h *Handler) onHistory(c tele.Context, member Member) error {
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "History"), c.Sender())
+
+	defer c.Respond()
+
+	g := NewGameFromData(c.Data())
+	log = log.WithField("Game", g.Name)
+
+	entries, err := h.Audit.Find(context.TODO(), Query{
+		Game:  &g,
+		Limit: 100,
+	})
+	if err != nil {
+		log.WithError(err).Error("Error finding audit history for game")
+		return c.Send("Wops! No he podido encontrar el historial.... Díselo a @MetalBlueberry para que lo arregle")
+	}
+
+	prettyEntries := make([]PrettyAuditEntry, 0, len(entries))
+	previous := AuditEntry{}
+	for _, e := range entries {
+		if e.Holder == previous.Holder {
+			continue
+		}
+		previous = e
+		prettyEntries = append(prettyEntries, PrettyAuditEntry{
+			AuditEntry: e,
+			TimeFormat: "2006-01-02",
+		})
+	}
+
+	if len(prettyEntries) == 0 {
+		return c.Send("Parece que nadie ha usado este juego nunca.\nPuedes ser el primero!")
+	}
+
+	for _, block := range SendList(prettyEntries) {
+		err := c.Send(block, mainMenu)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+	return nil
 }
 
 func (h *Handler) MyGames(c tele.Context) error {
