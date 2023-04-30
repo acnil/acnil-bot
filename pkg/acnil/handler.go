@@ -21,6 +21,12 @@ var (
 	btnEnCentro  = mainMenu.Text("Lista del Centro")
 	btnRename    = mainMenu.Text("🧍 Cambiar Nombre")
 
+	btnAdmin = mainMenu.Text("👮 Administrador")
+
+	adminMenu          = &tele.ReplyMarkup{ResizeKeyboard: true}
+	btnForgotten       = adminMenu.Text("Juegos olvidados?")
+	btnCancelAdminMenu = adminMenu.Text("Atrás")
+
 	renameMenu      = &tele.ReplyMarkup{ResizeKeyboard: true}
 	btnCancelRename = renameMenu.Text("Cancelar")
 
@@ -28,18 +34,35 @@ var (
 	btnStart  = renameMenu.Text("Empezar!")
 )
 
-func addMainMenuReplyMarkup(rm *tele.ReplyMarkup) {
-	rm.Reply(
-		rm.Row(btnMyGames),
-		rm.Row(btnEnGamonal, btnEnCentro),
-		rm.Row(btnRename),
+// mainMenuReplyMarkup Given a member, builds the main menu keyboard with appropriate buttons.
+func mainMenuReplyMarkup(member Member) *tele.ReplyMarkup {
+	markup := &tele.ReplyMarkup{ResizeKeyboard: true}
+
+	std := []tele.Row{
+		markup.Row(btnForgotten),
+		markup.Row(btnEnGamonal, btnEnCentro),
+		markup.Row(btnRename),
+	}
+	if member.Permissions == PermissionAdmin {
+		std = append(std, markup.Row(btnAdmin))
+	}
+	markup.Reply(std...)
+	markup.ResizeKeyboard = true
+	return markup
+}
+
+func adminMenuReplyMarkup(member Member) *tele.ReplyMarkup {
+	markup := &tele.ReplyMarkup{ResizeKeyboard: true}
+	markup.Reply(
+		markup.Row(btnForgotten),
+		markup.Row(btnCancelAdminMenu),
 	)
-	rm.ResizeKeyboard = true
-	rm.Inline()
+	markup.ResizeKeyboard = true
+	return markup
+
 }
 
 func init() {
-	addMainMenuReplyMarkup(mainMenu)
 	renameMenu.Reply(
 		renameMenu.Row(btnCancelRename),
 	)
@@ -51,6 +74,7 @@ func init() {
 	startMenu.RemoveKeyboard = true
 }
 
+// MembersDatabase gives access the the current member using the application
 type MembersDatabase interface {
 	Get(ctx context.Context, telegramID int64) (*Member, error)
 	List(ctx context.Context) ([]Member, error)
@@ -58,6 +82,7 @@ type MembersDatabase interface {
 	Update(ctx context.Context, member Member) error
 }
 
+// GameDatabase gives access to all the games registered in the excel
 type GameDatabase interface {
 	Find(ctx context.Context, name string) ([]Game, error)
 	List(ctx context.Context) ([]Game, error)
@@ -65,10 +90,12 @@ type GameDatabase interface {
 	Update(ctx context.Context, game ...Game) error
 }
 
+// Sender sends something to telegram bot
 type Sender interface {
 	Send(to tele.Recipient, what interface{}, opts ...interface{}) (*tele.Message, error)
 }
 
+// ROAudit gives read only access to the audit database
 type ROAudit interface {
 	Find(ctx context.Context, query Query) ([]AuditEntry, error)
 }
@@ -96,9 +123,15 @@ func (h *Handler) Register(b *tele.Bot) {
 	b.Handle(&btnEnCentro, h.IsAuthorized(h.InCentro))
 	b.Handle(&btnRename, h.Rename)
 	b.Handle(&btnCancelRename, h.CancelRename)
+
+	b.Handle(&btnAdmin, h.OnAdmin)
+	b.Handle(&btnForgotten, h.OnForgotten)
+
 	h.Bot = b
 }
 
+// IsAuthorized find if the current user is registered in the application and the access has been accepted by an admin
+// If a new user is detected, it will also emit an event for the admins and register it in the database.
 func (h *Handler) IsAuthorized(next func(tele.Context, Member) error) func(tele.Context) error {
 	return func(c tele.Context) error {
 		log := ilog.WithTelegramUser(
@@ -130,6 +163,16 @@ Si no lo recibes en 24h, avisa a @metalblueberry.
 `))
 		}
 		return next(c, *m)
+	}
+}
+
+// Calls next if the user is admin, otherwise fallback to text handler
+func (h Handler) IsAdmin(next func(tele.Context, Member) error) func(tele.Context, Member) error {
+	return func(c tele.Context, m Member) error {
+		if m.Permissions == PermissionAdmin {
+			return next(c, m)
+		}
+		return h.onText(c, m)
 	}
 }
 
@@ -212,7 +255,7 @@ También puedo buscar por parte del nombre. por ejemplo, Intenta decir "Explodin
 
 Por último, si me mandas el ID de un juego, también puedo encontrarlo.
 
-Si algo va mal, habla con @MetalBlueberry`, member.Nickname), mainMenu)
+Si algo va mal, habla con @MetalBlueberry`, member.Nickname), mainMenuReplyMarkup(member))
 }
 
 func (h *Handler) skipGroup(next func(c tele.Context) error) func(c tele.Context) error {
@@ -252,11 +295,11 @@ func (h *Handler) onText(c tele.Context, member Member) error {
 				return nil
 			}
 			log.WithError(err).Error("Failed to connect to GameDB")
-			return c.Send(err.Error(), mainMenu)
+			return c.Send(err.Error(), mainMenuReplyMarkup(member))
 		}
 		if getResult == nil {
 			log.Info("Unable to find game by ID")
-			return c.Send("No he podido encontrar un juego con ese ID", mainMenu)
+			return c.Send("No he podido encontrar un juego con ese ID", mainMenuReplyMarkup(member))
 		}
 		log.WithField("Game", getResult.Name).Info("Found Game by ID")
 		return c.Send(getResult.Card(), getResult.Buttons(member))
@@ -270,7 +313,7 @@ func (h *Handler) onText(c tele.Context, member Member) error {
 	switch {
 	case len(list) == 0:
 		log.Info("Unable to find game")
-		return c.Send("No he podido encontrar ningún juego con ese nombre", mainMenu)
+		return c.Send("No he podido encontrar ningún juego con ese nombre", mainMenuReplyMarkup(member))
 	case len(list) <= 3:
 		for _, g := range list {
 			log.WithField("Game", g.Name).Info("Found Game")
@@ -287,7 +330,7 @@ También puedes seleccionar un juego por su ID, solo dime el número de la lista
 
 Esto es todo lo que he encontrado`, mainMenu)
 		for _, block := range SendList(list) {
-			err := c.Send(block, mainMenu)
+			err := c.Send(block, mainMenuReplyMarkup(member))
 			if err != nil {
 				log.Error(err)
 			}
@@ -483,7 +526,7 @@ func (h *Handler) onHistory(c tele.Context, member Member) error {
 	}
 
 	for _, block := range SendList(prettyEntries) {
-		err := c.Send(block, mainMenu)
+		err := c.Send(block, mainMenuReplyMarkup(member))
 		if err != nil {
 			log.Error(err)
 		}
@@ -561,7 +604,7 @@ func (h *Handler) inLocation(c tele.Context, member Member, location string) err
 	}
 
 	for _, block := range SendList(inLocation) {
-		err := c.Send(block, mainMenu)
+		err := c.Send(block, mainMenuReplyMarkup(member))
 		if err != nil {
 			log.Error(err)
 		}
@@ -619,7 +662,7 @@ func (h *Handler) cancelRename(c tele.Context, member Member) error {
 		return err
 	}
 
-	return c.Send("Okey, Te llamas "+member.Nickname, mainMenu)
+	return c.Send("Okey, Te llamas "+member.Nickname, mainMenuReplyMarkup(member))
 }
 
 func (h *Handler) onRename(c tele.Context, member Member) error {
@@ -643,7 +686,7 @@ func (h *Handler) onRename(c tele.Context, member Member) error {
 
 	if newName == member.Nickname {
 		member.State = ""
-		return c.Send("Okey, te dejo el mismo nombre", mainMenu)
+		return c.Send("Okey, te dejo el mismo nombre", mainMenuReplyMarkup(member))
 	}
 
 	for _, other := range members {
@@ -654,6 +697,22 @@ func (h *Handler) onRename(c tele.Context, member Member) error {
 
 	member.State = ""
 	member.Nickname = newName
-	c.Send("Listo! ahora te llamas "+member.Nickname, mainMenu)
+	c.Send("Listo! ahora te llamas "+member.Nickname, mainMenuReplyMarkup(member))
 	return nil
+}
+
+func (h *Handler) OnAdmin(c tele.Context) error {
+	return h.IsAuthorized(h.IsAdmin(h.onAdmin))(c)
+}
+
+func (h *Handler) onAdmin(c tele.Context, member Member) error {
+	return c.Send("This is the future admin section", adminMenuReplyMarkup(member))
+}
+
+func (h *Handler) OnForgotten(c tele.Context) error {
+	return h.IsAuthorized(h.IsAdmin(h.onForgotten))(c)
+}
+
+func (h *Handler) onForgotten(c tele.Context, member Member) error {
+	return c.Send("This will print the list of games not returned within time", adminMenuReplyMarkup(member))
 }
