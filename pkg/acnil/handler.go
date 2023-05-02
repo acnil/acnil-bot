@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -39,7 +40,7 @@ func mainMenuReplyMarkup(member Member) *tele.ReplyMarkup {
 	markup := &tele.ReplyMarkup{ResizeKeyboard: true}
 
 	std := []tele.Row{
-		markup.Row(btnForgotten),
+		markup.Row(btnMyGames),
 		markup.Row(btnEnGamonal, btnEnCentro),
 		markup.Row(btnRename),
 	}
@@ -714,5 +715,28 @@ func (h *Handler) OnForgotten(c tele.Context) error {
 }
 
 func (h *Handler) onForgotten(c tele.Context, member Member) error {
-	return c.Send("This will print the list of games not returned within time", adminMenuReplyMarkup(member))
+
+	games, err := h.GameDB.List(context.Background())
+	if err != nil {
+		c.Send("Wops! Algo ha ido mal!")
+		return c.Send(err.Error())
+	}
+
+	leaseLimit := time.Hour * 24 * 15
+
+	forgottenGames := []Game{}
+	// c.Send(fmt.Sprintf("The following games have been held for longer than %s", leaseLimit), adminMenuReplyMarkup(member))
+	for _, g := range games {
+		if !g.IsAvailable() && !g.TakeDate.IsZero() && g.IsHeldForLongerThan(leaseLimit) {
+			forgottenGames = append(forgottenGames, g)
+		}
+	}
+
+	sort.Slice(forgottenGames, func(i, j int) bool { return forgottenGames[i].LeaseDays() < forgottenGames[j].LeaseDays() })
+
+	for _, g := range forgottenGames {
+		c.Send(g.Card(), g.Buttons(member))
+	}
+
+	return nil
 }
