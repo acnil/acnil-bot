@@ -620,5 +620,59 @@ var _ = Describe("Handler", func() {
 			})
 		})
 	})
+	Describe("An admin", func() {
+		var (
+			member *acnil.Member
+			sender *tele.User
+		)
+
+		BeforeEach(func() {
+			member = &acnil.Member{
+				Nickname:    "MetalBlueberry",
+				TelegramID:  "12345",
+				Permissions: acnil.PermissionAdmin,
+			}
+			mockMembersDatabase.EXPECT().Get(gomock.Any(), member.TelegramIDInt()).Return(member, nil)
+			sender = &tele.User{
+				ID:        12345,
+				FirstName: "Victor",
+				LastName:  "Perez",
+				Username:  "MetalBlueberry",
+			}
+			mockTeleContext.EXPECT().Sender().Return(sender).AnyTimes()
+
+		})
+		Describe("request a list of forgotten games", func() {
+			BeforeEach(func() {
+				mockGameDatabase.EXPECT().List(gomock.Any()).Return([]acnil.Game{
+					{
+						ID:       "1",
+						Name:     "Game1",
+						Holder:   "Other User",
+						TakeDate: time.Now(),
+					},
+					{
+						ID:   "2",
+						Name: "Game2",
+					},
+					{
+						ID:       "3",
+						Name:     "Game3",
+						Holder:   "Other User",
+						TakeDate: time.Now().Add(-time.Hour * 24 * 30),
+					},
+				}, nil)
+			})
+
+			It("returns the games with long lease times", func() {
+				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+					Expect(sent).To(ContainSubstring("Game3"))
+					return nil
+				}).Times(1)
+				err := h.OnForgotten(mockTeleContext)
+				Expect(err).To(BeNil())
+			})
+		})
+	})
 
 })

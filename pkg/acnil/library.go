@@ -213,6 +213,17 @@ func (g Game) IsHoldedBy(member Member) bool {
 	return strings.TrimSpace(Norm(g.Holder)) == Norm(member.Nickname)
 }
 
+func (g Game) LeaseDays() int {
+	return int(g.LeaseDuration().Round(time.Hour*24).Hours()) / 24
+}
+func (g Game) LeaseDuration() time.Duration {
+	return time.Now().Sub(g.TakeDate)
+}
+
+func (g Game) IsHeldForLongerThan(duration time.Duration) bool {
+	return g.LeaseDuration() > duration
+}
+
 func NewGameFromData(data string) Game {
 	fields := strings.SplitN(data, "|", 2)
 	return Game{
@@ -274,7 +285,7 @@ var (
 {{ if .IsAvailable -}}
 🟢 Disponible
 {{- else -}}
-🔴 Ocupado: {{ .Holder -}}
+🔴 Ocupado: {{ .Holder }} {{ .TakeDate.Format "2006-01-02" }} ({{ .LeaseDays }} días)
 {{ end }}
 
 {{ if .Comments }}
@@ -300,7 +311,7 @@ Tiempo de juego : {{ .Playingtime }}m
 {{ if .IsAvailable -}}
 🟢 Disponible
 {{- else -}}
-🔴 Ocupado: {{ .Holder -}}
+🔴 Ocupado: {{ .Holder }} {{ .TakeDate.Format "2006-01-02" }} ({{ .LeaseDays }} días)
 {{ end }}
 {{- if .Comments }}
 Notas: 
