@@ -679,21 +679,9 @@ func (h *Handler) onRename(c tele.Context, member Member) error {
 		return c.Send("No puedes usar un nombre tan largo...", renameMenu)
 	}
 
-	members, err := h.MembersDB.List(context.Background())
-	if err != nil {
-		c.Send(err.Error())
-		return err
-	}
-
 	if newName == member.Nickname {
 		member.State = ""
 		return c.Send("Okey, te dejo el mismo nombre", mainMenuReplyMarkup(member))
-	}
-
-	for _, other := range members {
-		if other.Nickname == newName {
-			return c.Send("Wops! Parece que ya hay otra persona usando este nombre.", renameMenu)
-		}
 	}
 
 	member.State = ""
@@ -725,7 +713,6 @@ func (h *Handler) onForgotten(c tele.Context, member Member) error {
 	leaseLimit := time.Hour * 24 * 15
 
 	forgottenGames := []Game{}
-	// c.Send(fmt.Sprintf("The following games have been held for longer than %s", leaseLimit), adminMenuReplyMarkup(member))
 	for _, g := range games {
 		if !g.IsAvailable() && !g.TakeDate.IsZero() && g.IsHeldForLongerThan(leaseLimit) {
 			forgottenGames = append(forgottenGames, g)
