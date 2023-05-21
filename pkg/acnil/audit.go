@@ -153,7 +153,7 @@ func (a *Audit) Find(ctx context.Context, query Query) ([]AuditEntry, error) {
 			continue
 		}
 
-		if query.Member != nil && !e.Game().IsHoldedBy(*query.Member) {
+		if query.Member != nil && !e.Game().IsHeldBy(*query.Member) {
 			continue
 		}
 

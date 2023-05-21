@@ -119,6 +119,7 @@ func (h *Handler) Register(b *tele.Bot) {
 	b.Handle("\fmore", h.OnMore)
 	b.Handle("\fauthorise", h.OnAuthorise)
 	b.Handle("\fhistory", h.OnHistory)
+	b.Handle("\fextendLease", h.OnExtendLease)
 	b.Handle(&btnMyGames, h.MyGames)
 	b.Handle(&btnEnGamonal, h.IsAuthorized(h.InGamonal))
 	b.Handle(&btnEnCentro, h.IsAuthorized(h.InCentro))
@@ -379,6 +380,7 @@ func (h *Handler) onTake(c tele.Context, member Member) error {
 	}
 	g.Holder = member.Nickname
 	g.TakeDate = time.Now()
+	g.SetLeaseTimeDays(21)
 
 	err = h.GameDB.Update(context.TODO(), g)
 	if err != nil {
@@ -416,7 +418,7 @@ func (h *Handler) onReturn(c tele.Context, member Member) error {
 
 	g = *getResult
 
-	if !g.IsHoldedBy(member) && member.Permissions != PermissionAdmin {
+	if !g.IsHeldBy(member) && member.Permissions != PermissionAdmin {
 		err := c.Edit("Parece que alguien ha modificado los datos. te envío los últimos actualizados")
 		if err != nil {
 			log.Print(err)
@@ -535,6 +537,63 @@ func (h *Handler) onHistory(c tele.Context, member Member) error {
 	return nil
 }
 
+func (h *Handler) OnExtendLease(c tele.Context) error {
+	return h.IsAuthorized(h.onExtendLease)(c)
+}
+
+func (h *Handler) onExtendLease(c tele.Context, member Member) error {
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "OnExtendLease"), c.Sender())
+
+	g := NewGameFromData(c.Data())
+	log = log.WithField("Game", g.Name)
+
+	getResult, err := h.GameDB.Get(context.TODO(), g.ID, g.Name)
+	if err != nil {
+		log.WithError(err).Error("Unable to get from GameDB")
+		c.Edit(err.Error())
+		return c.Respond()
+	}
+	if getResult == nil {
+		log.Warn("Unable to find game")
+		c.Edit("No he podido encontrar el juego. Intenta volver a buscarlo, tal vez se ha modificado el excel")
+		return c.Respond()
+	}
+
+	g = *getResult
+
+	if !g.IsHeldBy(member) {
+		err := c.Edit("Parece que alguien ha modificado los datos. te envío los últimos actualizados")
+		if err != nil {
+			log.Print(err)
+		}
+		err = c.Send(g.Card(), g.Buttons(member))
+		if err != nil {
+			log.Print(err)
+		}
+		log.Info("Conflict on ExtendLease")
+		return c.Respond()
+	}
+
+	g.SetLeaseTimeDays(g.LeaseDays() + 21)
+	if g.IsLeaseExpired() {
+		log.Errorf("Lease is still expired!!")
+	}
+
+	err = h.GameDB.Update(context.TODO(), g)
+	if err != nil {
+		c.Edit(err.Error())
+		log.Error("Failed to update game database")
+		return c.Respond()
+	}
+
+	err = c.Edit(g.Card(), g.Buttons(member))
+	if err != nil {
+		log.Errorf("Failed to edit card, %s", err)
+	}
+	log.Info("Game lease time extended")
+	return c.Respond()
+}
+
 func (h *Handler) MyGames(c tele.Context) error {
 	return h.IsAuthorized(h.myGames)(c)
 }
@@ -554,7 +613,7 @@ func (h *Handler) myGames(c tele.Context, member Member) error {
 
 	myGames := []Game{}
 	for _, game := range gameList {
-		if game.IsHoldedBy(member) {
+		if game.IsHeldBy(member) {
 			myGames = append(myGames, game)
 		}
 	}
@@ -710,11 +769,9 @@ func (h *Handler) onForgotten(c tele.Context, member Member) error {
 		return c.Send(err.Error())
 	}
 
-	leaseLimit := time.Hour * 24 * 15
-
 	forgottenGames := []Game{}
 	for _, g := range games {
-		if !g.IsAvailable() && !g.TakeDate.IsZero() && g.IsHeldForLongerThan(leaseLimit) {
+		if !g.IsAvailable() && g.IsLeaseExpired() {
 			forgottenGames = append(forgottenGames, g)
 		}
 	}
