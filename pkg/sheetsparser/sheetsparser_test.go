@@ -135,3 +135,162 @@ func TestSheetParserGaps_Marshal(t *testing.T) {
 		t.FailNow()
 	}
 }
+
+type testReadOnly struct {
+	ReadOnly string `col:"0,ro"`
+}
+
+func TestSheetReadOnly_Unmarshal(t *testing.T) {
+	p := &SheetParser{}
+	test := testReadOnly{}
+
+	err := p.Unmarshal([]interface{}{"rovalue"}, &test)
+
+	if err != nil {
+		t.Error(err)
+	}
+	if test.ReadOnly != "rovalue" {
+		t.Errorf("g.ReadOnly is %s but must be rovalue", test.ReadOnly)
+		t.FailNow()
+	}
+}
+
+func TestSheetReadOnly_Marshal(t *testing.T) {
+	p := &SheetParser{}
+	test := testReadOnly{
+		ReadOnly: "new value",
+	}
+
+	out, err := p.Marshal(&test)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if out[0] != nil {
+		t.Errorf("field 0 is %s but must be nil", out[0])
+		t.FailNow()
+	}
+}
+
+// Must error?
+// Must parse both?
+type testWriteOnly struct {
+	WriteOnly string `col:"0,wo"`
+}
+
+func TestSheetWriteOnly_Unmarshal(t *testing.T) {
+	p := &SheetParser{}
+	test := testWriteOnly{}
+
+	err := p.Unmarshal([]interface{}{"wovalue", "value"}, &test)
+
+	if err != nil {
+		t.Error(err)
+	}
+	if test.WriteOnly != "" {
+		t.Errorf("g.WriteOnly is %s but must be empty", test.WriteOnly)
+		t.FailNow()
+	}
+}
+
+func TestSheetWriteOnly_Marshal(t *testing.T) {
+	p := &SheetParser{}
+	test := testWriteOnly{
+		WriteOnly: "new value",
+	}
+
+	out, err := p.Marshal(&test)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if out[0].(string) != "new value" {
+		t.Errorf("field 0 is %s but must be new value", out[0])
+		t.FailNow()
+	}
+}
+
+type testReadAndWrite struct {
+	ReadOnly  string `col:"0,ro"`
+	WriteOnly string `col:"0,wo"`
+}
+
+func TestSheetReadAndWrite_Unmarshal(t *testing.T) {
+	p := &SheetParser{}
+	test := testReadAndWrite{}
+
+	err := p.Unmarshal([]interface{}{"value"}, &test)
+
+	if err != nil {
+		t.Error(err)
+	}
+	if test.WriteOnly != "" {
+		t.Errorf("g.WriteOnly is %s but must be empty", test.WriteOnly)
+		t.FailNow()
+	}
+	if test.ReadOnly != "value" {
+		t.Errorf("g.ReadOnly is %s but must be empty", test.ReadOnly)
+		t.FailNow()
+	}
+}
+
+func TestSheetReadAndWrite_Marshal(t *testing.T) {
+	p := &SheetParser{}
+	test := testReadAndWrite{
+		ReadOnly:  "read value",
+		WriteOnly: "write value",
+	}
+
+	out, err := p.Marshal(&test)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if out[0].(string) != "write value" {
+		t.Errorf("field 0 is %s but must be write value", out[0])
+		t.FailNow()
+	}
+}
+
+type testWriteAndRead struct {
+	// In this order the code fails :blow:
+	WriteOnly string `col:"0,wo"`
+	ReadOnly  string `col:"0,ro"`
+}
+
+func TestSheetWriteAndRead_Unmarshal(t *testing.T) {
+	p := &SheetParser{}
+	test := testWriteAndRead{}
+
+	err := p.Unmarshal([]interface{}{"value"}, &test)
+
+	if err != nil {
+		t.Error(err)
+	}
+	if test.WriteOnly != "" {
+		t.Errorf("g.WriteOnly is %s but must be empty", test.WriteOnly)
+		t.FailNow()
+	}
+	if test.ReadOnly != "value" {
+		t.Errorf("g.ReadOnly is %s but must be empty", test.ReadOnly)
+		t.FailNow()
+	}
+}
+
+func TestSheetWriteAndRead_Marshal(t *testing.T) {
+	p := &SheetParser{}
+	test := testWriteAndRead{
+		WriteOnly: "write value",
+		ReadOnly:  "read value",
+	}
+
+	out, err := p.Marshal(&test)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if v, ok := out[0].(string); !ok || v != "write value" {
+		t.Errorf("field 0 is %s but must be write value", out[0])
+		t.FailNow()
+	}
+}
