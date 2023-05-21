@@ -45,6 +45,11 @@ func (p *SheetParser) Unmarshal(in []interface{}, out interface{}) error {
 			continue
 		}
 
+		IsWriteOnly := strings.Contains(v, "wo")
+		if IsWriteOnly {
+			continue
+		}
+
 		fields := strings.Split(v, ",")
 
 		index, err := strconv.Atoi(fields[0])
@@ -109,9 +114,11 @@ func (p *SheetParser) Unmarshal(in []interface{}, out interface{}) error {
 }
 
 type ref struct {
-	Index      int
-	Field      reflect.Value
-	IsReadOnly bool
+	Index       int
+	Field       reflect.Value
+	IsReadOnly  bool
+	IsWriteOnly bool
+	OmitEmpty   bool
 }
 
 func (p *SheetParser) Marshal(in interface{}) ([]interface{}, error) {
@@ -141,10 +148,26 @@ func (p *SheetParser) Marshal(in interface{}) ([]interface{}, error) {
 			maxRef = index
 		}
 
-		refs = append(refs, ref{Index: index, Field: rv.Elem().Field(i), IsReadOnly: strings.Contains(v, "ro")})
+		refs = append(refs, ref{
+			Index:       index,
+			Field:       rv.Elem().Field(i),
+			IsReadOnly:  strings.Contains(v, "ro"),
+			IsWriteOnly: strings.Contains(v, "wo"),
+			OmitEmpty:   strings.Contains(v, "omitempty"),
+		})
 	}
 
-	sort.Slice(refs, func(i, j int) bool { return refs[i].Index < refs[j].Index })
+	sort.Slice(refs, func(i, j int) bool {
+		if refs[i].Index == refs[j].Index {
+			if refs[i].IsReadOnly {
+				return true
+			}
+			if refs[j].IsReadOnly {
+				return false
+			}
+		}
+		return refs[i].Index < refs[j].Index
+	})
 
 	out := make([]interface{}, maxRef+1)
 	for _, r := range refs {
@@ -167,7 +190,10 @@ func (p *SheetParser) Marshal(in interface{}) ([]interface{}, error) {
 			n := r.Field.Float()
 			out[r.Index] = strings.Replace(strconv.FormatFloat(n, 'f', 2, 64), ".", ",", 1)
 		default:
-
+			if r.OmitEmpty && r.Field.String() == "" {
+				out[r.Index] = nil
+				continue
+			}
 			out[r.Index] = r.Field.String()
 		}
 	}
