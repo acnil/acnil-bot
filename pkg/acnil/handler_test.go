@@ -240,7 +240,6 @@ var _ = Describe("Handler", func() {
 
 		})
 	})
-
 	Describe("An authorised member", func() {
 		var (
 			member *acnil.Member
@@ -354,11 +353,13 @@ var _ = Describe("Handler", func() {
 						Type: tele.ChatPrivate,
 					},
 				}).AnyTimes()
-				mockGameDatabase.EXPECT().Update(gomock.Any(), gomock.AssignableToTypeOf(acnil.Game{
-					ID:     "1",
-					Name:   "Game1",
-					Holder: member.Nickname,
-				}))
+				mockGameDatabase.EXPECT().Update(gomock.Any(), gomock.AssignableToTypeOf(acnil.Game{})).Do(func(ctx context.Context, g acnil.Game) {
+					Expect(g.ID).To(Equal("1"))
+					Expect(g.Name).To(Equal("Game1"))
+					Expect(g.Holder).To(Equal(member.Nickname))
+					Expect(g.ReturnDateFormula).To(Equal("=INDIRECT(ADDRESS(ROW();COLUMN()-1))+21"))
+
+				})
 			})
 			It("must allow the user to take the game", func() {
 				mockTeleContext.EXPECT().Edit(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
@@ -645,26 +646,47 @@ var _ = Describe("Handler", func() {
 		Describe("request a list of forgotten games", func() {
 			BeforeEach(func() {
 				mockGameDatabase.EXPECT().List(gomock.Any()).Return([]acnil.Game{
+					// Must not be returned if return date is in the future
 					{
-						ID:       "1",
-						Name:     "Game1",
-						Holder:   "Other User",
-						TakeDate: time.Now(),
+						// Game due date in the future
+						ID:         "1",
+						Name:       "Game1",
+						Holder:     "Other User",
+						ReturnDate: time.Now().Add(time.Hour * 24 * 30),
 					},
+					// Must not be returned if has no holder/return date
 					{
+						// Game without due date
+						// Game without holder
 						ID:   "2",
 						Name: "Game2",
 					},
 					{
-						ID:       "3",
-						Name:     "Game3",
-						Holder:   "Other User",
-						TakeDate: time.Now().Add(-time.Hour * 24 * 30),
+						// Game due date in the past
+						ID:         "3",
+						Name:       "Game3",
+						Holder:     "Other User",
+						ReturnDate: time.Now().Add(-time.Hour * 24 * 30),
+					},
+					// Must not be returned if has no return date
+					{
+						// Game without due date
+						ID:     "4",
+						Name:   "Game4",
+						Holder: "Manual input user",
+					},
+					// Must not be returned if has no holder
+					{
+						// Game with due date
+						// game without holder
+						ID:         "4",
+						Name:       "Game4",
+						ReturnDate: time.Now().Add(-time.Hour * 24 * 30),
 					},
 				}, nil)
 			})
 
-			It("returns the games with long lease times", func() {
+			It("returns the games that return date is less than today", func() {
 				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
 					Expect(sent).To(ContainSubstring("Game3"))
 					return nil
