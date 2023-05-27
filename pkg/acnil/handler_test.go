@@ -293,6 +293,55 @@ var _ = Describe("Handler", func() {
 				Expect(err).To(BeNil())
 			})
 		})
+		Describe("Attempts to extend lease a game owned by other user", func() {
+			var (
+				game *acnil.Game
+			)
+			BeforeEach(func() {
+				game = &acnil.Game{
+					ID:         "1",
+					Name:       "Game1",
+					Holder:     "Other User",
+					TakeDate:   time.Now().Add(-21 * 24 * time.Hour),
+					ReturnDate: time.Now(),
+				}
+				mockGameDatabase.EXPECT().Get(gomock.Any(), "1", "Game1").Return(game, nil)
+				mockTeleContext.EXPECT().Data().Return(game.Data()).AnyTimes()
+				mockTeleContext.EXPECT().Message().Return(&tele.Message{
+					Sender: sender,
+					Chat: &tele.Chat{
+						Type: tele.ChatPrivate,
+					},
+				}).AnyTimes()
+			})
+			It("Must update the return date", func() {
+				mockGameDatabase.EXPECT().Update(gomock.Any(), gomock.AssignableToTypeOf(acnil.Game{})).Do(func(ctx context.Context, g acnil.Game) {
+					Expect(g.ReturnDate).To(BeTemporally(">", game.ReturnDate))
+				})
+				mockTeleContext.EXPECT().Edit(gomock.Any(), gomock.Any()).Do(func(msg string, any ...interface{}) {
+					Expect(msg).To(ContainSubstring(game.Name))
+				}).Return(nil)
+				mockTeleContext.EXPECT().Respond(gomock.Any()).Times(1)
+
+				err := h.OnExtendLease(mockTeleContext)
+				Expect(err).To(BeNil())
+			})
+			Describe("that doesn't have a take date", func() {
+				BeforeEach(func() {
+					game.TakeDate = time.Time{}
+				})
+
+				It("Must inform of the error", func() {
+					mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).Do(func(msg string, any ...interface{}) {
+						Expect(msg).To(ContainSubstring("Necesito la fecha de prestamos para poder añadir mas dias"))
+					}).Return(nil)
+					mockTeleContext.EXPECT().Respond(gomock.Any()).Times(1)
+
+					err := h.OnExtendLease(mockTeleContext)
+					Expect(err).To(BeNil())
+				})
+			})
+		})
 	})
 	Describe("An authorised member", func() {
 		var (
