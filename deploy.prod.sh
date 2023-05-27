@@ -1,5 +1,7 @@
 #!/bin/bash
 
+ginkgo ./... || exit 1
+
 mkdir bin -p
 env CGO_ENABLED=0 GOOS=linux GOARCH=arm GOARM=5 go build -o bin/acnilbot cmd/acnilbot/main.go
 
