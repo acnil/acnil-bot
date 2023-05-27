@@ -179,9 +179,8 @@ var _ = Describe("Handler", func() {
 	})
 	Describe("An administrator ", func() {
 		var (
-			newMember *acnil.Member
-			admin     *acnil.Member
-			sender    *tele.User
+			admin  *acnil.Member
+			sender *tele.User
 		)
 		BeforeEach(func() {
 			admin = &acnil.Member{
@@ -189,21 +188,25 @@ var _ = Describe("Handler", func() {
 				TelegramID:  "12345",
 				Permissions: acnil.PermissionAdmin,
 			}
+			mockMembersDatabase.EXPECT().Get(gomock.Any(), admin.TelegramIDInt()).Return(admin, nil)
 			sender = &tele.User{
 				ID:        12345,
 				FirstName: "Victor",
 				LastName:  "Perez",
 				Username:  "MetalBlueberry",
 			}
-			newMember = &acnil.Member{
-				TelegramID:  "1",
-				Nickname:    "New User",
-				Permissions: "no",
-			}
 			mockTeleContext.EXPECT().Sender().Return(sender).AnyTimes()
 		})
 		Describe("Authorises a new user to use the bot", func() {
+			var (
+				newMember *acnil.Member
+			)
 			BeforeEach(func() {
+				newMember = &acnil.Member{
+					TelegramID:  "1",
+					Nickname:    "New User",
+					Permissions: "no",
+				}
 				text := "/fauthorise"
 				mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
 				mockTeleContext.EXPECT().Message().Return(&tele.Message{
@@ -215,7 +218,6 @@ var _ = Describe("Handler", func() {
 				}).AnyTimes()
 				mockTeleContext.EXPECT().Data().Return(newMember.TelegramID)
 
-				mockMembersDatabase.EXPECT().Get(gomock.Any(), admin.TelegramIDInt()).Return(admin, nil)
 				mockMembersDatabase.EXPECT().Get(gomock.Any(), newMember.TelegramIDInt()).Return(newMember, nil)
 
 			})
@@ -238,6 +240,58 @@ var _ = Describe("Handler", func() {
 				Expect(err).To(BeNil())
 			})
 
+		})
+		Describe("request a list of forgotten games", func() {
+			BeforeEach(func() {
+				mockGameDatabase.EXPECT().List(gomock.Any()).Return([]acnil.Game{
+					// Must not be returned if return date is in the future
+					{
+						// Game due date in the future
+						ID:         "1",
+						Name:       "Game1",
+						Holder:     "Other User",
+						ReturnDate: time.Now().Add(time.Hour * 24 * 30),
+					},
+					// Must not be returned if has no holder/return date
+					{
+						// Game without due date
+						// Game without holder
+						ID:   "2",
+						Name: "Game2",
+					},
+					{
+						// Game due date in the past
+						ID:         "3",
+						Name:       "Game3",
+						Holder:     "Other User",
+						ReturnDate: time.Now().Add(-time.Hour * 24 * 30),
+					},
+					// Must not be returned if has no return date
+					{
+						// Game without due date
+						ID:     "4",
+						Name:   "Game4",
+						Holder: "Manual input user",
+					},
+					// Must not be returned if has no holder
+					{
+						// Game with due date
+						// game without holder
+						ID:         "4",
+						Name:       "Game4",
+						ReturnDate: time.Now().Add(-time.Hour * 24 * 30),
+					},
+				}, nil)
+			})
+
+			It("returns the games that return date is less than today", func() {
+				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+					Expect(sent).To(ContainSubstring("Game3"))
+					return nil
+				}).Times(1)
+				err := h.OnForgotten(mockTeleContext)
+				Expect(err).To(BeNil())
+			})
 		})
 	})
 	Describe("An authorised member", func() {
@@ -617,81 +671,6 @@ var _ = Describe("Handler", func() {
 				})
 
 				err := h.MyGames(mockTeleContext)
-				Expect(err).To(BeNil())
-			})
-		})
-	})
-	Describe("An admin", func() {
-		var (
-			member *acnil.Member
-			sender *tele.User
-		)
-
-		BeforeEach(func() {
-			member = &acnil.Member{
-				Nickname:    "MetalBlueberry",
-				TelegramID:  "12345",
-				Permissions: acnil.PermissionAdmin,
-			}
-			mockMembersDatabase.EXPECT().Get(gomock.Any(), member.TelegramIDInt()).Return(member, nil)
-			sender = &tele.User{
-				ID:        12345,
-				FirstName: "Victor",
-				LastName:  "Perez",
-				Username:  "MetalBlueberry",
-			}
-			mockTeleContext.EXPECT().Sender().Return(sender).AnyTimes()
-
-		})
-		Describe("request a list of forgotten games", func() {
-			BeforeEach(func() {
-				mockGameDatabase.EXPECT().List(gomock.Any()).Return([]acnil.Game{
-					// Must not be returned if return date is in the future
-					{
-						// Game due date in the future
-						ID:         "1",
-						Name:       "Game1",
-						Holder:     "Other User",
-						ReturnDate: time.Now().Add(time.Hour * 24 * 30),
-					},
-					// Must not be returned if has no holder/return date
-					{
-						// Game without due date
-						// Game without holder
-						ID:   "2",
-						Name: "Game2",
-					},
-					{
-						// Game due date in the past
-						ID:         "3",
-						Name:       "Game3",
-						Holder:     "Other User",
-						ReturnDate: time.Now().Add(-time.Hour * 24 * 30),
-					},
-					// Must not be returned if has no return date
-					{
-						// Game without due date
-						ID:     "4",
-						Name:   "Game4",
-						Holder: "Manual input user",
-					},
-					// Must not be returned if has no holder
-					{
-						// Game with due date
-						// game without holder
-						ID:         "4",
-						Name:       "Game4",
-						ReturnDate: time.Now().Add(-time.Hour * 24 * 30),
-					},
-				}, nil)
-			})
-
-			It("returns the games that return date is less than today", func() {
-				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
-					Expect(sent).To(ContainSubstring("Game3"))
-					return nil
-				}).Times(1)
-				err := h.OnForgotten(mockTeleContext)
 				Expect(err).To(BeNil())
 			})
 		})
