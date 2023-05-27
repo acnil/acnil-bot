@@ -60,25 +60,41 @@ type Audit struct {
 
 func (a *Audit) Run(ctx context.Context) {
 	log := logrus.WithField(ilog.FieldHandler, "Audit Run")
+	if err := a.notifyAdmins("starting audit monitoring"); err != nil {
+		log.Error("Failed to notify admins, %w", err)
+	}
 
 	err := a.Do(ctx)
 	if err != nil {
-		a.notifyAdmins(err)
 		log.Printf("Failed to update audit!! %s", err)
+		if err := a.notifyAdmins(fmt.Sprintf("Failed to run audit, %s", err.Error())); err != nil {
+			log.Error("Failed to notify admins, %w", err)
+		}
 	}
 
-	ticker := time.NewTicker(time.Hour * 12)
+	ticker := time.NewTicker(time.Hour * 1)
 
 	go func() {
 		for {
 			log.Print("Wait for ticket to track audit")
 			select {
 			case <-ticker.C:
+				start := time.Now()
 				log.Print("Update audit entry")
+
 				err := a.Do(ctx)
 				if err != nil {
-					a.notifyAdmins(err)
 					log.Printf("Failed to update audit!! %s", err)
+					if err := a.notifyAdmins(fmt.Sprintf("Failed to run audit, %s", err.Error())); err != nil {
+						log.Error("Failed to notify admins, %w", err)
+					}
+				}
+				duration := time.Now().Sub(start)
+				if duration > time.Minute {
+					log.Printf("Audit is too slow!! %s", err)
+					if err := a.notifyAdmins(fmt.Sprintf("Audit is taking too long, %s", duration.String())); err != nil {
+						log.Error("Failed to notify admins, %w", err)
+					}
 				}
 			case <-ctx.Done():
 				ticker.Stop()
@@ -171,13 +187,19 @@ func reverse[S ~[]E, E any](s S) {
 		s[i], s[j] = s[j], s[i]
 	}
 }
-func (a *Audit) notifyAdmins(err error) {
+func (a *Audit) notifyAdmins(msg string) error {
 	members, err := a.MembersDB.List(context.Background())
+	if err != nil {
+		return fmt.Errorf("Failed to get list of members, %w", err)
+	}
 	for _, m := range members {
 		if m.Permissions == PermissionAdmin {
-			a.Bot.Send(&m, fmt.Sprintf("Failed to run Audit, %s", err.Error()))
+			if _, err := a.Bot.Send(&m, msg); err != nil {
+				return err
+			}
 		}
 	}
+	return nil
 }
 
 func printDuration(log *logrus.Entry, start time.Time) {

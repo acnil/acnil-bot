@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 	"os"
 	"time"
 
@@ -11,6 +12,8 @@ import (
 )
 
 func main() {
+
+	disableAudit := os.Getenv("DISABLE_AUDIT")
 
 	credentialsFile := GetEnv("CREDENTIALS_FILE", "credentials.json")
 	sheetID := os.Getenv("SHEET_ID")
@@ -45,11 +48,15 @@ func main() {
 	}
 
 	audit := &acnil.Audit{
-		AuditDB: acnil.NewSheetAuditDatabase(srv, auditSheetID),
-		GameDB:  acnil.NewGameDatabase(srv, sheetID),
+		AuditDB:   acnil.NewSheetAuditDatabase(srv, auditSheetID),
+		GameDB:    acnil.NewGameDatabase(srv, sheetID),
+		MembersDB: acnil.NewMembersDatabase(srv, sheetID),
+		Bot:       b,
 	}
 
-	audit.Run(context.Background())
+	if disableAudit == "" {
+		audit.Run(context.Background())
+	}
 
 	handler := &acnil.Handler{
 		MembersDB: acnil.NewMembersDatabase(srv, sheetID),
@@ -59,6 +66,7 @@ func main() {
 
 	handler.Register(b)
 
+	log.Println("Application ready! listening for events")
 	b.Start()
 }
 
