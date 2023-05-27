@@ -561,7 +561,7 @@ func (h *Handler) onExtendLease(c tele.Context, member Member) error {
 
 	g = *getResult
 
-	if !g.IsHeldBy(member) {
+	if member.Permissions != PermissionAdmin && !g.IsHeldBy(member) {
 		err := c.Edit("Parece que alguien ha modificado los datos. te envío los últimos actualizados")
 		if err != nil {
 			log.Print(err)
@@ -572,6 +572,11 @@ func (h *Handler) onExtendLease(c tele.Context, member Member) error {
 		}
 		log.Info("Conflict on ExtendLease")
 		return c.Respond()
+	}
+
+	if g.TakeDate.IsZero() {
+		c.Respond()
+		return c.Send("Necesito la fecha de prestamos para poder añadir mas dias")
 	}
 
 	g.SetLeaseTimeDays(g.LeaseDays() + 21)
