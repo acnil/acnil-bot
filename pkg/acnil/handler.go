@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -115,7 +116,9 @@ func (h *Handler) Register(b *tele.Bot) {
 
 	b.Handle(tele.OnText, h.OnText)
 	b.Handle("\ftake", h.OnTake)
+	b.Handle("\ftake-all", h.OnTakeAll)
 	b.Handle("\freturn", h.OnReturn)
+	b.Handle("\freturn-all", h.OnReturnAll)
 	b.Handle("\fmore", h.OnMore)
 	b.Handle("\fauthorise", h.OnAuthorise)
 	b.Handle("\fhistory", h.OnHistory)
@@ -285,54 +288,56 @@ func (h *Handler) onText(c tele.Context, member Member) error {
 		return h.onRename(c, member)
 	}
 
-	id, err := strconv.Atoi(c.Text())
-	if err == nil {
-		getResult, err := h.GameDB.Get(context.TODO(), strconv.Itoa(id), "")
+	lines := strings.Split(c.Text(), "\n")
+
+	list := []Game{}
+	for _, line := range lines {
+		search, err := h.textSearchGame(log, c, member, line)
 		if err != nil {
-			if mmErr, ok := err.(MultipleMatchesError); ok {
-				c.Send("Parece que hay varios juegos con el mismo ID")
-				for _, item := range SendList(mmErr.Matches) {
-					c.Send(item)
+			log.WithError(err).Error("Failed to search games")
+			return c.Send("No he podido buscar el juego, inténtalo otra vez")
+		}
+		list = append(list, search...)
+	}
+
+	if len(lines) == 1 {
+		switch {
+		case len(list) <= 3:
+			for _, g := range list {
+				log.WithField("Game", g.Name).Info("Found Game")
+				err := c.Send(g.Card(), g.Buttons(member))
+				if err != nil {
+					log.Error(err)
 				}
-				return nil
 			}
-			log.WithError(err).Error("Failed to connect to GameDB")
-			return c.Send(err.Error(), mainMenuReplyMarkup(member))
-		}
-		if getResult == nil {
-			log.Info("Unable to find game by ID")
-			return c.Send("No he podido encontrar un juego con ese ID", mainMenuReplyMarkup(member))
-		}
-		log.WithField("Game", getResult.Name).Info("Found Game by ID")
-		return c.Send(getResult.Card(), getResult.Buttons(member))
-	}
-
-	list, err := h.GameDB.Find(context.TODO(), c.Text())
-	if err != nil {
-		panic(err)
-	}
-
-	switch {
-	case len(list) == 0:
-		log.Info("Unable to find game")
-		return c.Send("No he podido encontrar ningún juego con ese nombre", mainMenuReplyMarkup(member))
-	case len(list) <= 3:
-		for _, g := range list {
-			log.WithField("Game", g.Name).Info("Found Game")
-			err := c.Send(g.Card(), g.Buttons(member))
-			if err != nil {
-				log.Error(err)
-			}
-		}
-	default:
-		log.WithField("count", len(list)).Info("Found multiple games")
-		c.Send(`He encontrado varios juegos, 
-intenta darme mas detalles del juego que buscas. 
+		default:
+			log.WithField("count", len(list)).Info("Found multiple games")
+			c.Send(`He encontrado varios juegos, 
+intenta darme el nombre concreto del juego que buscas. 
 También puedes seleccionar un juego por su ID, solo dime el número de la lista.
 
 Esto es todo lo que he encontrado`, mainMenu)
+			for _, block := range SendList(list) {
+				err := c.Send(block, mainMenuReplyMarkup(member))
+				if err != nil {
+					log.Error(err)
+				}
+			}
+		}
+	} else {
+		selector := &tele.ReplyMarkup{}
+		rows := []tele.Row{}
+		rows = append(rows, selector.Row(
+			selector.Data("Devolver todos", "return-all"),
+		))
+		rows = append(rows, selector.Row(
+			selector.Data("Tomar prestados todos", "take-all"),
+		))
+
+		selector.Inline(rows...)
+
 		for _, block := range SendList(list) {
-			err := c.Send(block, mainMenuReplyMarkup(member))
+			err := c.Send(block, selector)
 			if err != nil {
 				log.Error(err)
 			}
@@ -340,6 +345,93 @@ Esto es todo lo que he encontrado`, mainMenu)
 	}
 
 	return nil
+}
+
+func (h *Handler) textSearchGame(log *logrus.Entry, c tele.Context, member Member, text string) ([]Game, error) {
+	id, err := strconv.Atoi(text)
+	if err == nil {
+		getResult, err := h.GameDB.Get(context.TODO(), strconv.Itoa(id), "")
+		if err != nil {
+			if mmErr, ok := err.(MultipleMatchesError); ok {
+				c.Send(fmt.Sprintf("Parece que hay varios juegos con el mismo ID %d", id), mainMenuReplyMarkup(member))
+				return mmErr.Matches, nil
+			}
+			return nil, fmt.Errorf("failed to connect to GameDB, %w", err)
+		}
+		if getResult == nil {
+			c.Send(fmt.Sprintf("No he encontrado ningún juego con el ID %d", id), mainMenuReplyMarkup(member))
+			return []Game{}, nil
+		}
+		return []Game{*getResult}, nil
+	}
+
+	list, err := h.GameDB.Find(context.TODO(), text)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to find game by text, %w", err)
+	}
+	if len(list) == 0 {
+		c.Send(fmt.Sprintf("No he podido encontrar ningún juego con el nombre %s", text), mainMenuReplyMarkup(member))
+	}
+	if len(list) > 1 {
+		c.Send(fmt.Sprintf("He encontrado %d juegos con el nombre %s", len(list), text), mainMenuReplyMarkup(member))
+	}
+	return list, nil
+
+}
+
+func (h *Handler) OnTakeAll(c tele.Context) error {
+	return h.IsAuthorized(h.onTakeAll)(c)
+}
+
+var gameLineMatch = regexp.MustCompile(`[🔴🟢]\s0*(.*?):\s(.*?)(\s\((.*)\))?$`)
+
+func (h *Handler) onTakeAll(c tele.Context, member Member) error {
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Take All"), c.Sender())
+
+	allGames, err := h.GameDB.List(context.Background())
+	if err != nil {
+		log.WithError(err).Error("Failed to get game from DB")
+		c.Send("No he podido buscar el juego en la base de datos, inténtalo otra vez")
+		return nil
+	}
+
+	games := Games{}
+
+	lines := strings.Split(c.Message().Text, "\n")
+	for _, line := range lines {
+		fragments := gameLineMatch.FindStringSubmatch(line)
+		if len(fragments) != 5 {
+			log.Errorf("Invalid number of matches, %s, [%s]", line, strings.Join(fragments, "|"))
+			return c.Edit("Datos inválidos, vuelve a realizar la búsqueda")
+		}
+		id := fragments[1]
+		name := fragments[2]
+		expectedHolder := fragments[4]
+
+		g, err := Games(allGames).Get(id, name)
+		if err != nil {
+			return c.Send(fmt.Sprintf("Hay multiples coincidencias para el juego %s, %s.\n%s\nNo puedo realizar la operación", id, name, err.(MultipleMatchesError).Matches))
+		}
+		if g == nil {
+			return c.Send(fmt.Sprintf("No he encontrado el juego %s: \"%s\", ¿Se ha modificado el excel? vuelve a darme la lista", id, name))
+		}
+
+		if g.Holder != expectedHolder {
+			c.Send("Parece que los datos han cambiado, revisa la información y vuelve a intentarlo")
+			return h.bulk(c.Edit, games)
+		}
+
+		g.Holder = member.Nickname
+		games = append(games, *g)
+	}
+
+	if err := h.GameDB.Update(context.Background(), games...); err != nil {
+		log.WithError(err).Error("Failed to update gameDB")
+		c.Send("No he podido actualizar la base de datos, vuelve a intentarlo")
+	}
+
+	return h.bulk(c.Edit, games)
+
 }
 
 func (h *Handler) OnTake(c tele.Context) error {
@@ -392,6 +484,57 @@ func (h *Handler) onTake(c tele.Context, member Member) error {
 	c.Edit(g.Card(), g.Buttons(member))
 	log.Info("Game taken")
 	return c.Respond()
+}
+
+func (h *Handler) OnReturnAll(c tele.Context) error {
+	return h.IsAuthorized(h.onReturnAll)(c)
+}
+
+func (h *Handler) onReturnAll(c tele.Context, member Member) error {
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Return All"), c.Sender())
+
+	allGames, err := h.GameDB.List(context.Background())
+	if err != nil {
+		log.WithError(err).Error("Failed to get game from DB")
+		c.Send("No he podido buscar el juego en la base de datos, inténtalo otra vez")
+		return nil
+	}
+	games := Games{}
+
+	lines := strings.Split(c.Message().Text, "\n")
+	for _, line := range lines {
+		fragments := gameLineMatch.FindStringSubmatch(line)
+		if len(fragments) != 5 {
+			log.Errorf("Invalid number of matches, %s, [%s]", line, strings.Join(fragments, "|"))
+			return c.Edit("Datos inválidos, vuelve a realizar la búsqueda")
+		}
+		id := fragments[1]
+		name := fragments[2]
+		expectedHolder := fragments[4]
+
+		g, err := Games(allGames).Get(id, name)
+		if err != nil {
+			return c.Send(fmt.Sprintf("Hay multiples coincidencias para el juego %s, %s.\n%s\nNo puedo realizar la operación", id, name, err.(MultipleMatchesError).Matches))
+		}
+		if g == nil {
+			return c.Send(fmt.Sprintf("No he encontrado el juego %s: \"%s\", ¿Se ha modificado el excel? vuelve a darme la lista", id, name))
+		}
+
+		if g.Holder != expectedHolder {
+			c.Send("Parece que los datos han cambiado, revisa la información y vuelve a intentarlo")
+			return h.bulk(c.Edit, games)
+		}
+
+		g.Holder = ""
+		games = append(games, *g)
+	}
+
+	if err := h.GameDB.Update(context.Background(), games...); err != nil {
+		log.WithError(err).Error("Failed to update gameDB")
+		c.Send("No he podido actualizar la base de datos, vuelve a intentarlo")
+	}
+
+	return h.bulk(c.Edit, games)
 }
 
 func (h *Handler) OnReturn(c tele.Context) error {
@@ -624,18 +767,20 @@ func (h *Handler) myGames(c tele.Context, member Member) error {
 	}
 
 	if len(myGames) == 0 {
+		log.Info("Not games found for the user")
 		return c.Send("No tienes ningún juego a tu nombre")
 	}
 
-	for _, g := range myGames {
-		log.WithField("Game", g.Name).Info("Found Game owned by user")
-		err := c.Send(g.Card(), g.Buttons(member))
-		if err != nil {
-			log.Error(err)
-		}
-	}
+	// for _, g := range myGames {
+	// 	log.WithField("Game", g.Name).Info("Found Game owned by user")
+	// 	err := c.Send(g.Card(), g.Buttons(member))
+	// 	if err != nil {
+	// 		log.Error(err)
+	// 	}
+	// }
 
-	return nil
+	log.Info("Sending list to user")
+	return h.bulk(c.Send, myGames)
 }
 
 func (h *Handler) InCentro(c tele.Context, member Member) error {
@@ -675,6 +820,28 @@ func (h *Handler) inLocation(c tele.Context, member Member, location string) err
 		}
 	}
 
+	return nil
+}
+
+// Bulk sends a message with bulk operations for the list of games
+func (h *Handler) bulk(action func(what interface{}, opts ...interface{}) error, games []Game) error {
+	selector := &tele.ReplyMarkup{}
+	rows := []tele.Row{}
+	rows = append(rows, selector.Row(
+		selector.Data("Devolver todos", "return-all"),
+	))
+	rows = append(rows, selector.Row(
+		selector.Data("Tomar prestados todos", "take-all"),
+	))
+
+	selector.Inline(rows...)
+
+	for _, block := range SendList(games) {
+		err := action(block, selector)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

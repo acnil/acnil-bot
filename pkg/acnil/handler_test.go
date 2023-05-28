@@ -6,12 +6,18 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/metalblueberry/acnil-bot/pkg/acnil"
+	. "github.com/metalblueberry/acnil-bot/pkg/acnil/matchers"
 	"github.com/metalblueberry/acnil-bot/pkg/acnil/mock_acnil"
 	"github.com/metalblueberry/acnil-bot/pkg/acnil/mock_telebot_v3"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	tele "gopkg.in/telebot.v3"
+)
+
+var (
+	redDot   = "🔴"
+	greenDot = "🟢"
 )
 
 //go:generate mockgen -source=handler.go -destination mock_acnil/mock.go
@@ -414,6 +420,44 @@ var _ = Describe("Handler", func() {
 				Expect(err).ToNot(HaveOccurred())
 			})
 		})
+		Describe("When Text is sent with multiple lines", func() {
+			BeforeEach(func() {
+				mockGameDatabase.EXPECT().Find(gomock.Any(), "Game1").Return([]acnil.Game{
+					{
+						ID:   "1",
+						Name: "Game1",
+					},
+				}, nil)
+				mockGameDatabase.EXPECT().Find(gomock.Any(), "Game2").Return([]acnil.Game{
+					{
+						ID:   "2",
+						Name: "Game2",
+					},
+				}, nil)
+				mockGameDatabase.EXPECT().Get(gomock.Any(), "3", "").Return(&acnil.Game{
+					ID:   "3",
+					Name: "Game3",
+				}, nil)
+				text := "Game1\nGame2\n3"
+				mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
+				mockTeleContext.EXPECT().Message().Return(&tele.Message{
+					Sender: sender,
+					Text:   text,
+					Chat: &tele.Chat{
+						Type: tele.ChatPrivate,
+					},
+				}).AnyTimes()
+			})
+			It("Should reply with game details for each line", func() {
+				mockTeleContext.EXPECT().Send(ContainsString("Game1"), gomock.Any()).Times(1).Do(func(sent string, opt ...interface{}) {
+					Expect(sent).To(ContainSubstring("Game1"))
+					Expect(sent).To(ContainSubstring("Game2"))
+					Expect(sent).To(ContainSubstring("Game3"))
+				})
+				err := h.OnText(mockTeleContext)
+				Expect(err).ToNot(HaveOccurred())
+			})
+		})
 		Describe("When Text is an ID", func() {
 			BeforeEach(func() {
 				text := "1"
@@ -634,7 +678,7 @@ var _ = Describe("Handler", func() {
 				}, nil)
 				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
 					Expect(sent).To(ContainSubstring("Game2"))
-					Expect(sent).To(ContainSubstring("Ocupado"))
+					Expect(sent).To(ContainSubstring(redDot))
 					return nil
 				})
 
@@ -661,7 +705,7 @@ var _ = Describe("Handler", func() {
 				}, nil)
 				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
 					Expect(sent).To(ContainSubstring("Game2"))
-					Expect(sent).To(ContainSubstring("Ocupado"))
+					Expect(sent).To(ContainSubstring(redDot))
 					return nil
 				})
 
@@ -688,7 +732,7 @@ var _ = Describe("Handler", func() {
 				}, nil)
 				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
 					Expect(sent).To(ContainSubstring("Game2"))
-					Expect(sent).To(ContainSubstring("Ocupado"))
+					Expect(sent).To(ContainSubstring(redDot))
 					return nil
 				})
 
@@ -715,7 +759,7 @@ var _ = Describe("Handler", func() {
 				}, nil)
 				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
 					Expect(sent).To(ContainSubstring("Game2"))
-					Expect(sent).To(ContainSubstring("Ocupado"))
+					Expect(sent).To(ContainSubstring(redDot))
 					return nil
 				})
 

@@ -223,3 +223,41 @@ func (mr *MockSenderMockRecorder) Send(to, what interface{}, opts ...interface{}
 	varargs := append([]interface{}{to, what}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockSender)(nil).Send), varargs...)
 }
+
+// MockROAudit is a mock of ROAudit interface.
+type MockROAudit struct {
+	ctrl     *gomock.Controller
+	recorder *MockROAuditMockRecorder
+}
+
+// MockROAuditMockRecorder is the mock recorder for MockROAudit.
+type MockROAuditMockRecorder struct {
+	mock *MockROAudit
+}
+
+// NewMockROAudit creates a new mock instance.
+func NewMockROAudit(ctrl *gomock.Controller) *MockROAudit {
+	mock := &MockROAudit{ctrl: ctrl}
+	mock.recorder = &MockROAuditMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockROAudit) EXPECT() *MockROAuditMockRecorder {
+	return m.recorder
+}
+
+// Find mocks base method.
+func (m *MockROAudit) Find(ctx context.Context, query acnil.Query) ([]acnil.AuditEntry, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", ctx, query)
+	ret0, _ := ret[0].([]acnil.AuditEntry)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockROAuditMockRecorder) Find(ctx, query interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockROAudit)(nil).Find), ctx, query)
+}
