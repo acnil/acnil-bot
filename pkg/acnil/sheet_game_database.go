@@ -42,38 +42,13 @@ func (db *SheetGameDatabase) rowReadRange(row int) string {
 	return fmt.Sprintf("%s!%d:%d", db.Sheet, row, row)
 }
 
-type MultipleMatchesError struct {
-	Matches []Game
-}
-
-func (err MultipleMatchesError) Error() string {
-	return "Wops! Parece que hay mas de un juego con este id y nombre, modifica el excel manualmente para asegurar que no hay nombres idénticos."
-}
-
 func (db *SheetGameDatabase) Get(ctx context.Context, id string, name string) (*Game, error) {
 	games, err := db.List(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	matches := []Game{}
-
-	for _, g := range games {
-		if g.Matches(id, name) {
-			matches = append(matches, g)
-		}
-	}
-	if len(matches) == 0 {
-		return nil, nil
-	}
-
-	if len(matches) != 1 {
-		return nil, MultipleMatchesError{
-			Matches: matches,
-		}
-	}
-
-	return &matches[0], nil
+	return Games(games).Get(id, name)
 }
 
 func (db *SheetGameDatabase) List(ctx context.Context) ([]Game, error) {
