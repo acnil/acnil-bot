@@ -262,6 +262,19 @@ func (g Game) Equals(other Game) bool {
 		g.BGG == other.BGG
 }
 
+// Take sets the game holder to the given user and registers the take date
+func (g *Game) Take(holder string) {
+	g.Holder = holder
+	g.TakeDate = time.Now()
+	g.SetLeaseTimeDays(21)
+}
+
+// Return marks the game as returned
+func (g *Game) Return() {
+	g.Holder = ""
+	g.TakeDate = time.Time{}
+}
+
 type Games []Game
 
 type MultipleMatchesError struct {
