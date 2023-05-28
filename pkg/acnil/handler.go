@@ -826,12 +826,17 @@ func (h *Handler) inLocation(c tele.Context, member Member, location string) err
 func (h *Handler) bulk(action func(what interface{}, opts ...interface{}) error, games []Game) error {
 	selector := &tele.ReplyMarkup{}
 	rows := []tele.Row{}
-	rows = append(rows, selector.Row(
-		selector.Data("Devolver todos", "return-all"),
-	))
-	rows = append(rows, selector.Row(
-		selector.Data("Tomar prestados todos", "take-all"),
-	))
+
+	if Games(games).CanReturn() {
+		rows = append(rows, selector.Row(
+			selector.Data("Devolver todos", "return-all"),
+		))
+	}
+	if Games(games).CanTake() {
+		rows = append(rows, selector.Row(
+			selector.Data("Tomar prestados todos", "take-all"),
+		))
+	}
 
 	selector.Inline(rows...)
 
