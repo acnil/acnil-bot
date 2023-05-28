@@ -415,15 +415,22 @@ func (h *Handler) onTakeAll(c tele.Context, member Member) error {
 		name := fragments[2]
 		expectedHolder := fragments[4]
 
+		log.
+			WithField("Game", name).
+			WithField("ID", id)
+
 		g, err := Games(allGames).Get(id, name)
 		if err != nil {
+			log.Info("Multiple matches for the game")
 			return c.Send(fmt.Sprintf("Hay multiples coincidencias para el juego %s, %s.\n%s\nNo puedo realizar la operación", id, name, err.(MultipleMatchesError).Matches))
 		}
 		if g == nil {
+			log.Info("Game not found")
 			return c.Send(fmt.Sprintf("No he encontrado el juego %s: \"%s\", ¿Se ha modificado el excel? vuelve a darme la lista", id, name))
 		}
 
 		if g.Holder != expectedHolder {
+			log.Info("It has been modified!")
 			hasBeenModified = true
 		}
 
@@ -431,11 +438,17 @@ func (h *Handler) onTakeAll(c tele.Context, member Member) error {
 	}
 
 	if hasBeenModified {
+		log.Info("Detected conflict on TakeAll")
 		c.Send("Parece que los datos han cambiado, revisa la información y vuelve a intentarlo")
 		return h.bulk(c.Edit, games)
 	}
 
+	log.Info("Taking all games")
 	for i := range games {
+		log.
+			WithField("Game", games[i].Name).
+			WithField("ID", games[i].ID).
+			Info("Taking game")
 		games[i].Take(member.Nickname)
 	}
 
@@ -456,7 +469,9 @@ func (h *Handler) onTake(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Take"), c.Sender())
 
 	g := NewGameFromData(c.Data())
-	log = log.WithField("Game", g.Name)
+	log = log.
+		WithField("Game", g.Name).
+		WithField("ID", g.ID)
 
 	getResult, err := h.GameDB.Get(context.TODO(), g.ID, g.Name)
 	if err != nil {
@@ -527,15 +542,22 @@ func (h *Handler) onReturnAll(c tele.Context, member Member) error {
 		name := fragments[2]
 		expectedHolder := fragments[4]
 
+		log.
+			WithField("Game", name).
+			WithField("ID", id)
+
 		g, err := Games(allGames).Get(id, name)
 		if err != nil {
+			log.Info("Multiple matches for the game")
 			return c.Send(fmt.Sprintf("Hay multiples coincidencias para el juego %s, %s.\n%s\nNo puedo realizar la operación", id, name, err.(MultipleMatchesError).Matches))
 		}
 		if g == nil {
+			log.Info("Game not found")
 			return c.Send(fmt.Sprintf("No he encontrado el juego %s: \"%s\", ¿Se ha modificado el excel? vuelve a darme la lista", id, name))
 		}
 
 		if g.Holder != expectedHolder {
+			log.Info("It has been modified!")
 			hasBeenModified = true
 		}
 
@@ -543,11 +565,17 @@ func (h *Handler) onReturnAll(c tele.Context, member Member) error {
 	}
 
 	if hasBeenModified {
+		log.Info("Detected conflict on ReturnAll")
 		c.Send("Parece que los datos han cambiado, revisa la información y vuelve a intentarlo")
 		return h.bulk(c.Edit, games)
 	}
 
+	log.Info("Returning all games")
 	for i := range games {
+		log.
+			WithField("Game", games[i].Name).
+			WithField("ID", games[i].ID).
+			Info("Return game")
 		games[i].Return()
 	}
 
@@ -567,7 +595,9 @@ func (h *Handler) onReturn(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Return"), c.Sender())
 
 	g := NewGameFromData(c.Data())
-	log = log.WithField("Game", g.Name)
+	log = log.
+		WithField("Game", g.Name).
+		WithField("ID", g.ID)
 
 	getResult, err := h.GameDB.Get(context.TODO(), g.ID, g.Name)
 	if err != nil {
