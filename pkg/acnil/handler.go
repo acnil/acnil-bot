@@ -770,14 +770,6 @@ func (h *Handler) myGames(c tele.Context, member Member) error {
 		return c.Send("No tienes ningún juego a tu nombre")
 	}
 
-	// for _, g := range myGames {
-	// 	log.WithField("Game", g.Name).Info("Found Game owned by user")
-	// 	err := c.Send(g.Card(), g.Buttons(member))
-	// 	if err != nil {
-	// 		log.Error(err)
-	// 	}
-	// }
-
 	log.Info("Sending list to user")
 	return h.bulk(c.Send, myGames)
 }
