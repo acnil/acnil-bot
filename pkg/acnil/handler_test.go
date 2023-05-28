@@ -427,17 +427,17 @@ var _ = Describe("Handler", func() {
 						ID:   "1",
 						Name: "Game1",
 					},
-				}, nil)
+				}, nil).Times(1)
 				mockGameDatabase.EXPECT().Find(gomock.Any(), "Game2").Return([]acnil.Game{
 					{
 						ID:   "2",
 						Name: "Game2",
 					},
-				}, nil)
+				}, nil).Times(1)
 				mockGameDatabase.EXPECT().Get(gomock.Any(), "3", "").Return(&acnil.Game{
 					ID:   "3",
 					Name: "Game3",
-				}, nil)
+				}, nil).Times(1)
 				text := "Game1\nGame2\n3"
 				mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
 				mockTeleContext.EXPECT().Message().Return(&tele.Message{
