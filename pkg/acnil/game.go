@@ -305,3 +305,23 @@ func (games Games) Get(id string, name string) (*Game, error) {
 
 	return &matches[0], nil
 }
+
+// CanReturn returns true if at least one game of the list can be returned
+func (games Games) CanReturn() bool {
+	for i := range games {
+		if games[i].Holder != "" {
+			return true
+		}
+	}
+	return false
+}
+
+// CanTake returns true if at least one game of the list can be taken
+func (games Games) CanTake() bool {
+	for i := range games {
+		if games[i].Holder == "" {
+			return true
+		}
+	}
+	return false
+}
