@@ -427,14 +427,16 @@ func (h *Handler) onTakeAll(c tele.Context, member Member) error {
 			hasBeenModified = true
 		}
 
-		g.Take(member.Nickname)
-
 		games = append(games, *g)
 	}
 
 	if hasBeenModified {
 		c.Send("Parece que los datos han cambiado, revisa la información y vuelve a intentarlo")
 		return h.bulk(c.Edit, games)
+	}
+
+	for i := range games {
+		games[i].Take(member.Nickname)
 	}
 
 	if err := h.GameDB.Update(context.Background(), games...); err != nil {
@@ -537,14 +539,16 @@ func (h *Handler) onReturnAll(c tele.Context, member Member) error {
 			hasBeenModified = true
 		}
 
-		g.Return()
-
 		games = append(games, *g)
 	}
 
 	if hasBeenModified {
 		c.Send("Parece que los datos han cambiado, revisa la información y vuelve a intentarlo")
 		return h.bulk(c.Edit, games)
+	}
+
+	for i := range games {
+		games[i].Return()
 	}
 
 	if err := h.GameDB.Update(context.Background(), games...); err != nil {
