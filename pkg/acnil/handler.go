@@ -8,7 +8,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/metalblueberry/acnil-bot/pkg/ilog"
 	"github.com/sirupsen/logrus"
@@ -421,7 +420,8 @@ func (h *Handler) onTakeAll(c tele.Context, member Member) error {
 			return h.bulk(c.Edit, games)
 		}
 
-		g.Holder = member.Nickname
+		g.Take(member.Nickname)
+
 		games = append(games, *g)
 	}
 
@@ -470,9 +470,8 @@ func (h *Handler) onTake(c tele.Context, member Member) error {
 		log.Info("Conflict on Take")
 		return c.Respond()
 	}
-	g.Holder = member.Nickname
-	g.TakeDate = time.Now()
-	g.SetLeaseTimeDays(21)
+
+	g.Take(member.Nickname)
 
 	err = h.GameDB.Update(context.TODO(), g)
 	if err != nil {
@@ -525,7 +524,8 @@ func (h *Handler) onReturnAll(c tele.Context, member Member) error {
 			return h.bulk(c.Edit, games)
 		}
 
-		g.Holder = ""
+		g.Return()
+
 		games = append(games, *g)
 	}
 
@@ -574,8 +574,7 @@ func (h *Handler) onReturn(c tele.Context, member Member) error {
 		return c.Respond()
 	}
 
-	g.Holder = ""
-	g.TakeDate = time.Time{}
+	g.Return()
 
 	err = h.GameDB.Update(context.TODO(), g)
 	if err != nil {
