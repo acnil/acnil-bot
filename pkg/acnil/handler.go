@@ -346,19 +346,23 @@ Esto es todo lo que he encontrado`, mainMenu)
 	return nil
 }
 
-var mayBeAnID = regexp.MustCompile(`\d+\w*`)
+var mayBeAnID = regexp.MustCompile(`^\d+\w*$`)
+var isAnIDForSure = regexp.MustCompile(`^\d+$`)
 
 func (h *Handler) textSearchGame(log *logrus.Entry, c tele.Context, member Member, text string) ([]Game, error) {
-	list, err := h.GameDB.Find(context.TODO(), text)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to find game by text, %w", err)
-	}
-	if len(list) > 1 {
-		c.Send(fmt.Sprintf("He encontrado %d juegos con el nombre %s", len(list), text), mainMenuReplyMarkup(member))
-		return list, nil
-	}
-	if len(list) == 1 {
-		return list, nil
+
+	if !isAnIDForSure.MatchString(text) {
+		list, err := h.GameDB.Find(context.TODO(), text)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to find game by text, %w", err)
+		}
+		if len(list) > 1 {
+			c.Send(fmt.Sprintf("He encontrado %d juegos con el nombre %s", len(list), text), mainMenuReplyMarkup(member))
+			return list, nil
+		}
+		if len(list) == 1 {
+			return list, nil
+		}
 	}
 
 	if mayBeAnID.MatchString(text) {
@@ -366,21 +370,20 @@ func (h *Handler) textSearchGame(log *logrus.Entry, c tele.Context, member Membe
 		getResult, err := h.GameDB.Get(context.TODO(), id, "")
 		if err != nil {
 			if mmErr, ok := err.(MultipleMatchesError); ok {
-				c.Send(fmt.Sprintf("Parece que hay varios juegos con el mismo ID %d", id), mainMenuReplyMarkup(member))
+				c.Send(fmt.Sprintf("Parece que hay varios juegos con el mismo ID %s", id), mainMenuReplyMarkup(member))
 				return mmErr.Matches, nil
 			}
 			return nil, fmt.Errorf("failed to connect to GameDB, %w", err)
 		}
 		if getResult == nil {
-			c.Send(fmt.Sprintf("No he encontrado ningún juego con el ID %d", id), mainMenuReplyMarkup(member))
+			c.Send(fmt.Sprintf("No he encontrado ningún juego con el ID %s", id), mainMenuReplyMarkup(member))
 			return []Game{}, nil
 		}
 		return []Game{*getResult}, nil
 	}
 
 	c.Send(fmt.Sprintf("No he podido encontrar ningún juego con el nombre %s", text), mainMenuReplyMarkup(member))
-
-	return list, nil
+	return []Game{}, nil
 
 }
 
