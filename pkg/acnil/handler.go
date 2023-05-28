@@ -346,10 +346,24 @@ Esto es todo lo que he encontrado`, mainMenu)
 	return nil
 }
 
+var mayBeAnID = regexp.MustCompile(`\d+\w*`)
+
 func (h *Handler) textSearchGame(log *logrus.Entry, c tele.Context, member Member, text string) ([]Game, error) {
-	id, err := strconv.Atoi(text)
-	if err == nil {
-		getResult, err := h.GameDB.Get(context.TODO(), strconv.Itoa(id), "")
+	list, err := h.GameDB.Find(context.TODO(), text)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to find game by text, %w", err)
+	}
+	if len(list) > 1 {
+		c.Send(fmt.Sprintf("He encontrado %d juegos con el nombre %s", len(list), text), mainMenuReplyMarkup(member))
+		return list, nil
+	}
+	if len(list) == 1 {
+		return list, nil
+	}
+
+	if mayBeAnID.MatchString(text) {
+		id := strings.TrimLeft(text, "0")
+		getResult, err := h.GameDB.Get(context.TODO(), id, "")
 		if err != nil {
 			if mmErr, ok := err.(MultipleMatchesError); ok {
 				c.Send(fmt.Sprintf("Parece que hay varios juegos con el mismo ID %d", id), mainMenuReplyMarkup(member))
@@ -364,16 +378,8 @@ func (h *Handler) textSearchGame(log *logrus.Entry, c tele.Context, member Membe
 		return []Game{*getResult}, nil
 	}
 
-	list, err := h.GameDB.Find(context.TODO(), text)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to find game by text, %w", err)
-	}
-	if len(list) == 0 {
-		c.Send(fmt.Sprintf("No he podido encontrar ningún juego con el nombre %s", text), mainMenuReplyMarkup(member))
-	}
-	if len(list) > 1 {
-		c.Send(fmt.Sprintf("He encontrado %d juegos con el nombre %s", len(list), text), mainMenuReplyMarkup(member))
-	}
+	c.Send(fmt.Sprintf("No he podido encontrar ningún juego con el nombre %s", text), mainMenuReplyMarkup(member))
+
 	return list, nil
 
 }
@@ -386,6 +392,7 @@ var gameLineMatch = regexp.MustCompile(`[🔴🟢]\s0*(.*?):\s(.*?)(\s\((.*)\))?
 
 func (h *Handler) onTakeAll(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Take All"), c.Sender())
+	defer c.Respond()
 
 	allGames, err := h.GameDB.List(context.Background())
 	if err != nil {
@@ -395,6 +402,7 @@ func (h *Handler) onTakeAll(c tele.Context, member Member) error {
 	}
 
 	games := Games{}
+	hasBeenModified := false
 
 	lines := strings.Split(c.Message().Text, "\n")
 	for _, line := range lines {
@@ -416,13 +424,17 @@ func (h *Handler) onTakeAll(c tele.Context, member Member) error {
 		}
 
 		if g.Holder != expectedHolder {
-			c.Send("Parece que los datos han cambiado, revisa la información y vuelve a intentarlo")
-			return h.bulk(c.Edit, games)
+			hasBeenModified = true
 		}
 
 		g.Take(member.Nickname)
 
 		games = append(games, *g)
+	}
+
+	if hasBeenModified {
+		c.Send("Parece que los datos han cambiado, revisa la información y vuelve a intentarlo")
+		return h.bulk(c.Edit, games)
 	}
 
 	if err := h.GameDB.Update(context.Background(), games...); err != nil {
@@ -491,6 +503,7 @@ func (h *Handler) OnReturnAll(c tele.Context) error {
 
 func (h *Handler) onReturnAll(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Return All"), c.Sender())
+	defer c.Respond()
 
 	allGames, err := h.GameDB.List(context.Background())
 	if err != nil {
@@ -499,6 +512,7 @@ func (h *Handler) onReturnAll(c tele.Context, member Member) error {
 		return nil
 	}
 	games := Games{}
+	hasBeenModified := false
 
 	lines := strings.Split(c.Message().Text, "\n")
 	for _, line := range lines {
@@ -520,13 +534,17 @@ func (h *Handler) onReturnAll(c tele.Context, member Member) error {
 		}
 
 		if g.Holder != expectedHolder {
-			c.Send("Parece que los datos han cambiado, revisa la información y vuelve a intentarlo")
-			return h.bulk(c.Edit, games)
+			hasBeenModified = true
 		}
 
 		g.Return()
 
 		games = append(games, *g)
+	}
+
+	if hasBeenModified {
+		c.Send("Parece que los datos han cambiado, revisa la información y vuelve a intentarlo")
+		return h.bulk(c.Edit, games)
 	}
 
 	if err := h.GameDB.Update(context.Background(), games...); err != nil {
