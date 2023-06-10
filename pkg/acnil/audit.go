@@ -76,7 +76,7 @@ func (a *Audit) Run(ctx context.Context) {
 
 	go func() {
 		for {
-			log.Print("Wait for ticket to track audit")
+			log.Print("Wait for tick to track audit")
 			select {
 			case <-ticker.C:
 				start := time.Now()
