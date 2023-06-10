@@ -86,7 +86,7 @@ type Game struct {
 	TakeDate   time.Time `col:"5"`
 	ReturnDate time.Time `col:"6,ro"`
 	// ReturnDateFormula is the raw formula in the cell, this exists to allow reading the value but setting the formula
-	ReturnDateFormula string `col:"6,wo"`
+	ReturnDateFormula *string `col:"6,wo"`
 
 	Price     string `col:"7"`
 	Publisher string `col:"8"`
@@ -136,7 +136,8 @@ func (g *Game) SetLeaseTimeDays(days int) {
 	if days < 0 {
 		panic("lease time days must be greater than zero")
 	}
-	g.ReturnDateFormula = fmt.Sprintf("=INDIRECT(ADDRESS(ROW();COLUMN()-1))+%d", days)
+	formula := fmt.Sprintf("=INDIRECT(ADDRESS(ROW();COLUMN()-1))+%d", days)
+	g.ReturnDateFormula = &formula
 	g.ReturnDate = g.TakeDate.Add(time.Hour * 24 * time.Duration(days))
 }
 

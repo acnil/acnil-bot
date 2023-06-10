@@ -504,7 +504,7 @@ var _ = Describe("Handler", func() {
 					Expect(g.ID).To(Equal("1"))
 					Expect(g.Name).To(Equal("Game1"))
 					Expect(g.Holder).To(Equal(member.Nickname))
-					Expect(g.ReturnDateFormula).To(Equal("=INDIRECT(ADDRESS(ROW();COLUMN()-1))+21"))
+					Expect(g.ReturnDateFormula).To(HaveValue(Equal("=INDIRECT(ADDRESS(ROW();COLUMN()-1))+21")))
 
 				})
 			})
