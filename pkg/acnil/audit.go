@@ -220,8 +220,8 @@ func (a *Audit) rebuildSnapshot(ctx context.Context, log *logrus.Entry) error {
 			return err
 		}
 	}
-	log.WithField("audit lenght", len(entries)).
-		WithField("snapshot_lenght", len(a.snapshot)).
+	log.WithField("audit length", len(entries)).
+		WithField("snapshot_length", len(a.snapshot)).
 		Info("Rebuilding snapshot from audit events")
 	return nil
 }
