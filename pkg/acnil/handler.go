@@ -290,7 +290,7 @@ func (h *Handler) onText(c tele.Context, member Member) error {
 	gameList, err := h.GameDB.List(context.Background())
 	if err != nil {
 		log.WithError(err).Error("Failed to cache game data")
-		return c.Send("Wops! Algo ha ido mal, vuelve a intentarlo en unos momentos")
+		return c.Send("Wops! Algo ha ido mal, vuelve a intentarlo en unos momentos. Si el problema persiste, Avisa a @MetalBlueberry")
 	}
 
 	lines := strings.Split(c.Text(), "\n")
