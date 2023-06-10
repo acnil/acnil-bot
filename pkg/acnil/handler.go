@@ -287,11 +287,17 @@ func (h *Handler) onText(c tele.Context, member Member) error {
 		return h.onRename(c, member)
 	}
 
+	gameList, err := h.GameDB.List(context.Background())
+	if err != nil {
+		log.WithError(err).Error("Failed to cache game data")
+		return c.Send("Wops! Algo ha ido mal, vuelve a intentarlo en unos momentos")
+	}
+
 	lines := strings.Split(c.Text(), "\n")
 
-	list := []Game{}
+	list := Games{}
 	for _, line := range lines {
-		search, err := h.textSearchGame(log, c, member, line)
+		search, err := h.textSearchGame(log, c, gameList, member, line)
 		if err != nil {
 			log.WithError(err).Error("Failed to search games")
 			return c.Send("No he podido buscar el juego, inténtalo otra vez")
@@ -324,6 +330,17 @@ Esto es todo lo que he encontrado`, mainMenu)
 			}
 		}
 	} else {
+		duplicate, list := list.FindDuplicates()
+		if len(duplicate) > 0 {
+			c.Send("Parece que los siguientes elementos están duplicados en la lista que me has pasado")
+			for _, block := range SendList(duplicate) {
+				err := c.Send(block)
+				if err != nil {
+					log.Error(err)
+				}
+			}
+		}
+
 		selector := &tele.ReplyMarkup{}
 		rows := []tele.Row{}
 		rows = append(rows, selector.Row(
@@ -349,13 +366,33 @@ Esto es todo lo que he encontrado`, mainMenu)
 var mayBeAnID = regexp.MustCompile(`^\d+\w*$`)
 var isAnIDForSure = regexp.MustCompile(`^\d+$`)
 
-func (h *Handler) textSearchGame(log *logrus.Entry, c tele.Context, member Member, text string) ([]Game, error) {
+func (h *Handler) textSearchGame(log *logrus.Entry, c tele.Context, gameList Games, member Member, text string) ([]Game, error) {
+
+	if gameLineMatch.MatchString(text) {
+		game, err := NewGameFromLine(text)
+		if err != nil {
+			log.WithError(err).Error("Failed to convert line to a game")
+			c.Send("Esto no debería ocurrir, avisa a victor")
+			return []Game{}, nil
+		}
+
+		g, err := gameList.Get(game.ID, game.Name)
+		if err != nil {
+			if mmErr, ok := err.(MultipleMatchesError); ok {
+				c.Send(fmt.Sprintf("Parece que hay varios juegos con el mismo ID %s Nombre %s", game.ID, game.Name), mainMenuReplyMarkup(member))
+				return mmErr.Matches, nil
+			}
+			return []Game{}, nil
+		}
+		if g == nil {
+			c.Send(fmt.Sprintf("No he encontrado ningún juego con ID %s, nombre %s", game.ID, game.Name), mainMenuReplyMarkup(member))
+			return []Game{}, nil
+		}
+		return []Game{*g}, nil
+	}
 
 	if !isAnIDForSure.MatchString(text) {
-		list, err := h.GameDB.Find(context.TODO(), text)
-		if err != nil {
-			return nil, fmt.Errorf("Failed to find game by text, %w", err)
-		}
+		list := gameList.Find(text)
 		if len(list) > 1 {
 			c.Send(fmt.Sprintf("He encontrado %d juegos con el nombre %s", len(list), text), mainMenuReplyMarkup(member))
 			return list, nil
@@ -367,7 +404,7 @@ func (h *Handler) textSearchGame(log *logrus.Entry, c tele.Context, member Membe
 
 	if mayBeAnID.MatchString(text) {
 		id := strings.TrimLeft(text, "0")
-		getResult, err := h.GameDB.Get(context.TODO(), id, "")
+		getResult, err := gameList.Get(id, "")
 		if err != nil {
 			if mmErr, ok := err.(MultipleMatchesError); ok {
 				c.Send(fmt.Sprintf("Parece que hay varios juegos con el mismo ID %s", id), mainMenuReplyMarkup(member))
@@ -391,8 +428,6 @@ func (h *Handler) OnTakeAll(c tele.Context) error {
 	return h.IsAuthorized(h.onTakeAll)(c)
 }
 
-var gameLineMatch = regexp.MustCompile(`[🔴🟢]\s0*(.*?):\s(.*?)(\s\((.*)\))?$`)
-
 func (h *Handler) onTakeAll(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Take All"), c.Sender())
 	defer c.Respond()
@@ -409,30 +444,27 @@ func (h *Handler) onTakeAll(c tele.Context, member Member) error {
 
 	lines := strings.Split(c.Message().Text, "\n")
 	for _, line := range lines {
-		fragments := gameLineMatch.FindStringSubmatch(line)
-		if len(fragments) != 5 {
-			log.Errorf("Invalid number of matches, %s, [%s]", line, strings.Join(fragments, "|"))
+		lineGame, err := NewGameFromLine(line)
+		if err != nil {
+			log.WithError(err).Errorf("Invalid line")
 			return c.Edit("Datos inválidos, vuelve a realizar la búsqueda")
 		}
-		id := fragments[1]
-		name := fragments[2]
-		expectedHolder := fragments[4]
 
 		log.
-			WithField("Game", name).
-			WithField("ID", id)
+			WithField("Game", lineGame.Name).
+			WithField("ID", lineGame.ID)
 
-		g, err := Games(allGames).Get(id, name)
+		g, err := Games(allGames).Get(lineGame.ID, lineGame.Name)
 		if err != nil {
 			log.Info("Multiple matches for the game")
-			return c.Send(fmt.Sprintf("Hay multiples coincidencias para el juego %s, %s.\n%s\nNo puedo realizar la operación", id, name, err.(MultipleMatchesError).Matches))
+			return c.Send(fmt.Sprintf("Hay multiples coincidencias para el juego %s, %s.\n%s\nNo puedo realizar la operación", lineGame.ID, lineGame.Name, err.(MultipleMatchesError).Matches))
 		}
 		if g == nil {
 			log.Info("Game not found")
-			return c.Send(fmt.Sprintf("No he encontrado el juego %s: \"%s\", ¿Se ha modificado el excel? vuelve a darme la lista", id, name))
+			return c.Send(fmt.Sprintf("No he encontrado el juego %s: \"%s\", ¿Se ha modificado el excel? vuelve a darme la lista", lineGame.ID, lineGame.Name))
 		}
 
-		if g.Holder != expectedHolder {
+		if g.Holder != lineGame.Holder {
 			log.Info("It has been modified!")
 			hasBeenModified = true
 		}
@@ -536,31 +568,31 @@ func (h *Handler) onReturnAll(c tele.Context, member Member) error {
 
 	lines := strings.Split(c.Message().Text, "\n")
 	for _, line := range lines {
-		fragments := gameLineMatch.FindStringSubmatch(line)
-		if len(fragments) != 5 {
-			log.Errorf("Invalid number of matches, %s, [%s]", line, strings.Join(fragments, "|"))
+		lineGame, err := NewGameFromLine(line)
+		if err != nil {
+			log.WithError(err).Errorf("Invalid line")
 			return c.Edit("Datos inválidos, vuelve a realizar la búsqueda")
 		}
-		id := fragments[1]
-		name := fragments[2]
-		expectedHolder := fragments[4]
 
 		log.
-			WithField("Game", name).
-			WithField("ID", id)
+			WithField("Game", lineGame.Name).
+			WithField("ID", lineGame.ID)
 
-		g, err := Games(allGames).Get(id, name)
+		g, err := Games(allGames).Get(lineGame.ID, lineGame.Name)
 		if err != nil {
 			log.Info("Multiple matches for the game")
-			return c.Send(fmt.Sprintf("Hay multiples coincidencias para el juego %s, %s.\n%s\nNo puedo realizar la operación", id, name, err.(MultipleMatchesError).Matches))
+			return c.Send(fmt.Sprintf("Hay multiples coincidencias para el juego %s, %s.\n%s\nNo puedo realizar la operación", lineGame.ID, lineGame.Name, err.(MultipleMatchesError).Matches))
 		}
 		if g == nil {
 			log.Info("Game not found")
-			return c.Send(fmt.Sprintf("No he encontrado el juego %s: \"%s\", ¿Se ha modificado el excel? vuelve a darme la lista", id, name))
+			return c.Send(fmt.Sprintf("No he encontrado el juego %s: \"%s\", ¿Se ha modificado el excel? vuelve a darme la lista", lineGame.ID, lineGame.Name))
 		}
 
-		if g.Holder != expectedHolder {
-			log.Info("It has been modified!")
+		if g.Holder != lineGame.Holder {
+			log.
+				WithField("CurrentHolder", g.Holder).
+				WithField("ExpectedHolder", lineGame.Holder).
+				Info("It has been modified!")
 			hasBeenModified = true
 		}
 

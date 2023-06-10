@@ -85,16 +85,8 @@ func (db *SheetGameDatabase) Find(ctx context.Context, name string) ([]Game, err
 		return nil, err
 	}
 
-	matches := []Game{}
+	matches := Games(games).Find(name)
 
-	for _, g := range games {
-		if strings.Contains(
-			Norm(g.Name),
-			Norm(name),
-		) {
-			matches = append(matches, g)
-		}
-	}
 	return matches, nil
 }
 

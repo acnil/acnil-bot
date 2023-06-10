@@ -395,7 +395,7 @@ var _ = Describe("Handler", func() {
 		})
 		Describe("When Text is sent", func() {
 			BeforeEach(func() {
-				mockGameDatabase.EXPECT().Find(gomock.Any(), "Game1").Return([]acnil.Game{
+				mockGameDatabase.EXPECT().List(gomock.Any()).Return([]acnil.Game{
 					{
 						ID:   "1",
 						Name: "Game1",
@@ -422,22 +422,20 @@ var _ = Describe("Handler", func() {
 		})
 		Describe("When Text is sent with multiple lines", func() {
 			BeforeEach(func() {
-				mockGameDatabase.EXPECT().Find(gomock.Any(), "Game1").Return([]acnil.Game{
+				mockGameDatabase.EXPECT().List(gomock.Any()).Return([]acnil.Game{
 					{
 						ID:   "1",
 						Name: "Game1",
 					},
-				}, nil).Times(1)
-				mockGameDatabase.EXPECT().Find(gomock.Any(), "Game2").Return([]acnil.Game{
 					{
 						ID:   "2",
 						Name: "Game2",
 					},
-				}, nil).Times(1)
-				mockGameDatabase.EXPECT().Get(gomock.Any(), "3", "").Return(&acnil.Game{
-					ID:   "3",
-					Name: "Game3",
-				}, nil).Times(1)
+					{
+						ID:   "3",
+						Name: "Game3",
+					},
+				}, nil)
 				text := "Game1\nGame2\n3"
 				mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
 				mockTeleContext.EXPECT().Message().Return(&tele.Message{
@@ -461,9 +459,11 @@ var _ = Describe("Handler", func() {
 		Describe("When Text is an ID", func() {
 			BeforeEach(func() {
 				text := "1"
-				mockGameDatabase.EXPECT().Get(gomock.Any(), text, "").Return(&acnil.Game{
-					ID:   "1",
-					Name: "Game1",
+				mockGameDatabase.EXPECT().List(gomock.Any()).Return([]acnil.Game{
+					{
+						ID:   "1",
+						Name: "Game1",
+					},
 				}, nil)
 				mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
 				mockTeleContext.EXPECT().Message().Return(&tele.Message{

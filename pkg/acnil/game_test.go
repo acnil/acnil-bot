@@ -214,3 +214,53 @@ var _ = Describe("A game card", func() {
 		})
 	})
 })
+
+var _ = Describe("A game line", func() {
+	var (
+		gameLine string
+	)
+	Describe("without user", func() {
+		BeforeEach(func() {
+			gameLine = "🟢 0505: Brass Birmingham"
+		})
+
+		It("must parse the ID", func() {
+			game, err := acnil.NewGameFromLine(gameLine)
+			Expect(err).To(BeNil())
+			Expect(game.ID).To(Equal("505"))
+		})
+		It("must parse the name", func() {
+			game, err := acnil.NewGameFromLine(gameLine)
+			Expect(err).To(BeNil())
+			Expect(game.Name).To(Equal("Brass Birmingham"))
+		})
+		It("must parse the Holder as empty", func() {
+			game, err := acnil.NewGameFromLine(gameLine)
+			Expect(err).To(BeNil())
+			Expect(game.Holder).To(BeEmpty())
+		})
+
+	})
+	Describe("with user", func() {
+		BeforeEach(func() {
+			gameLine = "🔴 0505: Brass Birmingham (Metalblueberry)"
+		})
+		It("must parse the ID", func() {
+			game, err := acnil.NewGameFromLine(gameLine)
+			Expect(err).To(BeNil())
+			Expect(game.ID).To(Equal("505"))
+		})
+		It("must parse the name", func() {
+			game, err := acnil.NewGameFromLine(gameLine)
+			Expect(err).To(BeNil())
+			Expect(game.Name).To(Equal("Brass Birmingham"))
+		})
+		It("must parse the Holder", func() {
+			game, err := acnil.NewGameFromLine(gameLine)
+			Expect(err).To(BeNil())
+			Expect(game.Holder).To(Equal("Metalblueberry"))
+		})
+
+	})
+
+})

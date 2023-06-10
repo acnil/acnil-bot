@@ -3,6 +3,7 @@ package acnil
 import (
 	"bytes"
 	"fmt"
+	"regexp"
 	"strings"
 	"text/template"
 	"time"
@@ -107,6 +108,24 @@ func NewGameFromData(data string) Game {
 		ID:   fields[0],
 		Name: fields[1],
 	}
+}
+
+var gameLineMatch = regexp.MustCompile(`[🔴🟢]\s0*(.*?):\s(.*?)(\s\((.*)\))?$`)
+
+// NewGameFromLine Parses game information from a game line
+// A game line is a line that contains structured information about a game
+func NewGameFromLine(line string) (Game, error) {
+	if !gameLineMatch.MatchString(line) {
+		return Game{}, fmt.Errorf("%s Doesn't match the expression for a game line", line)
+	}
+
+	fragments := gameLineMatch.FindStringSubmatch(line)
+
+	return Game{
+		ID:     fragments[1],
+		Name:   fragments[2],
+		Holder: fragments[4],
+	}, nil
 }
 
 func (g Game) ContainsBGGData() bool {
@@ -306,6 +325,21 @@ func (games Games) Get(id string, name string) (*Game, error) {
 	return &matches[0], nil
 }
 
+func (games Games) Find(name string) []Game {
+
+	matches := []Game{}
+
+	for _, g := range games {
+		if strings.Contains(
+			Norm(g.Name),
+			Norm(name),
+		) {
+			matches = append(matches, g)
+		}
+	}
+	return matches
+}
+
 // CanReturn returns true if at least one game of the list can be returned
 func (games Games) CanReturn() bool {
 	for i := range games {
@@ -324,4 +358,17 @@ func (games Games) CanTake() bool {
 		}
 	}
 	return false
+}
+
+func (games Games) FindDuplicates() (duplicate Games, unique Games) {
+	seen := map[string]bool{}
+	for _, g := range games {
+		if _, ok := seen[g.String()]; ok {
+			duplicate = append(duplicate, g)
+			continue
+		}
+		seen[g.String()] = true
+		unique = append(unique, g)
+	}
+	return duplicate, unique
 }
