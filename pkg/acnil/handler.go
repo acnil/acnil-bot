@@ -1,6 +1,7 @@
 package acnil
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"text/template"
 
 	"github.com/metalblueberry/acnil-bot/pkg/ilog"
 	"github.com/sirupsen/logrus"
@@ -363,8 +365,8 @@ Esto es todo lo que he encontrado`, mainMenu)
 	return nil
 }
 
-var mayBeAnID = regexp.MustCompile(`^\d+\w*$`)
-var isAnIDForSure = regexp.MustCompile(`^\d+$`)
+var mayBeAnID = regexp.MustCompile(`^[/]?(\d+\w*)$`)
+var isAnIDForSure = regexp.MustCompile(`^[/]?(\d+)$`)
 
 func (h *Handler) textSearchGame(log *logrus.Entry, c tele.Context, gameList Games, member Member, text string) ([]Game, error) {
 
@@ -403,7 +405,7 @@ func (h *Handler) textSearchGame(log *logrus.Entry, c tele.Context, gameList Gam
 	}
 
 	if mayBeAnID.MatchString(text) {
-		id := strings.TrimLeft(text, "0")
+		id := mayBeAnID.FindStringSubmatch(text)[1]
 		getResult, err := gameList.Get(id, "")
 		if err != nil {
 			if mmErr, ok := err.(MultipleMatchesError); ok {
@@ -711,17 +713,36 @@ func (h *Handler) OnHistory(c tele.Context) error {
 	return h.IsAuthorized(h.onHistory)(c)
 }
 
-type PrettyAuditEntry struct {
+type HolderChanged struct {
+	AuditEntry
+	TimeFormat string
+}
+type CommentChanged struct {
 	AuditEntry
 	TimeFormat string
 }
 
-func (p PrettyAuditEntry) String() string {
-	if p.AuditEntry.Holder == "" {
-		return fmt.Sprintf("%s: %s", p.Timestamp.Format(p.TimeFormat), "devuelto")
-	}
-	return fmt.Sprintf("%s: %s", p.Timestamp.Format(p.TimeFormat), p.Holder)
+type AuditTmplData struct {
+	Game     Game
+	Holders  []HolderChanged
+	Comments []CommentChanged
 }
+
+var auditTmpl = template.Must(template.New("audit").Parse(`
+Prestamos del juego:
+{{.Game.ID}}:{{.Game.Name}}
+
+{{ range .Holders -}} 
+{{ .Timestamp.Format .TimeFormat }}: {{if .Holder}}🔴 {{.Holder}}{{ else }}🟢 {{.Location }}{{end}}
+{{ end }}
+{{ if .Comments -}} 
+Comentarios:
+{{ range .Comments -}} 
+{{ .Timestamp.Format .TimeFormat }}:
+{{if .Comments}}{{ .Comments }}{{else}}Comentario eliminado{{end}}
+{{ end }}
+{{ end }}
+`))
 
 func (h *Handler) onHistory(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "History"), c.Sender())
@@ -740,30 +761,44 @@ func (h *Handler) onHistory(c tele.Context, member Member) error {
 		return c.Send("Wops! No he podido encontrar el historial.... Díselo a @MetalBlueberry para que lo arregle")
 	}
 
-	prettyEntries := make([]PrettyAuditEntry, 0, len(entries))
+	holderChanged := make([]HolderChanged, 0, len(entries))
 	previous := AuditEntry{}
 	for _, e := range entries {
 		if e.Holder == previous.Holder {
 			continue
 		}
 		previous = e
-		prettyEntries = append(prettyEntries, PrettyAuditEntry{
+		holderChanged = append(holderChanged, HolderChanged{
 			AuditEntry: e,
 			TimeFormat: "2006-01-02",
 		})
 	}
 
-	if len(prettyEntries) == 0 {
+	commentChanged := make([]CommentChanged, 0, len(entries))
+	previous = AuditEntry{}
+	for _, e := range entries {
+		if e.Comments == previous.Comments {
+			continue
+		}
+		previous = e
+		commentChanged = append(commentChanged, CommentChanged{
+			AuditEntry: e,
+			TimeFormat: "2006-01-02",
+		})
+	}
+
+	if len(holderChanged) == 0 {
 		return c.Send("Parece que nadie ha usado este juego nunca.\nPuedes ser el primero!")
 	}
 
-	for _, block := range SendList(prettyEntries) {
-		err := c.Send(block, mainMenuReplyMarkup(member))
-		if err != nil {
-			log.Error(err)
-		}
-	}
-	return nil
+	buf := &bytes.Buffer{}
+	auditTmpl.Execute(buf, AuditTmplData{
+		Game:     g,
+		Holders:  holderChanged,
+		Comments: commentChanged,
+	})
+
+	return c.Send(buf.String())
 }
 
 func (h *Handler) OnExtendLease(c tele.Context) error {
