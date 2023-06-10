@@ -110,7 +110,7 @@ func NewGameFromData(data string) Game {
 	}
 }
 
-var gameLineMatch = regexp.MustCompile(`[🔴🟢]\s0*(.*?):\s(.*?)(\s\((.*)\))?$`)
+var gameLineMatch = regexp.MustCompile(`[🔴🟢]\s[/]?0*(.*?):\s(.*?)(\s\((.*)\))?$`)
 
 // NewGameFromLine Parses game information from a game line
 // A game line is a line that contains structured information about a game
@@ -126,6 +126,13 @@ func NewGameFromLine(line string) (Game, error) {
 		Name:   fragments[2],
 		Holder: fragments[4],
 	}, nil
+}
+
+func (g Game) String() string {
+	if g.IsAvailable() {
+		return fmt.Sprintf("🟢 /%04s: %s", g.ID, g.Name)
+	}
+	return fmt.Sprintf("🔴 /%04s: %s (%s)", g.ID, g.Name, g.Holder)
 }
 
 func (g Game) ContainsBGGData() bool {
@@ -256,13 +263,6 @@ func (g Game) MoreCard() string {
 
 func (g Game) IsAvailable() bool {
 	return g.Holder == ""
-}
-
-func (g Game) String() string {
-	if g.IsAvailable() {
-		return fmt.Sprintf("🟢 %04s: %s", g.ID, g.Name)
-	}
-	return fmt.Sprintf("🔴 %04s: %s (%s)", g.ID, g.Name, g.Holder)
 }
 
 func (g Game) Equals(other Game) bool {
