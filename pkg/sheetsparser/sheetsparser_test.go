@@ -8,10 +8,12 @@ import (
 type testDataHappy struct {
 	Ignored string
 
-	Col1  string    `col:"0"`
-	Col2  string    `col:"1"`
-	Col3  string    `col:"2"`
-	Date4 time.Time `col:"3"`
+	Col1       string    `col:"0"`
+	Col2       string    `col:"1"`
+	Col3       string    `col:"2"`
+	Date4      time.Time `col:"3"`
+	IsEmpty    *string   `col:"4"`
+	IsNotEmpty *string   `col:"5"`
 }
 
 func TestSheetParser_Unmarshal(t *testing.T) {
@@ -42,12 +44,14 @@ func TestSheetParser_Unmarshal(t *testing.T) {
 }
 
 func TestSheetParser_Marshal(t *testing.T) {
+	S := "r1Col5"
 	p := &SheetParser{}
 	g := testDataHappy{
-		Col1:  "r1Col1",
-		Col2:  "r1Col2",
-		Col3:  "r1Col3",
-		Date4: time.Date(2022, 12, 10, 0, 0, 0, 0, time.UTC),
+		Col1:       "r1Col1",
+		Col2:       "r1Col2",
+		Col3:       "r1Col3",
+		Date4:      time.Date(2022, 12, 10, 0, 0, 0, 0, time.UTC),
+		IsNotEmpty: &S,
 	}
 
 	out, err := p.Marshal(&g)
@@ -69,6 +73,14 @@ func TestSheetParser_Marshal(t *testing.T) {
 	}
 	if out[3].(string) != "10/12/2022" {
 		t.Errorf("field 3 is %s but must be 10/12/2022", out[3])
+		t.FailNow()
+	}
+	if out[4] != nil {
+		t.Errorf("field 4 is %s but must be nil", out[4])
+		t.FailNow()
+	}
+	if out[5].(string) != "r1Col5" {
+		t.Errorf("field 5 is %s but must be r1Col5", out[3])
 		t.FailNow()
 	}
 }
@@ -211,15 +223,17 @@ func TestSheetWriteOnly_Marshal(t *testing.T) {
 }
 
 type testReadAndWrite struct {
-	ReadOnly  string `col:"0,ro"`
-	WriteOnly string `col:"0,wo"`
+	Before    string `col:"0"`
+	ReadOnly  string `col:"1,ro"`
+	WriteOnly string `col:"1,wo"`
+	After     string `col:"3"`
 }
 
 func TestSheetReadAndWrite_Unmarshal(t *testing.T) {
 	p := &SheetParser{}
 	test := testReadAndWrite{}
 
-	err := p.Unmarshal([]interface{}{"value"}, &test)
+	err := p.Unmarshal([]interface{}{"before", "value"}, &test)
 
 	if err != nil {
 		t.Error(err)
@@ -237,16 +251,22 @@ func TestSheetReadAndWrite_Unmarshal(t *testing.T) {
 func TestSheetReadAndWrite_Marshal(t *testing.T) {
 	p := &SheetParser{}
 	test := testReadAndWrite{
+		Before:    "before",
 		ReadOnly:  "read value",
 		WriteOnly: "write value",
+		After:     "after",
 	}
 
 	out, err := p.Marshal(&test)
 	if err != nil {
 		t.Error(err)
 	}
+	if len(out) != 4 {
+		t.Errorf("Expected 2 fields but got %d, %s", len(out), out)
+		t.FailNow()
+	}
 
-	if out[0].(string) != "write value" {
+	if out[1].(string) != "write value" {
 		t.Errorf("field 0 is %s but must be write value", out[0])
 		t.FailNow()
 	}
@@ -293,4 +313,52 @@ func TestSheetWriteAndRead_Marshal(t *testing.T) {
 		t.Errorf("field 0 is %s but must be write value", out[0])
 		t.FailNow()
 	}
+}
+
+type testGame struct {
+	ReturnDate        time.Time `col:"1,ro"`
+	ReturnDateFormula *string   `col:"1,wo"`
+}
+
+func TestGameWriteAndRead_Unmarshal(t *testing.T) {
+	p := &SheetParser{}
+	test := testGame{}
+
+	err := p.Unmarshal([]interface{}{nil, "15/04/2023"}, &test)
+
+	if err != nil {
+		t.Error(err)
+	}
+	if test.ReturnDate.Format(p.DateFormat) == "15/04/2023" {
+		t.Errorf("g.ReturnDate is %s but must be 15/04/2023", test.ReturnDate.Format(p.DateFormat))
+		t.FailNow()
+	}
+	if test.ReturnDateFormula != nil {
+		t.Errorf("g.ReturnDateFormula is %#v but must be nil", test.ReturnDateFormula)
+		t.FailNow()
+	}
+}
+
+func TestGameWriteAndRead_Marshal(t *testing.T) {
+	p := &SheetParser{}
+	test := testGame{
+		ReturnDate:        time.Time{},
+		ReturnDateFormula: nil,
+	}
+
+	out, err := p.Marshal(&test)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(out) != 2 {
+		t.Errorf("Must return 2 fields but returned %d, %#v", len(out), out)
+		t.FailNow()
+	}
+
+	if out[1] != nil {
+		t.Errorf("field 1 must be nil but it is %#v", out[1])
+		t.FailNow()
+	}
+
 }

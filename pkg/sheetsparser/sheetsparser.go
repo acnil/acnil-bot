@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+var S = "string type"
 var DefaultParser = &SheetParser{}
 
 func Unmarshal(in []interface{}, out interface{}) error {
@@ -101,6 +102,13 @@ func (p *SheetParser) Unmarshal(in []interface{}, out interface{}) error {
 				return fmt.Errorf("couldn't parse float value, %s, %s", in[index], err)
 			}
 			elfield.Set(reflect.ValueOf(n))
+		case reflect.TypeOf(&S):
+			if index >= len(in) {
+				continue
+			}
+			val := reflect.ValueOf(in[index])
+			elfield.Set(val.Convert(elfield.Type()))
+
 		default:
 			if index >= len(in) {
 				elfield.Set(reflect.ValueOf(""))
@@ -175,20 +183,28 @@ func (p *SheetParser) Marshal(in interface{}) ([]interface{}, error) {
 			out[r.Index] = nil
 			continue
 		}
-		switch r.Field.Type() {
-		case reflect.TypeOf(time.Time{}):
+		fieldType := r.Field.Type()
+		switch {
+		case fieldType == reflect.TypeOf(time.Time{}):
 			t := r.Field.Interface().(time.Time)
 			if t.IsZero() {
 				out[r.Index] = nil
 				continue
 			}
 			out[r.Index] = t.Format(p.dateFormat())
-		case reflect.TypeOf(int(1)):
+		case fieldType == reflect.TypeOf(int(1)):
 			n := r.Field.Int()
 			out[r.Index] = strconv.FormatInt(n, 10)
-		case reflect.TypeOf(float64(1)):
+		case fieldType == reflect.TypeOf(float64(1)):
 			n := r.Field.Float()
 			out[r.Index] = strings.Replace(strconv.FormatFloat(n, 'f', 2, 64), ".", ",", 1)
+		case fieldType.Kind() == reflect.Pointer:
+			v := r.Field.Elem()
+			if v.Kind() == reflect.Invalid {
+				out[r.Index] = nil
+				continue
+			}
+			out[r.Index] = v.String()
 		default:
 			if r.OmitEmpty && r.Field.String() == "" {
 				out[r.Index] = nil
