@@ -50,6 +50,19 @@ var _ = Describe("A game card", func() {
 				buttons := ToOneDimension(game.Buttons(member).InlineKeyboard)
 				Expect(buttons).To(ContainElement(WithButtonText("Tomar Prestado")))
 			})
+			It("should not have a button to increase the time by a few days", func() {
+				buttons := ToOneDimension(game.Buttons(member).InlineKeyboard)
+				Expect(buttons).ToNot(ContainElement(WithButtonText("Dar mas tiempo")))
+			})
+			Describe("Ïf return date is set but holder is not", func() {
+				BeforeEach(func() {
+					game.ReturnDate = time.Now().Add(-24 * 30 * time.Hour)
+				})
+				It("should not have a button to increase the time by a few days", func() {
+					buttons := ToOneDimension(game.Buttons(member).InlineKeyboard)
+					Expect(buttons).ToNot(ContainElement(WithButtonText("Dar mas tiempo")))
+				})
+			})
 		})
 
 		Describe("for a game held by himself", func() {
@@ -165,6 +178,23 @@ var _ = Describe("A game card", func() {
 				TelegramID:  "1234",
 				Permissions: acnil.PermissionAdmin,
 			}
+		})
+
+		Describe("for an available game", func() {
+			BeforeEach(func() {
+				game.Holder = ""
+			})
+			Describe("that has the return date set incorrectly", func() {
+
+				BeforeEach(func() {
+					game.ReturnDate = time.Now().Add(-30 * 24 * time.Hour)
+				})
+				It("must not have a button to increase the time by a few days", func() {
+					buttons := ToOneDimension(game.Buttons(member).InlineKeyboard)
+					Expect(buttons).ToNot(ContainElement(WithButtonText("Dar mas tiempo")))
+				})
+			})
+
 		})
 
 		Describe("for a game held by other person", func() {
