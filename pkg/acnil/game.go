@@ -232,7 +232,7 @@ func (g Game) Buttons(member Member) *tele.ReplyMarkup {
 		selector.Data("Historial", "history", data),
 	))
 
-	if (g.IsHeldBy(member) || member.Permissions == PermissionAdmin) && g.IsLeaseExpired() {
+	if (g.IsHeldBy(member) || (member.Permissions == PermissionAdmin && !g.IsAvailable())) && g.IsLeaseExpired() {
 		rows = append(rows, selector.Row(
 			selector.Data("Dar mas tiempo", "extendLease", data),
 		))
