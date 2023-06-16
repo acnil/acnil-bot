@@ -7,4 +7,6 @@ const (
 	FieldLocation = "location"
 	FieldID       = "id"
 	FieldText     = "message"
+
+	FieldMethod = "method"
 )
