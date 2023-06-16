@@ -919,7 +919,7 @@ func (h *Handler) inLocation(c tele.Context, member Member, location string) err
 
 	inLocation := []Game{}
 	for _, game := range gameList {
-		if strings.EqualFold(game.Location, location) {
+		if strings.EqualFold(strings.TrimSpace(game.Location), location) {
 			inLocation = append(inLocation, game)
 		}
 	}
