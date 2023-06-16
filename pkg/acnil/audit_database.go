@@ -3,8 +3,11 @@ package acnil
 import (
 	"context"
 	"fmt"
-	"log"
+	"sort"
 	"time"
+
+	"github.com/metalblueberry/acnil-bot/pkg/ilog"
+	"github.com/sirupsen/logrus"
 
 	"github.com/metalblueberry/acnil-bot/pkg/sheetsparser"
 	"google.golang.org/api/sheets/v4"
@@ -57,7 +60,15 @@ func (db *SheetAuditDatabase) Append(ctx context.Context, entries []AuditEntry) 
 	return nil
 }
 
+type byDate []AuditEntry
+
+func (e byDate) Len() int           { return len(e) }
+func (e byDate) Less(i, j int) bool { return e[i].Timestamp.Before(e[j].Timestamp) }
+func (e byDate) Swap(i, j int)      { e[i], e[j] = e[j], e[i] }
+
 func (db *SheetAuditDatabase) List(ctx context.Context) ([]AuditEntry, error) {
+	log := logrus.WithField(ilog.FieldMethod, "SheetAuditDatabase.List")
+
 	resp, err := db.SRV.Spreadsheets.Values.Get(db.SheetID, db.fullReadRange()).Context(ctx).Do()
 	if err != nil {
 		log.Fatalf("Unable to retrieve data from sheet: %v", err)
@@ -80,5 +91,13 @@ func (db *SheetAuditDatabase) List(ctx context.Context) ([]AuditEntry, error) {
 		entries = append(entries, g)
 
 	}
-	return entries, nil
+
+	entriesByDate := byDate(entries)
+
+	if !sort.IsSorted(entriesByDate) {
+		log.Warn("Audit database is not sorted by date!")
+		sort.Stable(entriesByDate)
+	}
+
+	return entriesByDate, nil
 }
