@@ -761,6 +761,8 @@ func (h *Handler) onHistory(c tele.Context, member Member) error {
 		return c.Send("Wops! No he podido encontrar el historial.... Díselo a @MetalBlueberry para que lo arregle")
 	}
 
+	log.WithField("auditLength", len(entries)).Info("Found audit events")
+
 	holderChanged := make([]HolderChanged, 0, len(entries))
 	previous := AuditEntry{}
 	for _, e := range entries {
