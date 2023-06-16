@@ -134,7 +134,6 @@ func (c *Client) Search(ctx context.Context, query string) (*SearchResponse, err
 //   -H 'authority: boardgamegeek.com' \
 //   -H 'accept: application/json, text/plain, */*' \
 //   -H 'accept-language: es-ES,es;q=0.9,en;q=0.8' \
-//   -H 'cookie: bggusername=MetalBlueberry; bggpassword=n9w15wxlwxoqb14p2bmcgr9gd4vw3pqd; cc_cookie=%7B%22level%22%3A%5B%22necessary%22%2C%22analytics%22%2C%22shopping%22%2C%22socialmedia%22%5D%2C%22revision%22%3A1%2C%22rfc_cookie%22%3Atrue%7D; _gid=GA1.2.1999680218.1665403740; SessionID=2b33440cde330873d421e99ef2dc23d218fed399u3336125; _ga_GMNMCY4DVM=GS1.1.1665480516.19.1.1665482458.0.0.0; _ga=GA1.2.1747411281.1649515510; _gat_gtag_UA_104725_1=1' \
 //   -H 'referer: https://boardgamegeek.com/' \
 //   -H 'sec-ch-ua: "Chromium";v="106", "Google Chrome";v="106", "Not;A=Brand";v="99"' \
 //   -H 'sec-ch-ua-mobile: ?0' \
