@@ -730,7 +730,7 @@ type AuditTmplData struct {
 
 var auditTmpl = template.Must(template.New("audit").Parse(`
 Prestamos del juego:
-{{.Game.ID}}:{{.Game.Name}}
+/{{.Game.ID}}:{{.Game.Name}}
 
 {{ range .Holders -}} 
 {{ .Timestamp.Format .TimeFormat }}: {{if .Holder}}🔴 {{.Holder}}{{ else }}🟢 {{.Location }}{{end}}

@@ -25,7 +25,7 @@ var (
 		},
 	}).Parse(`
 {{ define "card" }}
-{{if .ID }}ID: {{ .ID }}{{end}}
+/{{if .ID }}ID: {{ .ID }}{{end}}
 {{ .Name }}
 {{ .Location }}
 
@@ -44,7 +44,7 @@ Notas:
 {{ end }}
 
 {{ define "morecard" }}
-{{if .ID }}ID: {{ .ID }}{{end}}
+{{if .ID }}ID: /{{ .ID }}{{end}}
 {{ .Name }}
 {{ .Publisher}} {{if .Price}}({{ .Price }}){{end}}
 {{ .Location }}
