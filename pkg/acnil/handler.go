@@ -112,28 +112,40 @@ type Handler struct {
 
 func (h *Handler) Register(b *tele.Bot) {
 
-	b.Handle("/start", h.Start)
-	b.Handle(&btnStart, h.Start)
+	privateChat := b.Group()
+	privateChat.Use(OnlyPrivateChatMiddleware)
+	privateChat.Handle("/start", h.Start)
+	privateChat.Handle(&btnStart, h.Start)
 
-	b.Handle(tele.OnText, h.OnText)
-	b.Handle("\ftake", h.OnTake)
-	b.Handle("\ftake-all", h.OnTakeAll)
-	b.Handle("\freturn", h.OnReturn)
-	b.Handle("\freturn-all", h.OnReturnAll)
-	b.Handle("\fmore", h.OnMore)
-	b.Handle("\fauthorise", h.OnAuthorise)
-	b.Handle("\fhistory", h.OnHistory)
-	b.Handle("\fextendLease", h.OnExtendLease)
-	b.Handle(&btnMyGames, h.MyGames)
-	b.Handle(&btnEnGamonal, h.IsAuthorized(h.InGamonal))
-	b.Handle(&btnEnCentro, h.IsAuthorized(h.InCentro))
-	b.Handle(&btnRename, h.Rename)
-	b.Handle(&btnCancelRename, h.CancelRename)
+	privateChat.Handle(tele.OnText, h.OnText)
+	privateChat.Handle("\ftake", h.OnTake)
+	privateChat.Handle("\ftake-all", h.OnTakeAll)
+	privateChat.Handle("\freturn", h.OnReturn)
+	privateChat.Handle("\freturn-all", h.OnReturnAll)
+	privateChat.Handle("\fmore", h.OnMore)
+	privateChat.Handle("\fauthorise", h.OnAuthorise)
+	privateChat.Handle("\fhistory", h.OnHistory)
+	privateChat.Handle("\fextendLease", h.OnExtendLease)
+	privateChat.Handle(&btnMyGames, h.MyGames)
+	privateChat.Handle(&btnEnGamonal, h.IsAuthorized(h.InGamonal))
+	privateChat.Handle(&btnEnCentro, h.IsAuthorized(h.InCentro))
+	privateChat.Handle(&btnRename, h.Rename)
+	privateChat.Handle(&btnCancelRename, h.CancelRename)
 
-	b.Handle(&btnAdmin, h.OnAdmin)
-	b.Handle(&btnForgotten, h.OnForgotten)
+	privateChat.Handle(&btnAdmin, h.OnAdmin)
+	privateChat.Handle(&btnForgotten, h.OnForgotten)
 
 	h.Bot = b
+}
+
+func OnlyPrivateChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
+	return func(ctx tele.Context) error {
+		if ctx.Chat().Type == tele.ChatPrivate {
+			next(ctx)
+		}
+		return nil
+	}
+
 }
 
 // IsAuthorized find if the current user is registered in the application and the access has been accepted by an admin
