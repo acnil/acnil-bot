@@ -377,7 +377,7 @@ Esto es todo lo que he encontrado`, mainMenu)
 	return nil
 }
 
-var mayBeAnID = regexp.MustCompile(`^[/]?(\d+\w*)$`)
+var mayBeAnID = regexp.MustCompile(`^[/]?0*(\d+\w*)$`)
 var isAnIDForSure = regexp.MustCompile(`^[/]?(\d+)$`)
 
 func (h *Handler) textSearchGame(log *logrus.Entry, c tele.Context, gameList Games, member Member, text string) ([]Game, error) {
