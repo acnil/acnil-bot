@@ -457,30 +457,115 @@ var _ = Describe("Handler", func() {
 			})
 		})
 		Describe("When Text is an ID", func() {
-			BeforeEach(func() {
-				text := "1"
-				mockGameDatabase.EXPECT().List(gomock.Any()).Return([]acnil.Game{
-					{
-						ID:   "1",
-						Name: "Game1",
-					},
-				}, nil)
-				mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
-				mockTeleContext.EXPECT().Message().Return(&tele.Message{
-					Sender: sender,
-					Text:   text,
-					Chat: &tele.Chat{
-						Type: tele.ChatPrivate,
-					},
-				}).AnyTimes()
-			})
-			It("Should reply with game details by ID", func() {
-				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
-					Expect(sent).To(ContainSubstring("Game1"))
-					return nil
+			Describe("with leading 0", func() {
+				BeforeEach(func() {
+					text := "01"
+					mockGameDatabase.EXPECT().List(gomock.Any()).Return([]acnil.Game{
+						{
+							ID:   "1",
+							Name: "Game1",
+						},
+					}, nil)
+					mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
+					mockTeleContext.EXPECT().Message().Return(&tele.Message{
+						Sender: sender,
+						Text:   text,
+						Chat: &tele.Chat{
+							Type: tele.ChatPrivate,
+						},
+					}).AnyTimes()
 				})
-				err := h.OnText(mockTeleContext)
-				Expect(err).ToNot(HaveOccurred())
+				It("Should reply with game details by ID", func() {
+					mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+						Expect(sent).To(ContainSubstring("Game1"))
+						return nil
+					})
+					err := h.OnText(mockTeleContext)
+					Expect(err).ToNot(HaveOccurred())
+				})
+			})
+			Describe("without leading 0", func() {
+				BeforeEach(func() {
+					text := "1"
+					mockGameDatabase.EXPECT().List(gomock.Any()).Return([]acnil.Game{
+						{
+							ID:   "1",
+							Name: "Game1",
+						},
+					}, nil)
+					mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
+					mockTeleContext.EXPECT().Message().Return(&tele.Message{
+						Sender: sender,
+						Text:   text,
+						Chat: &tele.Chat{
+							Type: tele.ChatPrivate,
+						},
+					}).AnyTimes()
+				})
+				It("Should reply with game details by ID", func() {
+					mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+						Expect(sent).To(ContainSubstring("Game1"))
+						return nil
+					})
+					err := h.OnText(mockTeleContext)
+					Expect(err).ToNot(HaveOccurred())
+				})
+			})
+		})
+		Describe("When Text is an ID command", func() {
+			Describe("with leading 0", func() {
+				BeforeEach(func() {
+					text := "/01"
+					mockGameDatabase.EXPECT().List(gomock.Any()).Return([]acnil.Game{
+						{
+							ID:   "1",
+							Name: "Game1",
+						},
+					}, nil)
+					mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
+					mockTeleContext.EXPECT().Message().Return(&tele.Message{
+						Sender: sender,
+						Text:   text,
+						Chat: &tele.Chat{
+							Type: tele.ChatPrivate,
+						},
+					}).AnyTimes()
+				})
+				It("Should reply with game details by ID", func() {
+					mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+						Expect(sent).To(ContainSubstring("Game1"))
+						return nil
+					})
+					err := h.OnText(mockTeleContext)
+					Expect(err).ToNot(HaveOccurred())
+				})
+			})
+			Describe("without leading 0", func() {
+				BeforeEach(func() {
+					text := "/1"
+					mockGameDatabase.EXPECT().List(gomock.Any()).Return([]acnil.Game{
+						{
+							ID:   "1",
+							Name: "Game1",
+						},
+					}, nil)
+					mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
+					mockTeleContext.EXPECT().Message().Return(&tele.Message{
+						Sender: sender,
+						Text:   text,
+						Chat: &tele.Chat{
+							Type: tele.ChatPrivate,
+						},
+					}).AnyTimes()
+				})
+				It("Should reply with game details by ID", func() {
+					mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+						Expect(sent).To(ContainSubstring("Game1"))
+						return nil
+					})
+					err := h.OnText(mockTeleContext)
+					Expect(err).ToNot(HaveOccurred())
+				})
 			})
 		})
 		Describe("When an user attempts to take a game that is available", func() {
