@@ -41,7 +41,6 @@ jobs:
 
     - name: Terraform Plan
       id: plan
-      if: github.event_name == 'pull_request'
       run: ./tf/plan.sh
       continue-on-error: true
 
@@ -50,5 +49,4 @@ jobs:
       run: exit 1
 
     - name: Terraform Apply
-      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
       run: ./tf/apply.sh
