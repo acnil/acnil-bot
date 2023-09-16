@@ -15,6 +15,7 @@ require (
 
 require (
 	cloud.google.com/go/compute v1.7.0 // indirect
+	github.com/aws/aws-lambda-go v1.41.0 // indirect
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect

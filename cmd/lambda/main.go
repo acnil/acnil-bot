@@ -2,28 +2,45 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"os"
-	"time"
 
+	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/metalblueberry/acnil-bot/pkg/acnil"
+	httplambda "github.com/metalblueberry/acnil-bot/pkg/httpLambda"
 	"github.com/metalblueberry/acnil-bot/pkg/recipes"
 	"github.com/sirupsen/logrus"
+	"gopkg.in/telebot.v3"
 	tele "gopkg.in/telebot.v3"
 )
 
-func main() {
+func Handler(b *tele.Bot) func(ctx context.Context, request httplambda.Request) error {
+	return func(ctx context.Context, request httplambda.Request) error {
+		log.Println("Handling request")
 
-	disableAudit := os.Getenv("DISABLE_AUDIT")
+		update := telebot.Update{}
+		err := json.Unmarshal([]byte(request.Body), &update)
+		if err != nil {
+			return err
+		}
 
-	sheetID := os.Getenv("SHEET_ID")
-	if sheetID == "" {
-		logrus.Fatal("SHEET_ID must be defined")
+		log.Println("sending update, ", update.ID)
+		b.ProcessUpdate(update)
+		return nil
 	}
+}
+
+func main() {
 
 	botToken := os.Getenv("TOKEN")
 	if botToken == "" {
 		logrus.Fatal("TOKEN must be defined")
+	}
+
+	sheetID := os.Getenv("SHEET_ID")
+	if sheetID == "" {
+		logrus.Fatal("SHEET_ID must be defined")
 	}
 
 	auditSheetID := os.Getenv("AUDIT_SHEET_ID")
@@ -31,27 +48,17 @@ func main() {
 		logrus.Fatal("AUDIT_SHEET_ID must be defined")
 	}
 
+	srv := recipes.SheetsService()
+
 	pref := tele.Settings{
-		Token:  botToken,
-		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
+		Token:       botToken,
+		Synchronous: true,
 	}
 
 	b, err := tele.NewBot(pref)
 	if err != nil {
 		logrus.Fatal(err)
 		return
-	}
-
-	srv := recipes.SheetsService()
-
-	if disableAudit == "" {
-		audit := &acnil.Audit{
-			AuditDB:   acnil.NewSheetAuditDatabase(srv, auditSheetID),
-			GameDB:    acnil.NewGameDatabase(srv, sheetID),
-			MembersDB: acnil.NewMembersDatabase(srv, sheetID),
-			Bot:       b,
-		}
-		audit.Run(context.Background())
 	}
 
 	auditQuery := &acnil.AuditQuery{
@@ -68,8 +75,8 @@ func main() {
 	handlerGroup := b.Group()
 	handler.Register(handlerGroup)
 
-	log.Println("Application ready! listening for events")
-	b.Start()
+	log.Println("starting lambda")
+	lambda.Start(Handler(b))
 }
 
 func GetEnv(key string, def string) string {

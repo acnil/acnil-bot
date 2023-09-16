@@ -110,32 +110,28 @@ type Handler struct {
 	Bot       Sender
 }
 
-func (h *Handler) Register(b *tele.Bot) {
+func (h *Handler) Register(handlerGroup *tele.Group) {
+	handlerGroup.Use(OnlyPrivateChatMiddleware)
+	handlerGroup.Handle("/start", h.Start)
+	handlerGroup.Handle(&btnStart, h.Start)
 
-	privateChat := b.Group()
-	privateChat.Use(OnlyPrivateChatMiddleware)
-	privateChat.Handle("/start", h.Start)
-	privateChat.Handle(&btnStart, h.Start)
+	handlerGroup.Handle(tele.OnText, h.OnText)
+	handlerGroup.Handle("\ftake", h.OnTake)
+	handlerGroup.Handle("\ftake-all", h.OnTakeAll)
+	handlerGroup.Handle("\freturn", h.OnReturn)
+	handlerGroup.Handle("\freturn-all", h.OnReturnAll)
+	handlerGroup.Handle("\fmore", h.OnMore)
+	handlerGroup.Handle("\fauthorise", h.OnAuthorise)
+	handlerGroup.Handle("\fhistory", h.OnHistory)
+	handlerGroup.Handle("\fextendLease", h.OnExtendLease)
+	handlerGroup.Handle(&btnMyGames, h.MyGames)
+	handlerGroup.Handle(&btnEnGamonal, h.IsAuthorized(h.InGamonal))
+	handlerGroup.Handle(&btnEnCentro, h.IsAuthorized(h.InCentro))
+	handlerGroup.Handle(&btnRename, h.Rename)
+	handlerGroup.Handle(&btnCancelRename, h.CancelRename)
 
-	privateChat.Handle(tele.OnText, h.OnText)
-	privateChat.Handle("\ftake", h.OnTake)
-	privateChat.Handle("\ftake-all", h.OnTakeAll)
-	privateChat.Handle("\freturn", h.OnReturn)
-	privateChat.Handle("\freturn-all", h.OnReturnAll)
-	privateChat.Handle("\fmore", h.OnMore)
-	privateChat.Handle("\fauthorise", h.OnAuthorise)
-	privateChat.Handle("\fhistory", h.OnHistory)
-	privateChat.Handle("\fextendLease", h.OnExtendLease)
-	privateChat.Handle(&btnMyGames, h.MyGames)
-	privateChat.Handle(&btnEnGamonal, h.IsAuthorized(h.InGamonal))
-	privateChat.Handle(&btnEnCentro, h.IsAuthorized(h.InCentro))
-	privateChat.Handle(&btnRename, h.Rename)
-	privateChat.Handle(&btnCancelRename, h.CancelRename)
-
-	privateChat.Handle(&btnAdmin, h.OnAdmin)
-	privateChat.Handle(&btnForgotten, h.OnForgotten)
-
-	h.Bot = b
+	handlerGroup.Handle(&btnAdmin, h.OnAdmin)
+	handlerGroup.Handle(&btnForgotten, h.OnForgotten)
 }
 
 func OnlyPrivateChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
