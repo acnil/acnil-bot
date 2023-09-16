@@ -7,7 +7,11 @@ terraform {
   }
 
   required_version = ">= 1.2.0"
-
+  backend "s3" {
+    bucket = "acnil-terraform"
+    key    = "tf"
+    region = "eu-west-1"
+  }
 }
 
 provider "aws" {
@@ -60,10 +64,7 @@ module "bot_handler" {
   architectures              = ["x86_64"]
   memory_size                = "128"
   timeout                    = "3"
-  source_path = [{
-    path     = "../cmd/lambda/package"
-    commands = ["CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -o ../package/bootstrap ../main.go", ":zip"]
-  }]
+  source_path                = "../cmd/lambda/package"
 
   environment_variables = {
     AUDIT_SHEET_ID : var.audit_sheet_id,
@@ -86,10 +87,7 @@ module "audit_handler" {
   architectures = ["x86_64"]
   memory_size   = "128"
   timeout       = "5"
-  source_path = [{
-    path     = "../cmd/auditLambda/package"
-    commands = ["CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -o ../package/bootstrap ../main.go", ":zip"]
-  }]
+  source_path   = "../cmd/auditLambda/package"
 
   environment_variables = {
     AUDIT_SHEET_ID : var.audit_sheet_id,
@@ -118,10 +116,10 @@ module "eventbridge" {
   rules = {
     crons = {
       description = "Trigger for a audit acnil-bot Lambda"
-      ## 15m
-      schedule_expression = "cron(0/1 * * * ? *)"
+      ## 1m
+      # schedule_expression = "cron(0/1 * * * ? *)"
       ## every day at midnight
-      # schedule_expression = "cron(0 0 * * ? *)"
+      schedule_expression = "cron(0 0 * * ? *)"
     }
   }
 
