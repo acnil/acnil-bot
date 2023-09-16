@@ -24,5 +24,10 @@ jobs:
       with:
         terraform_version: 1.5.7
 
+    - name: Terraform Init
+      id: init
+      run: terraform -chdir=./tf init
+      continue-on-error: true
+
     - name: Terraform Apply
       run: ./tf/destroy.sh
