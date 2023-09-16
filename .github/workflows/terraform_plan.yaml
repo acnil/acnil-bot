@@ -47,6 +47,3 @@ jobs:
     - name: Terraform Status
       if: steps.plan.outcome == 'failure' || steps.validate.outcome == 'failure' || steps.init.outcome == 'failure' || steps.fmt.outcome == 'failure'
       run: exit 1
-
-    - name: Terraform Apply
-      run: ./tf/apply.sh
