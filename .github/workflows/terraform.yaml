@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-20.04
     defaults:
       run:
-        working-directory: terraform
+        working-directory: tf
     permissions:
       contents: read
       pull-requests: write
@@ -35,18 +35,18 @@ jobs:
 
     - name: Terraform Init
       id: init
-      run: terraform -chdir=./tf init
+      run: terraform  init
       continue-on-error: true
 
     - name: Terraform Validate
       id: validate
-      run: terraform -chdir=./tf validate -no-color
+      run: terraform  validate -no-color
       continue-on-error: true
 
     - name: Terraform Plan
       id: plan
       if: github.event_name == 'pull_request'
-      run: terraform -chdir=./tf plan -no-color -input=false
+      run: terraform  plan -no-color -input=false
       continue-on-error: true
 
     - name: Terraform Status
@@ -55,4 +55,4 @@ jobs:
 
     - name: Terraform Apply
       if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-      run: terraform -chdir=./tf apply -auto-approve -input=false
+      run: terraform  apply -auto-approve -input=false
