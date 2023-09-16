@@ -14,6 +14,7 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/metalblueberry/acnil-bot/pkg/acnil"
 	"github.com/metalblueberry/acnil-bot/pkg/bgg"
+	"github.com/metalblueberry/acnil-bot/pkg/recipes"
 	"github.com/pkg/browser"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -101,21 +102,17 @@ func (db *ExtendedDataDB) GetByBGGID(ID string) (ExtendedData, bool) {
 
 func main() {
 
-	credentialsFile := GetEnv("CREDENTIALS_FILE", "credentials.json")
 	sheetID := os.Getenv("SHEET_ID")
 	if sheetID == "" {
 		logrus.Fatal("SHEET_ID must be defined")
 	}
 
-	srv, err := acnil.CreateClientFromCredentials(context.Background(), credentialsFile)
-	if err != nil {
-		logrus.Fatal("Couldn't load credentials", err)
-	}
+	srv := recipes.SheetsService()
 
 	GameDB := acnil.NewGameDatabase(srv, sheetID)
 	bggapi := bgg.NewClient()
 	extended := &ExtendedDataDB{}
-	err = extended.LoadFile("extended.db.json")
+	err := extended.LoadFile("extended.db.json")
 	if err != nil {
 		logrus.Warnf("Failed to load db %s", err.Error())
 	}
