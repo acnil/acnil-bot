@@ -3,7 +3,6 @@ package recipes
 import (
 	"compress/gzip"
 	"context"
-	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -75,8 +74,6 @@ func CreateClientFromCredentials(ctx context.Context, credentials CredentialsFil
 
 	client := conf.Client(ctx)
 
-	b, _ := json.MarshalIndent(conf, "", " ")
-	log.Println(string(b))
 	// not needed for now, Just an experiment
 	// client.Transport = &gzipTransport{
 	// 	RoundTripper: client.Transport,

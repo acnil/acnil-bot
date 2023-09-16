@@ -5,11 +5,11 @@ set -o pipefail
 
 go test ./...
 
-# GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -o lambda/bootstrap cmd/lambda/main.go
-# cp credentials.json lambda/credentials.json
+GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -o cmd/lambda/package/bootstrap cmd/lambda/main.go
 
-# GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -o auditLambda/bootstrap cmd/auditLambda/main.go
-# cp credentials.json auditLambda/credentials.json
+GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -o cmd/auditLambda/package/bootstrap cmd/auditLambda/main.go
+
+export TF_LAMBDA_PACKAGE_LOG_LEVEL=DEBUG3
 
 terraform -chdir=./tf apply -input=false \
      -var=sheets_private_key="$SHEETS_PRIVATE_KEY" \
