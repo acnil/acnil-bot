@@ -26,9 +26,15 @@ func SheetsService() *sheets.Service {
 		logrus.Fatal("SHEETS_PRIVATE_KEY must be defined")
 	}
 
+	SheetsEmail := GetEnv("SHEETS_EMAIL", "")
+	if SheetsEmail == "" {
+		logrus.Fatal("SHEETS_EMAIL must be defined")
+	}
+
 	credentialsFile := DefaultCredentialFile
 	credentialsFile.PrivateKey = strings.ReplaceAll(SheetsPrivateKey, "\\n", "\n")
 	credentialsFile.PrivateKeyID = SheetsPrivateKeyID
+	credentialsFile.Email = SheetsEmail
 
 	srv, err := CreateClientFromCredentials(context.Background(), credentialsFile)
 	if err != nil {
@@ -55,7 +61,6 @@ type CredentialsFile struct {
 // DefaultCredentialFile is the google account details for acnilbot
 // PrivateKeyID and PrivateKey will be provided from secrets
 var DefaultCredentialFile = CredentialsFile{
-	Email:    "bot-246@acnil-bot.iam.gserviceaccount.com",
 	TokenURL: "https://oauth2.googleapis.com/token",
 	Scopes: []string{
 		"https://www.googleapis.com/auth/spreadsheets",

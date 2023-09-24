@@ -52,6 +52,12 @@ variable "sheets_private_key_id" {
   sensitive   = true
 }
 
+variable "sheets_email" {
+  description = "Email used to interact with google sheets"
+  type        = string
+  sensitive   = false
+}
+
 //https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/v6.0.0
 module "bot_handler" {
   source = "terraform-aws-modules/lambda/aws"
@@ -72,6 +78,7 @@ module "bot_handler" {
     TOKEN : var.bot_token,
     SHEETS_PRIVATE_KEY_ID : var.sheets_private_key_id
     SHEETS_PRIVATE_KEY : var.sheets_private_key
+    SHEETS_EMAIL : var.sheets_email
   }
   cloudwatch_logs_retention_in_days = 14
 }
@@ -95,6 +102,7 @@ module "audit_handler" {
     TOKEN : var.bot_token,
     SHEETS_PRIVATE_KEY_ID : var.sheets_private_key_id
     SHEETS_PRIVATE_KEY : var.sheets_private_key
+    SHEETS_EMAIL : var.sheets_email
   }
   cloudwatch_logs_retention_in_days = 14
 
