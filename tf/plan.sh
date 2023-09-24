@@ -10,6 +10,7 @@ GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -o cmd/auditLambda/package/b
 terraform -chdir=./tf plan -input=false -no-color \
      -var=sheets_private_key="$SHEETS_PRIVATE_KEY" \
      -var=sheets_private_key_id="$SHEETS_PRIVATE_KEY_ID" \
+     -var=sheets_email="$SHEETS_EMAIL" \
      -var=bot_token=$TOKEN \
      -var=sheet_id=$SHEET_ID \
      -var=audit_sheet_id=$AUDIT_SHEET_ID
