@@ -3,9 +3,9 @@
 set -e 
 set -o pipefail
 
-GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -o cmd/lambda/package/bootstrap cmd/lambda/main.go
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -o cmd/lambda/package/bootstrap cmd/lambda/main.go
 
-GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -o cmd/auditLambda/package/bootstrap cmd/auditLambda/main.go
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -o cmd/auditLambda/package/bootstrap cmd/auditLambda/main.go
 
 terraform -chdir=./tf plan -input=false \
      -var=sheets_private_key="$SHEETS_PRIVATE_KEY" \
