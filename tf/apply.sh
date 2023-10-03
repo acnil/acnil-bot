@@ -7,7 +7,7 @@ GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -o cmd/lambda/package/bootst
 
 GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -o cmd/auditLambda/package/bootstrap cmd/auditLambda/main.go
 
-terraform -chdir=./tf apply -input=false \
+terraform -chdir=./tf apply -input=false --auto-approve \
      -var=sheets_private_key="$SHEETS_PRIVATE_KEY" \
      -var=sheets_private_key_id="$SHEETS_PRIVATE_KEY_ID" \
      -var=sheets_email="$SHEETS_EMAIL" \
