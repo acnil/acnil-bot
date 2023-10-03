@@ -19,7 +19,7 @@ terraform -chdir=./tf apply -input=false --auto-approve \
 echo "Bot token selected"
 curl -H "Content-Type: application/json" -X GET "https://api.telegram.org/bot$TOKEN/getMe"
 
-FUNCTION_URL="$(terraform -chdir=./tf output function_url)"
+FUNCTION_URL=`terraform -chdir=./tf output function_url`
 echo  ""
 echo  "Configure webhook to $FUNCTION_URL"
 
