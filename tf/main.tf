@@ -18,6 +18,16 @@ provider "aws" {
   region = "eu-west-1"
 }
 
+
+// This is the md5 of the bot tokens. Used to validate that you are using the right tokens
+// Feel free to add more worspaces if needed
+locals {
+  bot_token_md5 = {
+    "default" : "ac2312fb0515871b88408d233f7c562e"
+    "production" : "0606b1eb24a5ea79d095b081a55ce690"
+  }
+}
+
 variable "bot_token" {
   description = "telegram bot token"
   type        = string
@@ -38,6 +48,13 @@ variable "audit_sheet_id" {
 
 output "function_url" {
   value = module.bot_handler.lambda_function_url
+
+  // This precondition is used to make sure you are using the right bot token for the environment
+  // Mainly to detect cases where you have the wrong environment set.
+  precondition {
+    condition     = md5(var.bot_token) == local.bot_token_md5[terraform.workspace]
+    error_message = format("the selected token doesn't match the expected for the workspace. The hash is \"%s\" but expected \"%s\"", nonsensitive(md5(var.bot_token)), local.bot_token_md5[terraform.workspace])
+  }
 }
 
 variable "sheets_private_key" {
@@ -62,7 +79,7 @@ variable "sheets_email" {
 module "bot_handler" {
   source = "terraform-aws-modules/lambda/aws"
 
-  function_name              = "acnil-bot"
+  function_name              = format("%s-acnil-bot", terraform.workspace)
   description                = "Function to control acnil bot"
   handler                    = "bootstrap"
   runtime                    = "provided.al2"
@@ -83,11 +100,18 @@ module "bot_handler" {
   cloudwatch_logs_retention_in_days = 14
 }
 
+check "bot_token_checsum" {
+  assert {
+    condition     = md5(var.bot_token) == local.bot_token_md5[terraform.workspace]
+    error_message = format("the selected token doesn't match the expected for the workspace. The hash is \"%s\" but expected \"%s\"", nonsensitive(md5(var.bot_token)), local.bot_token_md5[terraform.workspace])
+  }
+}
+
 
 module "audit_handler" {
   source = "terraform-aws-modules/lambda/aws"
 
-  function_name = "audit-acnil-bot"
+  function_name = format("%s-audit-acnil-bot", terraform.workspace)
   description   = "Function to monitor audit"
   handler       = "bootstrap"
   runtime       = "provided.al2"
@@ -110,34 +134,32 @@ module "audit_handler" {
   allowed_triggers = {
     ScanAmiRule = {
       principal  = "events.amazonaws.com"
-      source_arn = module.eventbridge.eventbridge_rule_arns["crons"]
+      source_arn = resource.aws_cloudwatch_event_rule.daily.arn
     }
   }
 }
 
 # // https://registry.terraform.io/modules/terraform-aws-modules/eventbridge/aws/latest
-module "eventbridge" {
-  source = "terraform-aws-modules/eventbridge/aws"
 
-  create_bus = false
+resource "aws_cloudwatch_event_rule" "daily" {
+  name        = format("%s-acnil-bot-daily_rule", terraform.workspace)
+  description = "trigger lambda daily"
 
-  rules = {
-    crons = {
-      description = "Trigger for a audit acnil-bot Lambda"
-      ## 1m
-      # schedule_expression = "cron(0/1 * * * ? *)"
-      ## every day at midnight
-      schedule_expression = "cron(0 0 * * ? *)"
-    }
-  }
+  # schedule_expression = "rate(5 minutes)"
+  schedule_expression = "cron(0 0 * * ? *)"
+}
 
-  targets = {
-    crons = [
-      {
-        name  = module.audit_handler.lambda_function_name
-        arn   = module.audit_handler.lambda_function_arn
-        input = jsonencode({ "job" : "DoIT" })
-      }
-    ]
-  }
+resource "aws_cloudwatch_event_target" "lambda_target" {
+  rule      = aws_cloudwatch_event_rule.daily.name
+  target_id = "SendToLambda"
+  arn       = module.audit_handler.lambda_function_arn
+}
+
+resource "aws_lambda_permission" "allow_eventbridge" {
+  statement_id = "AllowExecutionFromEventBridge"
+  action       = "lambda:InvokeFunction"
+  # function_name = aws_lambda_function.test_lambda.function_name
+  function_name = module.audit_handler.lambda_function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.daily.arn
 }
