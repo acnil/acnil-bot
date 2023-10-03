@@ -34,6 +34,7 @@ jobs:
     - name: Cache Terraform
       uses: actions/cache@v3
       with:
+        key: terraform-cache
         path: |
           ~/tf/.terraform
           ~/tf/builds
