@@ -3,7 +3,7 @@ set -e
 set -o pipefail
 
 
-terraform -chdir=./tf destroy -input=false -no-color -auto-approve \
+terraform -chdir=./tf destroy -input=false -no-color \
      -var=sheets_private_key="$SHEETS_PRIVATE_KEY" \
      -var=sheets_private_key_id="$SHEETS_PRIVATE_KEY_ID" \
      -var=sheets_email="$SHEETS_EMAIL" \
