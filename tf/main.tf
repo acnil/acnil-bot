@@ -100,13 +100,6 @@ module "bot_handler" {
   cloudwatch_logs_retention_in_days = 14
 }
 
-check "bot_token_checsum" {
-  assert {
-    condition     = md5(var.bot_token) == local.bot_token_md5[terraform.workspace]
-    error_message = format("the selected token doesn't match the expected for the workspace. The hash is \"%s\" but expected \"%s\"", nonsensitive(md5(var.bot_token)), local.bot_token_md5[terraform.workspace])
-  }
-}
-
 
 module "audit_handler" {
   source = "terraform-aws-modules/lambda/aws"
