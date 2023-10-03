@@ -29,5 +29,9 @@ jobs:
       run: terraform -chdir=./tf init
       continue-on-error: true
 
+    - name: Terraform Workspace
+      id: workspace
+      run: terraform -chdir=./tf workspace select production
+
     - name: Terraform Apply
       run: ./tf/apply.sh
