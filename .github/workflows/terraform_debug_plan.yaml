@@ -42,6 +42,8 @@ jobs:
     - name: Terraform Plan
       id: plan
       run: |
+        terraform -chdir=./tf output function_url
         FUNCTION_URL=`terraform -chdir=./tf output function_url`
         echo  ""
         echo  "Configure webhook to $FUNCTION_URL"
+        echo $FUNCTION_URL | cut -d "/" -f 2-
