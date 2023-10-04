@@ -17,7 +17,7 @@ env:
 
 jobs:
   terraform:
-    name: Plan / Apply
+    name: Plan 
     runs-on: ubuntu-20.04
     permissions:
       contents: read

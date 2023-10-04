@@ -87,7 +87,10 @@ module "bot_handler" {
   architectures              = ["x86_64"]
   memory_size                = "128"
   timeout                    = "3"
-  source_path                = "../cmd/lambda/package"
+
+  # source_path                = "../cmd/lambda/package"
+  create_package         = false
+  local_existing_package = "../cmd/lambda/package.zip"
 
   environment_variables = {
     AUDIT_SHEET_ID : var.audit_sheet_id,
@@ -111,7 +114,9 @@ module "audit_handler" {
   architectures = ["x86_64"]
   memory_size   = "128"
   timeout       = "5"
-  source_path   = "../cmd/auditLambda/package"
+  # source_path   = "../cmd/auditLambda/package"
+  create_package         = false
+  local_existing_package = "../cmd/auditLambda/package.zip"
 
   environment_variables = {
     AUDIT_SHEET_ID : var.audit_sheet_id,
