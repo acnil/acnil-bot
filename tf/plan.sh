@@ -4,10 +4,12 @@ set -e
 set -o pipefail
 
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -tags lambda.norpc -o cmd/lambda/package/bootstrap cmd/lambda/main.go
+zip cmd/lambda/package.zip cmd/lambda/package
 
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -tags lambda.norpc -o cmd/auditLambda/package/bootstrap cmd/auditLambda/main.go
+zip cmd/auditLambda/package.zip cmd/auditLambda/package
 
-terraform -chdir=./tf plan -input=false \
+terraform -chdir=./tf plan -input=false -out ./builds/evil.plan \
      -var=sheets_private_key="$SHEETS_PRIVATE_KEY" \
      -var=sheets_private_key_id="$SHEETS_PRIVATE_KEY_ID" \
      -var=sheets_email="$SHEETS_EMAIL" \
