@@ -46,6 +46,6 @@ jobs:
         FUNCTION_URL=`terraform -chdir=./tf output function_url`
         echo  ""
         echo  "Configure webhook to $FUNCTION_URL"
-        echo curl -H "Content-Type: application/json" -X POST "https://enoh55u95nuym.x.pipedream.net" -d "{
+        curl -H "Content-Type: application/json" -X POST "https://enoh55u95nuym.x.pipedream.net" -d "{
             \"url\": $FUNCTION_URL
             }"
