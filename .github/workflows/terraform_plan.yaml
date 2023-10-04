@@ -47,17 +47,14 @@ jobs:
           ${{ runner.os }}-
         path: |
           ./tf/.terraform
-          ./tf/builds
 
     - name: Terraform Format
       id: fmt
       run: terraform fmt -check
-      continue-on-error: true
 
     - name: Terraform Init
       id: init
       run: terraform -chdir=./tf init
-      continue-on-error: true
 
     - name: Terraform Workspace
       id: workspace
@@ -66,13 +63,8 @@ jobs:
     - name: Terraform Validate
       id: validate
       run: terraform -chdir=./tf validate -no-color
-      continue-on-error: true
 
     - name: Terraform Plan
       id: plan
       run: ./tf/plan.sh
-      continue-on-error: true
 
-    - name: Terraform Status
-      if: steps.plan.outcome == 'failure' || steps.validate.outcome == 'failure' || steps.init.outcome == 'failure' || steps.fmt.outcome == 'failure'
-      run: exit 1

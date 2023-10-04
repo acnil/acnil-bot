@@ -42,17 +42,15 @@ jobs:
           ${{ runner.os }}-
         path: |
           ./tf/.terraform
-          ./tf/builds
 
 
     - name: Terraform Init
       id: init
       run: terraform -chdir=./tf init
-      continue-on-error: true
 
     - name: Terraform Workspace
       id: workspace
       run: terraform -chdir=./tf workspace select production
 
-    - name: Terraform Apply
+    - name: Terraform Destroy
       run: ./tf/destroy.sh
