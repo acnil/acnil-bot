@@ -46,8 +46,8 @@ jobs:
           ${{ runner.os }}-build-
           ${{ runner.os }}-
         path: |
-          ~/tf/.terraform
-          ~/tf/builds
+          ./tf/.terraform
+          ./tf/builds
 
     - name: Terraform Format
       id: fmt
