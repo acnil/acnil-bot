@@ -7,11 +7,11 @@ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -tags lambda.norpc -o c
 ## Why?
 ## https://zerostride.medium.com/building-deterministic-zip-files-with-built-in-commands-741275116a19
 touch cmd/lambda/package/bootstrap -t 201301250000
-(cd cmd/lambda/package; rm ../package.zip; zip -rq -D -X -9 -A --compression-method deflate ../package.zip bootstrap;)
+(cd cmd/lambda/package; rm -f ../package.zip; zip -rq -D -X -9 -A --compression-method deflate ../package.zip bootstrap;)
 
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -tags lambda.norpc -o cmd/auditLambda/package/bootstrap cmd/auditLambda/main.go
 touch cmd/auditLambda/package/bootstrap -t 201301250000
-(cd cmd/auditLambda/package; rm ../package.zip; zip -rq -D -X -9 -A --compression-method deflate ../package.zip bootstrap;)
+(cd cmd/auditLambda/package; rm -f ../package.zip; zip -rq -D -X -9 -A --compression-method deflate ../package.zip bootstrap;)
 
 terraform -chdir=./tf apply -input=false --auto-approve \
      -var=sheets_private_key="$SHEETS_PRIVATE_KEY" \
