@@ -8,7 +8,7 @@ export GOOS=linux
 export GOARCH=amd64
 export GOPATH=/home/runner/go
 
-build="go build -trimpath -tags lambda.norpc -buildvcs=false -compiler gc"
+build="go build -trimpath -tags lambda.norpc -buildvcs=true -compiler gc"
 go env
 
 $build -o cmd/lambda/package/bootstrap cmd/lambda/main.go
