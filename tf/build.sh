@@ -11,7 +11,7 @@ export GOPATH=/home/runner/go
 build="go build -trimpath -tags lambda.norpc -buildvcs=true -compiler gc"
 go env
 
-$build -o cmd/lambda/package/bootstrap cmd/lambda/main.go
+(cd cmd/lambda; $build -o package/bootstrap)
 
 chmod 777 cmd/lambda/package/bootstrap
 echo Binary MD5 $(cat cmd/lambda/package/bootstrap | md5sum )
@@ -22,7 +22,7 @@ touch cmd/lambda/package/bootstrap -t 201301250000
 
 echo Zip MD5 $(cat cmd/lambda/package.zip | md5sum )
 
-$build -o cmd/auditLambda/package/bootstrap cmd/auditLambda/main.go
+(cd cmd/auditLambda; $build -o package/bootstrap)
 chmod 777 cmd/auditLambda/package/bootstrap
 echo Binary MD5 $(cat cmd/auditLambda/package/bootstrap | md5sum )
 touch cmd/auditLambda/package/bootstrap -t 201301250000
