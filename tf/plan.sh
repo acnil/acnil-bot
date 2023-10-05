@@ -2,8 +2,14 @@
 
 set -e 
 set -o pipefail
+export CGO_ENABLED=0 
+export GOOS=linux 
+export GOARCH=amd64
+flags="go build -trimpath -tags lambda.norpc -buildvcs=false -compiler gc"
+go env
 
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -tags lambda.norpc -o cmd/lambda/package/bootstrap cmd/lambda/main.go
+$flags -o cmd/lambda/package/bootstrap cmd/lambda/main.go
+
 echo Binary MD5 $(cat cmd/lambda/package/bootstrap | md5sum )
 ## Why?
 ## https://zerostride.medium.com/building-deterministic-zip-files-with-built-in-commands-741275116a19
@@ -13,7 +19,7 @@ touch cmd/lambda/package/bootstrap -t 201301250000
 
 echo Zip MD5 $(cat cmd/lambda/package.zip | md5sum )
 
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -tags lambda.norpc -o cmd/auditLambda/package/bootstrap cmd/auditLambda/main.go
+$flags -o cmd/auditLambda/package/bootstrap cmd/auditLambda/main.go
 echo Binary MD5 $(cat cmd/auditLambda/package/bootstrap | md5sum )
 # chmod 777 cmd/auditLambda/package/bootstrap
 touch cmd/auditLambda/package/bootstrap -t 201301250000
