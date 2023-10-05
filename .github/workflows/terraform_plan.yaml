@@ -67,5 +67,20 @@ jobs:
     - name: Terraform Plan
       id: plan
       run: |
-        ./tf/plan.sh >> $GITHUB_STEP_SUMMARY
+        ./tf/plan.sh
+    - name: Outcome
+      id: outcome
+      run: |
+        </details>
+
+        #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+        <details><summary>Show Plan</summary>
+
+        \`\`\`\n
+        ${process.env.PLAN}
+        \`\`\`
+
+      </details>
+         
 
