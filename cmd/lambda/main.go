@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
+	"runtime/debug"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/metalblueberry/acnil-bot/pkg/acnil"
@@ -32,6 +34,10 @@ func Handler(b *tele.Bot) func(ctx context.Context, request httplambda.Request) 
 }
 
 func main() {
+
+	if bi, ok := debug.ReadBuildInfo(); ok {
+		fmt.Printf("%+v\n", bi)
+	}
 
 	botToken := os.Getenv("TOKEN")
 	if botToken == "" {
