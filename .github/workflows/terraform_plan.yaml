@@ -71,7 +71,7 @@ jobs:
     - name: Outcome
       id: outcome
       run: |
-        </details>
+        echo `</details>
 
         #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
 
@@ -80,6 +80,5 @@ jobs:
         \`\`\`\n
         ${process.env.PLAN}
         \`\`\`
-        </details>
-         
+        </details>` >> GITHUB_STEP_SUMMARY
 
