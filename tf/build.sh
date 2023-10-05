@@ -14,7 +14,7 @@ export GOPATH=/home/runner/go
 echo Building $1
 (
     cd $1;
-    go build -trimpath -tags lambda.norpc -buildvcs=true -compiler gc -o package/bootstrap;
+    go build -trimpath -tags lambda.norpc -buildvcs=false -compiler gc -o package/bootstrap;
     chmod 777 package/bootstrap
     echo Binary MD5 $(cat package/bootstrap | md5sum )
     touch package/bootstrap -t 201301250000
