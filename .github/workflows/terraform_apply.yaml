@@ -55,8 +55,6 @@ jobs:
     - name: Terraform Workspace
       id: workspace
       run: terraform -chdir=./tf workspace select production
-    - name: Debug
-      run: echo $WEBHOOK_SECRET_TOKEN
 
     - name: Terraform Apply
       run: ./tf/apply.sh
