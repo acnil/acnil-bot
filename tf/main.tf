@@ -34,6 +34,12 @@ variable "bot_token" {
   sensitive   = true
 }
 
+variable "webhook_secret_token" {
+  description = "Token that telegram will use to ensure the calls come from telegram"
+  type        = string
+  sensitive   = true
+}
+
 variable "sheet_id" {
   description = "sheet used for inventory"
   type        = string
@@ -75,6 +81,7 @@ variable "sheets_email" {
   sensitive   = false
 }
 
+
 //https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/v6.0.0
 module "bot_handler" {
   source = "terraform-aws-modules/lambda/aws"
@@ -88,7 +95,6 @@ module "bot_handler" {
   memory_size                = "128"
   timeout                    = "3"
 
-  # source_path                = "../cmd/lambda/package"
   create_package         = false
   local_existing_package = "../cmd/lambda/package.zip"
 
@@ -99,6 +105,7 @@ module "bot_handler" {
     SHEETS_PRIVATE_KEY_ID : var.sheets_private_key_id
     SHEETS_PRIVATE_KEY : var.sheets_private_key
     SHEETS_EMAIL : var.sheets_email
+    WEBHOOK_SECRET_TOKEN : var.webhook_secret_token
   }
   cloudwatch_logs_retention_in_days = 14
 }
@@ -114,7 +121,7 @@ module "audit_handler" {
   architectures = ["x86_64"]
   memory_size   = "128"
   timeout       = "5"
-  # source_path   = "../cmd/auditLambda/package"
+
   create_package         = false
   local_existing_package = "../cmd/auditLambda/package.zip"
 

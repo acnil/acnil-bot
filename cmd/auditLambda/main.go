@@ -1,35 +1,15 @@
 package main
 
 import (
-	"context"
-	"encoding/json"
 	"log"
 	"os"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/metalblueberry/acnil-bot/pkg/acnil"
-	httplambda "github.com/metalblueberry/acnil-bot/pkg/httpLambda"
 	"github.com/metalblueberry/acnil-bot/pkg/recipes"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/telebot.v3"
 	tele "gopkg.in/telebot.v3"
 )
-
-func Handler(b *tele.Bot) func(ctx context.Context, request httplambda.Request) error {
-	return func(ctx context.Context, request httplambda.Request) error {
-		log.Println("Handling request")
-
-		update := telebot.Update{}
-		err := json.Unmarshal([]byte(request.Body), &update)
-		if err != nil {
-			return err
-		}
-
-		log.Println("sending update, ", update.ID)
-		b.ProcessUpdate(update)
-		return nil
-	}
-}
 
 func main() {
 	botToken := os.Getenv("TOKEN")
