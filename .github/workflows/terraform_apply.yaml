@@ -13,7 +13,7 @@ env:
   SHEETS_PRIVATE_KEY_ID: ${{ secrets.SHEETS_PRIVATE_KEY_ID }}
   SHEET_ID: ${{ secrets.SHEET_ID }}
   TOKEN: ${{ secrets.TOKEN }}
-  WEBHOOK_SECRET_TOKEN: ${{ secrets.WEBHOOK_SECRET_TOKEN}}
+  WEBHOOK_SECRET_TOKEN: ${{ secrets.WEBHOOK_SECRET_TOKEN }}
 
 jobs:
   terraform:
