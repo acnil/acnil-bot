@@ -12,7 +12,8 @@ terraform -chdir=./tf plan -input=false \
      -var=sheets_email="$SHEETS_EMAIL" \
      -var=bot_token=$TOKEN \
      -var=sheet_id=$SHEET_ID \
-     -var=audit_sheet_id=$AUDIT_SHEET_ID
+     -var=audit_sheet_id=$AUDIT_SHEET_ID \
+     -var=webhook_secret_token=$WEBHOOK_SECRET_TOKEN
 
 echo "Bot token selected"
 curl -H "Content-Type: application/json"  -X GET "https://api.telegram.org/bot$TOKEN/getMe"
@@ -22,5 +23,6 @@ echo  ""
 echo  "Configure webhook to $FUNCTION_URL"
 
 echo curl -H "Content-Type: application/json" -X POST "https://api.telegram.org/bot$TOKEN/setWebhook" -d "{
-     \"url\": $FUNCTION_URL
+     \"url\": $FUNCTION_URL,
+     \"secret_token\": \"hiden\"
      }"

@@ -3,10 +3,8 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
-	"runtime/debug"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/metalblueberry/acnil-bot/pkg/acnil"
@@ -18,8 +16,17 @@ import (
 )
 
 func Handler(b *tele.Bot) func(ctx context.Context, request httplambda.Request) error {
+	webhookSecretToken := os.Getenv("WEBHOOK_SECRET_TOKEN")
+	if webhookSecretToken == "" {
+		logrus.Fatal("WEBHOOK_SECRET_TOKEN must be defined")
+	}
+
 	return func(ctx context.Context, request httplambda.Request) error {
 		log.Println("Handling request")
+		if request.Headers["x-telegram-bot-api-secret-token"] != webhookSecretToken {
+			log.Printf("Request rejected because the token doesn't match, received %s", request.Headers)
+			return nil
+		}
 
 		update := telebot.Update{}
 		err := json.Unmarshal([]byte(request.Body), &update)
@@ -34,10 +41,6 @@ func Handler(b *tele.Bot) func(ctx context.Context, request httplambda.Request) 
 }
 
 func main() {
-
-	if bi, ok := debug.ReadBuildInfo(); ok {
-		fmt.Printf("%+v\n", bi)
-	}
 
 	botToken := os.Getenv("TOKEN")
 	if botToken == "" {
