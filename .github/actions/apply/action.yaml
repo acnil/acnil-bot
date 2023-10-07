@@ -3,7 +3,8 @@ description: "Apply terraform changes"
 runs:
   using: "composite"
   steps:
-    - uses: ./.github/actions/terraform
+    - name: Terraform setup
+      uses: ./.github/actions/terraform
     - name: Terraform Apply
       shell: bash
       run: ./tf/apply.sh
