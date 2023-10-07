@@ -8,4 +8,4 @@ runs:
       run: go test -v ./...
     - name: Build 
       shell: bash
-      run: build.sh
+      run: ./tf/build.sh
