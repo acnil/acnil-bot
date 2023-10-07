@@ -1,0 +1,26 @@
+name: Terraform Plan
+description: "Apply terraform changes"
+runs:
+  using: composite
+  steps:
+    - name: Prepare terraform
+      uses: ./.github/actions/terraform
+
+    - name: Terraform Plan
+      shell: bash
+      run: ./tf/plan.sh
+
+    - name: Outcome
+      shell: bash
+      id: outcome
+      run: |
+        echo `</details>
+
+        #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+        <details><summary>Show Plan</summary>
+
+        \`\`\`\n
+        ${process.env.PLAN}
+        \`\`\`
+        </details>` >> GITHUB_STEP_SUMMARY
