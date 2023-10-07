@@ -1,5 +1,4 @@
 /secret.json
-/.env
 /deploy/*
 /credentials.prod.json
 /credentials.json
@@ -11,5 +10,5 @@
 /lambda/
 
 bootstrap
-prod.env
 package.zip
+env
