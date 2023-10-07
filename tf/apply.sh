@@ -3,9 +3,6 @@
 set -e 
 set -o pipefail
 
-__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-bash ${__dir}/build.sh
-
 terraform -chdir=./tf apply -input=false --auto-approve \
      -var=sheets_private_key="$SHEETS_PRIVATE_KEY" \
      -var=sheets_private_key_id="$SHEETS_PRIVATE_KEY_ID" \
