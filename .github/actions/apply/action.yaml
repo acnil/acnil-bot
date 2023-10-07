@@ -7,5 +7,15 @@ runs:
       uses: ./.github/actions/terraform
 
     - name: Terraform Apply
+      env:
+        AUDIT_SHEET_ID: ${{ secrets.AUDIT_SHEET_ID }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        SHEETS_EMAIL: ${{ secrets.SHEETS_EMAIL }}
+        SHEETS_PRIVATE_KEY: ${{ secrets.SHEETS_PRIVATE_KEY }}
+        SHEETS_PRIVATE_KEY_ID: ${{ secrets.SHEETS_PRIVATE_KEY_ID }}
+        SHEET_ID: ${{ secrets.SHEET_ID }}
+        TOKEN: ${{ secrets.TOKEN }}
+        WEBHOOK_SECRET_TOKEN: ${{ secrets.WEBHOOK_SECRET_TOKEN }}
       shell: bash
       run: ./tf/apply.sh
