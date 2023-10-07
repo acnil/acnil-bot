@@ -14,6 +14,8 @@ runs:
     - name: Outcome
       shell: bash
       id: outcome
+      env:
+        PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
       run: |
         echo `</details>
 
