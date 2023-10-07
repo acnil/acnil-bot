@@ -1,13 +1,9 @@
 name: Build
 
-jobs:
-  test:
-    needs: checkout
-    steps:
+runs:
+  using: "composite"
+  steps:
     - name: Test all
       run: go test -v ./...
-  build:
-    needs: checkout
-    steps:
     - name: Build acnilbot
       run: go build -v cmd/acnilbot/main.go
