@@ -15,4 +15,4 @@ jobs:
     steps:
     - name: Check out repository
       uses: actions/checkout@v4   
-    - uses: ./.github/actions/build.yaml
+    - uses: ./.github/actions/build
