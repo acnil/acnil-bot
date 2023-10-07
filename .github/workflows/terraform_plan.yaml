@@ -38,6 +38,14 @@ jobs:
         terraform_version: 1.5.6
         terraform_wrapper: false
 
+    - name: Terraform Validate
+      id: validate
+      run: terraform -chdir=./tf validate -no-color
+
+    - name: Terraform Format
+      id: fmt
+      run: terraform fmt -check
+
     - name: Cache Terraform
       uses: actions/cache@v3
       with:
@@ -49,10 +57,6 @@ jobs:
         path: |
           ./tf/.terraform
 
-    - name: Terraform Format
-      id: fmt
-      run: terraform fmt -check
-
     - name: Terraform Init
       id: init
       run: terraform -chdir=./tf init
@@ -60,10 +64,6 @@ jobs:
     - name: Terraform Workspace
       id: workspace
       run: terraform -chdir=./tf workspace select production
-
-    - name: Terraform Validate
-      id: validate
-      run: terraform -chdir=./tf validate -no-color
 
     - name: Terraform Plan
       id: plan
