@@ -29,3 +29,13 @@ runs:
       shell: bash
       id: workspace
       run: terraform -chdir=./tf workspace select production
+
+    - name: Terraform Format
+      shell: bash
+      id: fmt
+      run: terraform fmt -check
+
+    - name: Terraform Validate
+      shell: bash
+      id: validate
+      run: terraform -chdir=./tf validate -no-color
