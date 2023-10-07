@@ -6,6 +6,6 @@ runs:
     - name: Test all
       shell: bash
       run: go test -v ./...
-    - name: Build acnilbot
+    - name: Build 
       shell: bash
-      run: go build -v cmd/acnilbot/main.go
+      run: ./tf/build.sh
