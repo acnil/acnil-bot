@@ -1,4 +1,4 @@
-name: Terraform Plan
+name: Terraform Delete
 description: "Apply terraform changes"
 runs:
   using: composite
@@ -6,6 +6,6 @@ runs:
     - name: Prepare terraform
       uses: ./.github/actions/terraform
 
-    - name: Terraform Plan
+    - name: Terraform Delete
       shell: bash
-      run: ./tf/plan.sh
+      run: ./tf/delete.sh

@@ -3,9 +3,9 @@ description: "Builds go binaries in a stable way and zips the result to upload i
 runs:
   using: "composite"
   steps:
-    # - name: Test all
-    #   shell: bash
-    #   run: go test -v ./...
+    - name: Test all
+      shell: bash
+      run: go test -v ./...
     - name: Build 
       shell: bash
       run: | 
