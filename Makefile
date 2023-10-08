@@ -16,3 +16,6 @@ setup-dev:
 
 setup-prod:
 	terraform -chdir=./tf workspace select production
+
+run-local:
+	reflex -s -r ".*go" -- go run cmd/acnilbot/main.go
