@@ -700,6 +700,8 @@ var _ = Describe("Handler", func() {
 						Type: tele.ChatPrivate,
 					},
 				}).AnyTimes()
+			})
+			It("the game must be updated with empty holder", func() {
 				mockGameDatabase.EXPECT().Update(gomock.Any(), gomock.AssignableToTypeOf(acnil.Game{
 					ID:   "1",
 					Name: "Game1",
@@ -708,10 +710,9 @@ var _ = Describe("Handler", func() {
 					Expect(g.Holder).To(BeEmpty())
 					Expect(g.TakeDate).To(BeZero())
 				})
-			})
-			It("the game must be updated with empty holder", func() {
 				mockTeleContext.EXPECT().Edit(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
 					Expect(sent).To(ContainSubstring("Game1"))
+					Expect(sent).ToNot(ContainSubstring(member.Nickname))
 					return nil
 				})
 				mockTeleContext.EXPECT().Respond(gomock.Any())
@@ -740,13 +741,18 @@ var _ = Describe("Handler", func() {
 				}).AnyTimes()
 
 			})
-			It("the game must not be updated and new data must be returned", func() {
-				mockTeleContext.EXPECT().Edit(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
-					Expect(sent).To(ContainSubstring("te envío los últimos actualizados"))
-					return nil
+			It("the game must be updated with empty holder", func() {
+				mockGameDatabase.EXPECT().Update(gomock.Any(), gomock.AssignableToTypeOf(acnil.Game{
+					ID:   "1",
+					Name: "Game1",
+				})).Do(func(_ context.Context, g acnil.Game) {
+					Expect(g.Name).To(Equal("Game1"))
+					Expect(g.Holder).To(BeEmpty())
+					Expect(g.TakeDate).To(BeZero())
 				})
-				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+				mockTeleContext.EXPECT().Edit(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
 					Expect(sent).To(ContainSubstring("Game1"))
+					Expect(sent).ToNot(ContainSubstring(member.Nickname))
 					return nil
 				})
 				mockTeleContext.EXPECT().Respond(gomock.Any())
