@@ -3,7 +3,6 @@ package recipes
 import (
 	"compress/gzip"
 	"context"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -109,7 +108,7 @@ func (db gzipTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 
 	// if it is not gzip, just continue
 	if !strings.EqualFold(resp.Header.Get("Content-Encoding"), "gzip") || !db.Enabled {
-		log.Print("gzip not supported")
+		logrus.Print("gzip not supported")
 		return resp, err
 	}
 

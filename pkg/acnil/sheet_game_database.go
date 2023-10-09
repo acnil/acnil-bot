@@ -3,11 +3,11 @@ package acnil
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 	"unicode"
 
 	"github.com/metalblueberry/acnil-bot/pkg/sheetsparser"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
@@ -54,7 +54,7 @@ func (db *SheetGameDatabase) Get(ctx context.Context, id string, name string) (*
 func (db *SheetGameDatabase) List(ctx context.Context) ([]Game, error) {
 	resp, err := db.SRV.Spreadsheets.Values.Get(db.SheetID, db.fullReadRange()).Do()
 	if err != nil {
-		log.Fatalf("Unable to retrieve data from sheet: %v", err)
+		logrus.Fatalf("Unable to retrieve data from sheet: %v", err)
 	}
 	games := []Game{}
 
@@ -125,7 +125,7 @@ func Norm(in string) string {
 	dst := make([]byte, len(in))
 	ndst, _, err := t.Transform(dst, []byte(in), true)
 	if err != nil {
-		log.Printf("ERROR: %s\n", err)
+		logrus.Printf("ERROR: %s\n", err)
 		return strings.ToLower(in)
 	}
 	return strings.ToLower(string(dst[:ndst]))

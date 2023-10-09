@@ -3,11 +3,11 @@ package acnil
 import (
 	"context"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
 	"github.com/metalblueberry/acnil-bot/pkg/sheetsparser"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/api/sheets/v4"
 	tele "gopkg.in/telebot.v3"
 )
@@ -117,7 +117,7 @@ func (db *SheetMembersDatabase) Get(ctx context.Context, telegramID int64) (*Mem
 func (db *SheetMembersDatabase) List(ctx context.Context) ([]Member, error) {
 	resp, err := db.SRV.Spreadsheets.Values.Get(db.SheetID, db.fullReadRange()).Do()
 	if err != nil {
-		log.Fatalf("Unable to retrieve data from sheet: %v", err)
+		logrus.Fatalf("Unable to retrieve data from sheet: %v", err)
 	}
 	members := []Member{}
 
@@ -146,7 +146,7 @@ func (db *SheetMembersDatabase) Append(ctx context.Context, member Member) error
 
 	_, err := db.SRV.Spreadsheets.Values.Append(db.SheetID, db.fullReadRange(), &sheets.ValueRange{Values: [][]interface{}{values}}).ValueInputOption("USER_ENTERED").Do()
 	if err != nil {
-		log.Fatalf("Unable to append data to sheet: %v", err)
+		logrus.Fatalf("Unable to append data to sheet: %v", err)
 	}
 	return nil
 }
