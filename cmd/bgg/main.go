@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"os/signal"
 	"strconv"
@@ -150,7 +149,7 @@ func main() {
 		},
 	}
 	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 }
@@ -324,7 +323,7 @@ func FindGame(bggapi *bgg.Client, game acnil.Game) (*bgg.Boardgame, error) {
 			return nil, fmt.Errorf("Unable to use manual input %w", err)
 		}
 		for _, i := range resp.Boardgame {
-			log.Println(i.Name)
+			logrus.Println(i.Name)
 		}
 
 		if len(resp.Boardgame) != 1 {
@@ -350,7 +349,7 @@ func FindGame(bggapi *bgg.Client, game acnil.Game) (*bgg.Boardgame, error) {
 		}
 
 		for _, i := range resp.Boardgame {
-			log.Println(i.Name)
+			logrus.Println(i.Name)
 		}
 		return &resp.Boardgame[0], nil
 	}
@@ -364,7 +363,7 @@ func FindGame(bggapi *bgg.Client, game acnil.Game) (*bgg.Boardgame, error) {
 		}
 
 		for _, i := range resp.Boardgame {
-			log.Println(i.Name)
+			logrus.Println(i.Name)
 		}
 		return &resp.Boardgame[0], nil
 	}
@@ -394,7 +393,7 @@ retry:
 	}
 
 	for _, i := range resp.Boardgame {
-		log.Println(i.Name)
+		logrus.Println(i.Name)
 	}
 	return &resp.Boardgame[0], nil
 
