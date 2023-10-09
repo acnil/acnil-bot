@@ -373,3 +373,15 @@ func (games Games) FindDuplicates() (duplicate Games, unique Games) {
 	}
 	return duplicate, unique
 }
+
+type Location string
+
+const (
+	LocationGamonal = "Gamonal"
+	LocationCentro  = "Centro"
+)
+
+func (g Game) IsInLocation(location Location) bool {
+
+	return strings.EqualFold(strings.TrimSpace(g.Location), string(location))
+}
