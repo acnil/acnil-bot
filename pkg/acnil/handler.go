@@ -28,6 +28,7 @@ var (
 
 	adminMenu          = &tele.ReplyMarkup{ResizeKeyboard: true}
 	btnForgotten       = adminMenu.Text("Juegos olvidados?")
+	btnNotInAnyPlace   = adminMenu.Text("Juegos en ningún sitio")
 	btnCancelAdminMenu = adminMenu.Text("Atrás")
 
 	renameMenu      = &tele.ReplyMarkup{ResizeKeyboard: true}
@@ -58,6 +59,7 @@ func adminMenuReplyMarkup(member Member) *tele.ReplyMarkup {
 	markup := &tele.ReplyMarkup{ResizeKeyboard: true}
 	markup.Reply(
 		markup.Row(btnForgotten),
+		markup.Row(btnNotInAnyPlace),
 		markup.Row(btnCancelAdminMenu),
 	)
 	markup.ResizeKeyboard = true
@@ -132,6 +134,7 @@ func (h *Handler) Register(handlerGroup *tele.Group) {
 
 	handlerGroup.Handle(&btnAdmin, h.OnAdmin)
 	handlerGroup.Handle(&btnForgotten, h.OnForgotten)
+	handlerGroup.Handle(&btnNotInAnyPlace, h.OnNotInAnyPlace)
 }
 
 func OnlyPrivateChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
@@ -929,14 +932,14 @@ func (h *Handler) myGames(c tele.Context, member Member) error {
 }
 
 func (h *Handler) InCentro(c tele.Context, member Member) error {
-	return h.inLocation(c, member, "Centro")
+	return h.inLocation(c, member, LocationCentro)
 }
 
 func (h *Handler) InGamonal(c tele.Context, member Member) error {
-	return h.inLocation(c, member, "Gamonal")
+	return h.inLocation(c, member, LocationGamonal)
 }
 
-func (h *Handler) inLocation(c tele.Context, member Member, location string) error {
+func (h *Handler) inLocation(c tele.Context, member Member, location Location) error {
 	log := ilog.WithTelegramUser(logrus.
 		WithField(ilog.FieldHandler, "inLocation").
 		WithField(ilog.FieldLocation, location),
@@ -949,7 +952,7 @@ func (h *Handler) inLocation(c tele.Context, member Member, location string) err
 
 	inLocation := []Game{}
 	for _, game := range gameList {
-		if strings.EqualFold(strings.TrimSpace(game.Location), location) {
+		if game.IsInLocation(location) {
 			inLocation = append(inLocation, game)
 		}
 	}
@@ -1102,6 +1105,38 @@ func (h *Handler) onForgotten(c tele.Context, member Member) error {
 
 	for _, g := range forgottenGames {
 		c.Send(g.Card(), g.Buttons(member))
+	}
+
+	return nil
+}
+
+func (h *Handler) OnNotInAnyPlace(c tele.Context) error {
+	return h.IsAuthorized(h.IsAdmin(h.onNotInAnyPlace))(c)
+}
+
+func (h *Handler) onNotInAnyPlace(c tele.Context, member Member) error {
+
+	games, err := h.GameDB.List(context.Background())
+	if err != nil {
+		c.Send("Wops! Algo ha ido mal!")
+		return c.Send(err.Error())
+	}
+
+	notInAnyPlace := []Game{}
+	for _, g := range games {
+		if !g.IsInLocation(LocationGamonal) && !g.IsInLocation(LocationCentro) {
+			notInAnyPlace = append(notInAnyPlace, g)
+		}
+	}
+
+	sort.Slice(notInAnyPlace, func(i, j int) bool { return notInAnyPlace[i].LeaseDays() < notInAnyPlace[j].LeaseDays() })
+
+	for _, g := range notInAnyPlace {
+		c.Send(g.Card(), g.Buttons(member))
+	}
+
+	if len(notInAnyPlace) == 0 {
+		c.Send("Todo está bien")
 	}
 
 	return nil
