@@ -162,8 +162,30 @@ func (h *Handler) IsAuthorized(next func(tele.Context, Member) error) func(tele.
 			sender, _ := json.Marshal(c.Sender())
 			log.WithField(ilog.FieldName, newMember.Nickname).WithField("sender", string(sender)).Info("Registering new user")
 			m = &newMember
-			h.MembersDB.Append(context.Background(), newMember)
-			h.notifyAdminsOfNewLogin(log, newMember)
+			err := h.MembersDB.Append(context.Background(), newMember)
+			if err != nil {
+				logrus.
+					WithError(err).
+					Error("Failed to append member to database")
+			}
+			err = h.notifyAdminsOfNewLogin(log, newMember)
+			if err != nil {
+				logrus.
+					WithError(err).
+					Error("Failed to notify admins of new login")
+			}
+		}
+
+		// Migration code, this makes sure all users have the telegram name and the telegramUsername set
+		if m.TelegramName == "" {
+			m.TelegramName = fmt.Sprintf("%s %s", c.Sender().FirstName, c.Sender().LastName)
+			m.TelegramUsername = c.Sender().Username
+			err := h.MembersDB.Update(context.Background(), *m)
+			if err != nil {
+				logrus.
+					WithError(err).
+					Error("Failed to update member in database")
+			}
 		}
 
 		if !m.Permissions.IsAuthorised() {
@@ -173,7 +195,7 @@ func (h *Handler) IsAuthorized(next func(tele.Context, Member) error) func(tele.
 			return c.Send(fmt.Sprintf(`Hola,
 He notificado a un administrador de que necesitas acceso. Te avisaré cuando lo tengas.
 
-Si no lo recibes en 24h, avisa a @metalblueberry. 
+Si no lo recibes en 24h, avisa a @MetalBlueberry. 
 `))
 		}
 		return next(c, *m)

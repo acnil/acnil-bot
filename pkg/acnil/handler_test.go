@@ -58,9 +58,11 @@ var _ = Describe("Handler", func() {
 		)
 		BeforeEach(func() {
 			admin = &acnil.Member{
-				Nickname:    "MetalBlueberry",
-				TelegramID:  "12345",
-				Permissions: acnil.PermissionAdmin,
+				Nickname:         "MetalBlueberry",
+				TelegramID:       "12345",
+				Permissions:      acnil.PermissionAdmin,
+				TelegramName:     "Victor Perez",
+				TelegramUsername: "MetalBlueberry",
 			}
 			sender = &tele.User{
 				ID:        1,
@@ -68,9 +70,11 @@ var _ = Describe("Handler", func() {
 				LastName:  "User",
 			}
 			newMember = &acnil.Member{
-				TelegramID:  "1",
-				Nickname:    "New User",
-				Permissions: "no",
+				TelegramID:       "1",
+				Nickname:         "New User",
+				Permissions:      "no",
+				TelegramName:     "New User",
+				TelegramUsername: "Username",
 			}
 			mockTeleContext.EXPECT().Sender().Return(sender).AnyTimes()
 		})
@@ -124,9 +128,11 @@ var _ = Describe("Handler", func() {
 		)
 		BeforeEach(func() {
 			admin = &acnil.Member{
-				Nickname:    "MetalBlueberry",
-				TelegramID:  "12345",
-				Permissions: acnil.PermissionAdmin,
+				Nickname:         "MetalBlueberry",
+				TelegramID:       "12345",
+				Permissions:      acnil.PermissionAdmin,
+				TelegramName:     "Victor Perez",
+				TelegramUsername: "MetalBlueberry",
 			}
 			sender = &tele.User{
 				ID:        1,
@@ -135,9 +141,11 @@ var _ = Describe("Handler", func() {
 				Username:  "NewUsername",
 			}
 			newMember = &acnil.Member{
-				TelegramID:  "1",
-				Nickname:    "NewUsername",
-				Permissions: "no",
+				TelegramID:       "1",
+				Nickname:         "NewUsername",
+				Permissions:      "no",
+				TelegramName:     "New User",
+				TelegramUsername: "Username",
 			}
 			mockTeleContext.EXPECT().Sender().Return(sender).AnyTimes()
 		})
@@ -190,9 +198,11 @@ var _ = Describe("Handler", func() {
 		)
 		BeforeEach(func() {
 			admin = &acnil.Member{
-				Nickname:    "MetalBlueberry",
-				TelegramID:  "12345",
-				Permissions: acnil.PermissionAdmin,
+				Nickname:         "MetalBlueberry",
+				TelegramID:       "12345",
+				Permissions:      acnil.PermissionAdmin,
+				TelegramName:     "Victor Perez",
+				TelegramUsername: "MetalBlueberry",
 			}
 			mockMembersDatabase.EXPECT().Get(gomock.Any(), admin.TelegramIDInt()).Return(admin, nil)
 			sender = &tele.User{
@@ -209,9 +219,11 @@ var _ = Describe("Handler", func() {
 			)
 			BeforeEach(func() {
 				newMember = &acnil.Member{
-					TelegramID:  "1",
-					Nickname:    "New User",
-					Permissions: "no",
+					TelegramID:       "1",
+					Nickname:         "New User",
+					Permissions:      "no",
+					TelegramName:     "New User",
+					TelegramUsername: "Username",
 				}
 				text := "/fauthorise"
 				mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
@@ -357,9 +369,11 @@ var _ = Describe("Handler", func() {
 
 		BeforeEach(func() {
 			member = &acnil.Member{
-				Nickname:    "MetalBlueberry",
-				TelegramID:  "12345",
-				Permissions: acnil.PermissionYes,
+				Nickname:         "MetalBlueberry",
+				TelegramID:       "12345",
+				Permissions:      acnil.PermissionYes,
+				TelegramName:     "Victor Perez",
+				TelegramUsername: "MetalBlueberry",
 			}
 			mockMembersDatabase.EXPECT().Get(gomock.Any(), member.TelegramIDInt()).Return(member, nil)
 			sender = &tele.User{
