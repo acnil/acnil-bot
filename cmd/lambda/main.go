@@ -42,6 +42,8 @@ func Handler(b *tele.Bot) func(ctx context.Context, request httplambda.Request) 
 
 func main() {
 
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+
 	botToken := os.Getenv("TOKEN")
 	if botToken == "" {
 		logrus.Fatal("TOKEN must be defined")
