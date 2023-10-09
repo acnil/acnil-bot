@@ -179,16 +179,6 @@ func FillInventory(ctx *cli.Context, GameDB acnil.GameDatabase, bggapi *bgg.Clie
 		games[i].AvgWeight = ex.AvgWeight
 	}
 
-	// for _, g := range games {
-	// 	fmt.Print("[")
-	// 	_, row := g.ToRow()
-	// 	for _, row := range row {
-	// 		fmt.Printf("\"%s\",", row)
-	// 	}
-	// 	fmt.Print("]\n")
-	// }
-	// return nil
-	// // return GameDB.Update(ctx.Context, games...)
 	return GameDB.Update(ctx.Context, games...)
 }
 
