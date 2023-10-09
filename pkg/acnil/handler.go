@@ -680,7 +680,7 @@ func (h *Handler) onReturn(c tele.Context, member Member) error {
 
 	g = *getResult
 
-	if !g.IsHeldBy(member) && member.Permissions != PermissionAdmin {
+	if g.IsAvailable() {
 		err := c.Edit("Parece que alguien ha modificado los datos. te envío los últimos actualizados")
 		if err != nil {
 			log.Print(err)

@@ -116,9 +116,9 @@ var _ = Describe("A game card", func() {
 				card := game.Card()
 				Expect(card).To(ContainSubstring(game.Holder))
 			})
-			It("Must NOT contain return button", func() {
+			It("Must contain return button", func() {
 				buttons := ToOneDimension(game.Buttons(member).InlineKeyboard)
-				Expect(buttons).ToNot(ContainElement(WithButtonText("Devolver")))
+				Expect(buttons).To(ContainElement(WithButtonText("Devolver")))
 			})
 			It("Must NOT contain take button", func() {
 				buttons := ToOneDimension(game.Buttons(member).InlineKeyboard)

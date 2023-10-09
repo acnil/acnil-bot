@@ -211,12 +211,12 @@ func (g Game) Buttons(member Member) *tele.ReplyMarkup {
 	selector := &tele.ReplyMarkup{}
 	data := g.Data()
 	rows := []tele.Row{}
-	switch {
-	case g.IsAvailable():
+
+	if g.IsAvailable() {
 		rows = append(rows, selector.Row(
 			selector.Data("Tomar Prestado", "take", data),
 		))
-	case g.IsHeldBy(member), member.Permissions == PermissionAdmin:
+	} else {
 		rows = append(rows, selector.Row(
 			selector.Data("Devolver", "return", data),
 		))
