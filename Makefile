@@ -19,3 +19,6 @@ setup-prod:
 
 run-local:
 	reflex -s -r ".*go" -- go run cmd/acnilbot/main.go
+
+test:
+	go test ./...
