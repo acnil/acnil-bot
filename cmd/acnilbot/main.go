@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"os"
 	"time"
 
@@ -68,7 +67,7 @@ func main() {
 	handlerGroup := b.Group()
 	handler.Register(handlerGroup)
 
-	log.Println("Application ready! listening for events")
+	logrus.Println("Application ready! listening for events")
 	b.Start()
 }
 

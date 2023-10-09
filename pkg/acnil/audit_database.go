@@ -6,9 +6,9 @@ import (
 	"sort"
 	"time"
 
-	"github.com/metalblueberry/acnil-bot/pkg/ilog"
 	"github.com/sirupsen/logrus"
 
+	"github.com/metalblueberry/acnil-bot/pkg/ilog"
 	"github.com/metalblueberry/acnil-bot/pkg/sheetsparser"
 	"google.golang.org/api/sheets/v4"
 )

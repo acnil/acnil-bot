@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/aws/aws-lambda-go/lambda"
@@ -49,7 +48,7 @@ func main() {
 		MembersDB: acnil.NewMembersDatabase(srv, sheetID),
 		Bot:       b,
 	}
-	log.Println("starting lambda")
+	logrus.Println("starting lambda")
 	lambda.Start(audit.Do)
 }
 

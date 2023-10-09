@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"os"
 
 	"github.com/aws/aws-lambda-go/lambda"
@@ -22,9 +21,9 @@ func Handler(b *tele.Bot) func(ctx context.Context, request httplambda.Request) 
 	}
 
 	return func(ctx context.Context, request httplambda.Request) error {
-		log.Println("Handling request")
+		logrus.Println("Handling request")
 		if request.Headers["x-telegram-bot-api-secret-token"] != webhookSecretToken {
-			log.Printf("Request rejected because the token doesn't match, received %s", request.Headers)
+			logrus.Printf("Request rejected because the token doesn't match, received %s", request.Headers)
 			return nil
 		}
 
@@ -34,7 +33,7 @@ func Handler(b *tele.Bot) func(ctx context.Context, request httplambda.Request) 
 			return err
 		}
 
-		log.Println("sending update, ", update.ID)
+		logrus.Println("sending update, ", update.ID)
 		b.ProcessUpdate(update)
 		return nil
 	}
@@ -86,7 +85,7 @@ func main() {
 	handlerGroup := b.Group()
 	handler.Register(handlerGroup)
 
-	log.Println("starting lambda")
+	logrus.Println("starting lambda")
 	lambda.Start(Handler(b))
 }
 
