@@ -40,11 +40,14 @@ func (p MemberPermissions) IsAuthorised() bool {
 
 type Member struct {
 	Row string
+
 	// Nickname Is the name used in the excel file and to set the Holder field on Games
-	Nickname    string            `col:"0"`
-	TelegramID  string            `col:"1"`
-	Permissions MemberPermissions `col:"2"`
-	State       string            `col:"3"`
+	Nickname         string            `col:"0"`
+	TelegramID       string            `col:"1"`
+	Permissions      MemberPermissions `col:"2"`
+	State            string            `col:"3"`
+	TelegramName     string            `col:"4"`
+	TelegramUsername string            `col:"5"`
 }
 
 const (
@@ -80,17 +83,20 @@ func NewMembersDatabase(srv *sheets.Service, sheetID string) *SheetMembersDataba
 }
 
 func NewMemberFromTelegram(user *tele.User) Member {
-	nickname := fmt.Sprintf("%s %s", user.FirstName, user.LastName)
+	name := fmt.Sprintf("%s %s", user.FirstName, user.LastName)
+	nickname := name
 	if strings.TrimSpace(user.Username) != "" {
 		nickname = user.Username
 	}
 
 	return Member{
-		Row:         "",
-		Nickname:    strings.TrimSpace(nickname),
-		TelegramID:  strconv.Itoa(int(user.ID)),
-		Permissions: PermissionNo,
-		State:       "",
+		Row:              "",
+		Nickname:         strings.TrimSpace(nickname),
+		TelegramID:       strconv.Itoa(int(user.ID)),
+		Permissions:      PermissionNo,
+		State:            "",
+		TelegramName:     name,
+		TelegramUsername: "@" + strings.TrimSpace(user.Username),
 	}
 }
 
@@ -142,7 +148,7 @@ func (db *SheetMembersDatabase) List(ctx context.Context) ([]Member, error) {
 func (db *SheetMembersDatabase) Append(ctx context.Context, member Member) error {
 	values := []interface{}{}
 
-	values = append(values, member.Nickname, member.TelegramID, member.Permissions)
+	_, values = member.ToRow()
 
 	_, err := db.SRV.Spreadsheets.Values.Append(db.SheetID, db.fullReadRange(), &sheets.ValueRange{Values: [][]interface{}{values}}).ValueInputOption("USER_ENTERED").Do()
 	if err != nil {
