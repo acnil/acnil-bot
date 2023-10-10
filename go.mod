@@ -4,7 +4,6 @@ go 1.18
 
 require (
 	github.com/aws/aws-lambda-go v1.41.0
-	github.com/golang/mock v1.6.0
 	github.com/manifoldco/promptui v0.9.0
 	github.com/onsi/ginkgo/v2 v2.5.1
 	github.com/onsi/gomega v1.24.1
