@@ -4,11 +4,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	"github.com/metalblueberry/acnil-bot/pkg/acnil"
 	"github.com/metalblueberry/acnil-bot/pkg/acnil/mock_acnil"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 )
 
 //go:generate mockgen -source=audit_query.go -destination mock_acnil/audit_query.go

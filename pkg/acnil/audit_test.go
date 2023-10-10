@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 
 	"github.com/metalblueberry/acnil-bot/pkg/acnil"
 	"github.com/metalblueberry/acnil-bot/pkg/acnil/mock_acnil"

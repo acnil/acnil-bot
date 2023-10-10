@@ -4,13 +4,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	"github.com/metalblueberry/acnil-bot/pkg/acnil"
 	. "github.com/metalblueberry/acnil-bot/pkg/acnil/matchers"
 	"github.com/metalblueberry/acnil-bot/pkg/acnil/mock_acnil"
 	"github.com/metalblueberry/acnil-bot/pkg/acnil/mock_telebot_v3"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 
 	tele "gopkg.in/telebot.v3"
 )
@@ -21,6 +21,7 @@ var (
 )
 
 //go:generate mockgen -source=handler.go -destination mock_acnil/mock.go
+//go:generate mockgen -destination mock_telebot_v3/mock.go gopkg.in/telebot.v3 Context
 var _ = Describe("Handler", func() {
 
 	var (
