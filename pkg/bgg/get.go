@@ -1,9 +1,11 @@
 package bgg
 
 import (
+	"bytes"
 	"context"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -126,11 +128,17 @@ func (c *Client) Get(ctx context.Context, ids ...string) (*Boardgames, error) {
 	}
 	defer resp.Body.Close()
 
-	decoder := xml.NewDecoder(resp.Body)
+	raw := &bytes.Buffer{}
+	bdy := io.TeeReader(resp.Body, raw)
+
+	decoder := xml.NewDecoder(bdy)
 	out := &Boardgames{}
 	err = decoder.Decode(out)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to decode, %w", err)
+	}
+	if bytes.Contains(raw.Bytes(), []byte("Item not found")) {
+		return nil, fmt.Errorf("Not found")
 	}
 
 	return out, nil

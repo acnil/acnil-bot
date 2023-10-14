@@ -43,23 +43,30 @@ func (sr SearchResponse) First() *Item {
 }
 
 type Item struct {
-	Objectid      string     `json:"objectid"`
-	Subtype       Subtype    `json:"subtype"`
-	Primaryname   string     `json:"primaryname"`
-	Nameid        string     `json:"nameid"`
-	Yearpublished int64      `json:"yearpublished"`
-	Ordtitle      string     `json:"ordtitle"`
-	RepImageid    int64      `json:"rep_imageid"`
-	Objecttype    Objecttype `json:"objecttype"`
-	Name          string     `json:"name"`
-	Sortindex     string     `json:"sortindex"`
-	Type          Type       `json:"type"`
-	ID            string     `json:"id"`
-	Href          string     `json:"href"`
+	Objectid string  `json:"objectid"`
+	Subtype  Subtype `json:"subtype"`
+	// Primaryname sometimes is a string and sometimes is int
+	Primaryname interface{} `json:"primaryname"`
+	Nameid      string      `json:"nameid"`
+	// Yearpublished sometimes is a string and sometimes is string
+	Yearpublished interface{} `json:"yearpublished"`
+	Ordtitle      string      `json:"ordtitle"`
+	RepImageid    int64       `json:"rep_imageid"`
+	Objecttype    Objecttype  `json:"objecttype"`
+	Name          string      `json:"name"`
+	Sortindex     string      `json:"sortindex"`
+	Type          Type        `json:"type"`
+	ID            string      `json:"id"`
+	Href          string      `json:"href"`
 }
 
 func (i Item) Label() string {
-	return fmt.Sprintf("%s (%d)", i.Name, i.Yearpublished)
+	switch v := i.Yearpublished.(type) {
+	case int, int64:
+		return fmt.Sprintf("%s (%d)", i.Name, v)
+	default:
+		return fmt.Sprintf("%s (%s)", i.Name, v)
+	}
 }
 
 type Objecttype string
