@@ -3,9 +3,9 @@ description: "Builds go binaries in a stable way and zips the result to upload i
 runs:
   using: "composite"
   steps:
-    - name: Test all
-      shell: bash
-      run: go test -v ./...
+    - uses: actions/setup-go@v4
+      with:
+        go-version: '1.21.3' 
     - name: Cache Go Modules
       uses: actions/cache@v3
       with:
@@ -17,3 +17,6 @@ runs:
       run: | 
         chmod +x ./tf/build.sh 
         ./tf/build.sh
+    - name: Test all
+      shell: bash
+      run: go test -v ./...
