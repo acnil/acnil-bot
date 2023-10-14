@@ -12,3 +12,4 @@
 bootstrap
 package.zip
 env/*.env
+/modcache

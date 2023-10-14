@@ -6,6 +6,12 @@ runs:
     - name: Test all
       shell: bash
       run: go test -v ./...
+    - name: Cache Go Modules
+      uses: actions/cache@v3
+      with:
+        key: ${{ runner.os }}-build-go-mod-cache
+        path: |
+          ./modcache
     - name: Build 
       shell: bash
       run: | 
