@@ -96,7 +96,7 @@ func NewMemberFromTelegram(user *tele.User) Member {
 		Permissions:      PermissionNo,
 		State:            "",
 		TelegramName:     name,
-		TelegramUsername: "@" + strings.TrimSpace(user.Username),
+		TelegramUsername: strings.TrimSpace(user.Username),
 	}
 }
 
