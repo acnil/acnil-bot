@@ -119,7 +119,7 @@ func (db *SheetGameDatabase) Update(ctx context.Context, games ...Game) error {
 	return nil
 }
 
-//Norm normalises a string for comparison
+// Norm normalises a string for comparison
 func Norm(in string) string {
 	t := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
 	dst := make([]byte, len(in))
