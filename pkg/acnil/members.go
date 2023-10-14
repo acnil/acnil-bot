@@ -76,7 +76,7 @@ func (m *Member) ToRow() (string, []interface{}) {
 func NewMembersDatabase(srv *sheets.Service, sheetID string) *SheetMembersDatabase {
 	return &SheetMembersDatabase{
 		SRV:       srv,
-		ReadRange: "A:D",
+		ReadRange: "A:F",
 		Sheet:     "Miembros",
 		SheetID:   sheetID,
 	}
