@@ -262,18 +262,25 @@ func TestSheetReadAndWrite_Marshal(t *testing.T) {
 		t.Error(err)
 	}
 	if len(out) != 4 {
-		t.Errorf("Expected 2 fields but got %d, %s", len(out), out)
+		t.Errorf("Expected 4 fields but got %d, %s", len(out), out)
 		t.FailNow()
 	}
 
 	if out[1].(string) != "write value" {
-		t.Errorf("field 0 is %s but must be write value", out[0])
+		t.Errorf("field 1 is %s but must be write value", out[1])
+		t.FailNow()
+	}
+	if out[2] != nil {
+		t.Errorf("field 2 is %v but must be nil", out[2])
+		t.FailNow()
+	}
+	if out[3].(string) != "after" {
+		t.Errorf("field 3 is %s but must be write value", out[3])
 		t.FailNow()
 	}
 }
 
 type testWriteAndRead struct {
-	// In this order the code fails :blow:
 	WriteOnly string `col:"0,wo"`
 	ReadOnly  string `col:"0,ro"`
 }
