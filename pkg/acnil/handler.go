@@ -129,6 +129,7 @@ func (h *Handler) Register(handlerGroup *tele.Group) {
 	handlerGroup.Handle("\fgame-page-1", h.OnGamePage(1))
 	handlerGroup.Handle("\fgame-page-2", h.OnGamePage(2))
 	handlerGroup.Handle("\fswitch-location", h.OnSwitchLocation)
+	handlerGroup.Handle("\fupdate-comment", h.OnUpdateCommentButton)
 	handlerGroup.Handle(&btnMyGames, h.MyGames)
 	handlerGroup.Handle(&btnEnGamonal, h.IsAuthorized(h.InGamonal))
 	handlerGroup.Handle(&btnEnCentro, h.IsAuthorized(h.InCentro))
@@ -316,14 +317,15 @@ func (h *Handler) OnText(c tele.Context) error {
 }
 
 func (h *Handler) onText(c tele.Context, member Member) error {
-	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Text"), c.Sender())
-
-	log = log.WithField(ilog.FieldText, c.Text())
-
 	switch {
 	case member.State.Is(StateActionRename):
 		return h.onRename(c, member)
+	case member.State.Is(StateActionUpdateComment):
+		return h.onUpdateComment(c, member)
 	}
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Text"), c.Sender())
+
+	log = log.WithField(ilog.FieldText, c.Text())
 
 	gameList, err := h.GameDB.List(context.Background())
 	if err != nil {
@@ -1230,6 +1232,70 @@ func (h *Handler) onSwitchLocation(c tele.Context, member Member) error {
 		log.WithError(err).Error("Failed to update card")
 	}
 	log.Info("Switched location")
+
+	return c.Respond()
+}
+
+func (h *Handler) OnUpdateCommentButton(c tele.Context) error {
+	return h.IsAuthorized(h.onUpdateCommentButton)(c)
+}
+
+func (h *Handler) onUpdateCommentButton(c tele.Context, member Member) error {
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "UpdateCommentButton"), c.Sender())
+
+	g := NewGameFromData(c.Data())
+	log = log.WithField("Game", g.Name)
+
+	c.Send(fmt.Sprintf("Dime que comentario quieres dejar para el juego %s: %s", g.ID, g.Name))
+
+	member.State.SetUpdateComment(g)
+
+	err := h.MembersDB.Update(context.Background(), member)
+	if err != nil {
+		log.Error("Failed to updated memberDB")
+		return err
+	}
+
+	return c.Respond()
+}
+
+func (h *Handler) onUpdateComment(c tele.Context, member Member) error {
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "UpdateComment"), c.Sender())
+
+	g := NewGameFromData(member.State.Data)
+	log = log.WithField("Game", g.Name)
+
+	getResult, err := h.GameDB.Get(context.TODO(), g.ID, g.Name)
+	if err != nil {
+		log.WithError(err).Error("Unable to get from GameDB")
+		c.Edit(err.Error())
+		return c.Respond()
+	}
+	if getResult == nil {
+		log.Warn("Unable to find game")
+		c.Edit("No he podido encontrar el juego. Intenta volver a buscarlo, tal vez se ha modificado el excel")
+		return c.Respond()
+	}
+
+	g = *getResult
+
+	member.State.Clear()
+
+	err = h.MembersDB.Update(context.Background(), member)
+	if err != nil {
+		log.Error("Failed to updated memberDB")
+		return c.Respond()
+	}
+
+	g.Comments = c.Text()
+
+	err = h.GameDB.Update(context.Background(), g)
+	if err != nil {
+		log.Error("Failed to update game DB")
+	}
+
+	// c.Send(fmt.Sprintf("Listo! he actualizado el comentario a \"%s\"", g.Comments))
+	c.Send(g.Card(), g.Buttons(member))
 
 	return c.Respond()
 }

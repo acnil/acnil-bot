@@ -409,7 +409,7 @@ var _ = Describe("Handler", func() {
 			})
 		})
 		Describe("When Text is sent", func() {
-			BeforeEach(func() {
+			It("Should reply with game details", func() {
 				mockGameDatabase.EXPECT().List(gomock.Any()).Return([]acnil.Game{
 					{
 						ID:   "1",
@@ -417,7 +417,6 @@ var _ = Describe("Handler", func() {
 					},
 				}, nil)
 				text := "Game1"
-				mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
 				mockTeleContext.EXPECT().Message().Return(&tele.Message{
 					Sender: sender,
 					Text:   text,
@@ -425,14 +424,49 @@ var _ = Describe("Handler", func() {
 						Type: tele.ChatPrivate,
 					},
 				}).AnyTimes()
-			})
-			It("Should reply with game details", func() {
+				mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
 				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
 					Expect(sent).To(ContainSubstring("Game1"))
 					return nil
 				})
 				err := h.OnText(mockTeleContext)
 				Expect(err).ToNot(HaveOccurred())
+			})
+			Describe("If the state is UpdateComment", func() {
+				BeforeEach(func() {
+					game := acnil.Game{
+						ID:   "1",
+						Name: "Game1",
+					}
+					member.State.SetUpdateComment(game)
+					mockGameDatabase.EXPECT().Get(gomock.Any(), "1", "Game1").Return(&game, nil)
+				})
+				It("Must update game comment", func() {
+					text := "New Game comment"
+					mockTeleContext.EXPECT().Message().Return(&tele.Message{
+						Sender: sender,
+						Text:   text,
+						Chat: &tele.Chat{
+							Type: tele.ChatPrivate,
+						},
+					}).AnyTimes()
+					mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
+					mockGameDatabase.EXPECT().Update(gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, game acnil.Game) error {
+						Expect(game.Comments).To(Equal("New Game comment"))
+						return nil
+					})
+					mockMembersDatabase.EXPECT().Update(gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, member acnil.Member) error {
+						Expect(member.State.Action).To(BeEmpty())
+						Expect(member.State.Data).To(BeEmpty())
+						return nil
+					})
+
+					mockTeleContext.EXPECT().Send(ContainsString(text), gomock.Any()).Times(1)
+					mockTeleContext.EXPECT().Respond().Times(1)
+					err := h.OnText(mockTeleContext)
+					Expect(err).ToNot(HaveOccurred())
+				})
+
 			})
 		})
 		Describe("When Text is sent with multiple lines", func() {
@@ -1048,6 +1082,35 @@ var _ = Describe("Handler", func() {
 					err := h.OnSwitchLocation(mockTeleContext)
 					Expect(err).To(BeNil())
 				})
+			})
+		})
+		Describe("When the button to update comments is used", func() {
+			BeforeEach(func() {
+				mockTeleContext.EXPECT().Data().Return(acnil.Game{
+					ID:   "1",
+					Name: "Game1",
+				}.Data()).AnyTimes()
+
+				mockTeleContext.EXPECT().Message().Return(&tele.Message{
+					Sender: sender,
+					Chat: &tele.Chat{
+						Type: tele.ChatPrivate,
+					},
+				}).AnyTimes()
+			})
+			It("Must ask for the new comment", func() {
+				mockMembersDatabase.EXPECT().Update(gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, member acnil.Member) error {
+					Expect(member.State.Data).To(ContainSubstring("Game1"))
+					return nil
+				})
+				mockTeleContext.EXPECT().Respond(gomock.Any())
+
+				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+					Expect(sent).To(ContainSubstring("Game1"))
+					return nil
+				})
+				err := h.OnUpdateCommentButton(mockTeleContext)
+				Expect(err).To(BeNil())
 			})
 		})
 	})

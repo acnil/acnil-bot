@@ -182,21 +182,29 @@ func ParseMemberPermissions(p string) MemberPermissions {
 type StateAction string
 
 const (
-	StateActionRename StateAction = "rename"
+	StateActionRename        StateAction = "rename"
+	StateActionUpdateComment StateAction = "update-comment"
 )
 
 type MemberState struct {
 	Action StateAction `json:"action,omitempty"`
+	Data   string      `json:"data,omitempty"`
 }
 
 func (s *MemberState) Clear() {
 	s.Action = ""
+	s.Data = ""
+}
+
+func (s *MemberState) Is(action StateAction) bool {
+	return s.Action == action
 }
 
 func (s *MemberState) SetRename() {
 	s.Action = StateActionRename
 }
 
-func (s *MemberState) Is(action StateAction) bool {
-	return s.Action == StateActionRename
+func (s *MemberState) SetUpdateComment(g Game) {
+	s.Action = StateActionUpdateComment
+	s.Data = g.Data()
 }

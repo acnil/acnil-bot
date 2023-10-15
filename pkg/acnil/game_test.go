@@ -75,11 +75,35 @@ var _ = Describe("A game card", func() {
 				})
 			})
 			Describe("in the 2nd button page", func() {
+				Describe("When it is in Gamonal", func() {
+					BeforeEach(func() {
+						game.Location = string(acnil.LocationGamonal)
+					})
+					It("Must contain Mover al Centro button", func() {
+						buttons := ToOneDimension(game.ButtonsForPage(member, 2).InlineKeyboard)
+						var button telebot.InlineButton
+						Expect(buttons).To(ContainElement(WithButtonText("Mover al Centro"), &button))
+						Expect(button).To(WithButtonData(game.Data()))
+					})
+				})
+				Describe("When it is in Centro", func() {
+					BeforeEach(func() {
+						game.Location = string(acnil.LocationCentro)
+					})
+					It("Must contain Mover a Gamonal button", func() {
+						buttons := ToOneDimension(game.ButtonsForPage(member, 2).InlineKeyboard)
+						var button telebot.InlineButton
+						Expect(buttons).To(ContainElement(WithButtonText("Mover a Gamonal"), &button))
+						Expect(button).To(WithButtonData(game.Data()))
+					})
+				})
+				It("Must contain Actualizar comentario button", func() {
+					buttons := ToOneDimension(game.ButtonsForPage(member, 2).InlineKeyboard)
+					Expect(buttons).To(ContainElement(WithButtonText("Actualizar comentario")))
+				})
 				It("Must contain < button", func() {
 					buttons := ToOneDimension(game.ButtonsForPage(member, 2).InlineKeyboard)
-					var button telebot.InlineButton
-					Expect(buttons).To(ContainElement(WithButtonText("<"), &button))
-					Expect(button).To(WithButtonData(game.Data()))
+					Expect(buttons).To(ContainElement(WithButtonText("<")))
 				})
 				It("Must append data to all buttons", func() {
 					buttons := ToOneDimension(game.ButtonsForPage(member, 2).InlineKeyboard)

@@ -259,6 +259,9 @@ func (g Game) ButtonsForPage(member Member, page int) *tele.ReplyMarkup {
 			))
 		}
 		rows = append(rows, selector.Row(
+			selector.Data("Actualizar comentario", "update-comment", data),
+		))
+		rows = append(rows, selector.Row(
 			selector.Data("<", "game-page-1", data),
 		))
 	}
