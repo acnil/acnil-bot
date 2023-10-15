@@ -1,6 +1,7 @@
 package sheetsparser
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -59,8 +60,8 @@ func (p *SheetParser) Unmarshal(in []interface{}, out interface{}) error {
 		}
 
 		elfield := rv.Elem().Field(i)
-		switch elfield.Type() {
-		case reflect.TypeOf(time.Time{}):
+		switch {
+		case elfield.Type() == reflect.TypeOf(time.Time{}):
 			if index >= len(in) {
 				elfield.Set(reflect.ValueOf(time.Time{}))
 				continue
@@ -72,7 +73,7 @@ func (p *SheetParser) Unmarshal(in []interface{}, out interface{}) error {
 			}
 			elfield.Set(reflect.ValueOf(t))
 
-		case reflect.TypeOf(int(1)):
+		case elfield.Type() == reflect.TypeOf(int(1)):
 			if index >= len(in) {
 				elfield.Set(reflect.ValueOf(int(0)))
 				continue
@@ -87,7 +88,7 @@ func (p *SheetParser) Unmarshal(in []interface{}, out interface{}) error {
 				return fmt.Errorf("couldn't parse int value, row: %#v, %s at %d, %s", in, in[index], index, err)
 			}
 			elfield.Set(reflect.ValueOf(int(n)))
-		case reflect.TypeOf(float64(1)):
+		case elfield.Type() == reflect.TypeOf(float64(1)):
 			if index >= len(in) {
 				elfield.Set(reflect.ValueOf(float64(0)))
 				continue
@@ -102,13 +103,22 @@ func (p *SheetParser) Unmarshal(in []interface{}, out interface{}) error {
 				return fmt.Errorf("couldn't parse float value, %s, %s", in[index], err)
 			}
 			elfield.Set(reflect.ValueOf(n))
-		case reflect.TypeOf(&S):
+		case elfield.Type() == reflect.TypeOf(&S):
 			if index >= len(in) {
 				continue
 			}
 			val := reflect.ValueOf(in[index])
 			elfield.Set(val.Convert(elfield.Type()))
-
+		case elfield.Kind() == reflect.Struct:
+			if index >= len(in) {
+				continue
+			}
+			v := reflect.New(elfield.Type()).Interface()
+			err := json.Unmarshal([]byte(in[index].(string)), &v)
+			if err != nil {
+				return fmt.Errorf("Couldn't load json data, %w", err)
+			}
+			elfield.Set(reflect.ValueOf(v).Elem())
 		default:
 			if index >= len(in) {
 				elfield.Set(reflect.ValueOf(""))
@@ -205,6 +215,13 @@ func (p *SheetParser) Marshal(in interface{}) ([]interface{}, error) {
 				continue
 			}
 			out[r.Index] = v.String()
+		case fieldType.Kind() == reflect.Struct:
+			v := r.Field.Interface()
+			bytes, err := json.Marshal(v)
+			if err != nil {
+				return nil, fmt.Errorf("Failed to marshal struct as json, %w", err)
+			}
+			out[r.Index] = string(bytes)
 		default:
 			if r.OmitEmpty && r.Field.String() == "" {
 				out[r.Index] = nil

@@ -369,3 +369,58 @@ func TestGameWriteAndRead_Marshal(t *testing.T) {
 	}
 
 }
+
+type testStructSerialization struct {
+	StructField struct {
+		StringField string `json:"string_field,omitempty"`
+		NumberField int    `json:"number_field,omitempty"`
+	} `col:"0"`
+}
+
+func TestStructSerialization_Unmarshal(t *testing.T) {
+	p := &SheetParser{}
+	test := testStructSerialization{}
+
+	err := p.Unmarshal([]interface{}{`{"string_field":"test","number_field":1}`}, &test)
+
+	if err != nil {
+		t.Error(err)
+	}
+	if test.StructField.StringField != "test" {
+		t.Errorf("StringField is %s but must be \"test\"", test.StructField.StringField)
+		t.FailNow()
+	}
+	if test.StructField.NumberField != 1 {
+		t.Errorf("NumberField is %d but must be \"1\"", test.StructField.NumberField)
+		t.FailNow()
+	}
+}
+
+func TestStructSerialization_Marshal(t *testing.T) {
+	p := &SheetParser{}
+	test := testStructSerialization{
+		StructField: struct {
+			StringField string "json:\"string_field,omitempty\""
+			NumberField int    "json:\"number_field,omitempty\""
+		}{
+			StringField: "test",
+			NumberField: 1,
+		},
+	}
+
+	out, err := p.Marshal(&test)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(out) != 1 {
+		t.Errorf("Must return 1 field but returned %d, %#v", len(out), out)
+		t.FailNow()
+	}
+	expected := `{"string_field":"test","number_field":1}`
+	if out[0] != expected {
+		t.Errorf("field 0 must be %s but it is %s", expected, out[0])
+		t.FailNow()
+	}
+
+}

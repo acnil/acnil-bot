@@ -320,8 +320,8 @@ func (h *Handler) onText(c tele.Context, member Member) error {
 
 	log = log.WithField(ilog.FieldText, c.Text())
 
-	switch member.State {
-	case "rename":
+	switch {
+	case member.State.Is(StateActionRename):
 		return h.onRename(c, member)
 	}
 
@@ -1029,13 +1029,16 @@ func (h *Handler) Rename(c tele.Context) error {
 }
 
 func (h *Handler) rename(c tele.Context, member Member) error {
-	member.State = "rename"
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Rename"), c.Sender())
+	member.State.SetRename()
 
 	err := h.MembersDB.Update(context.Background(), member)
 	if err != nil {
+		log.WithError(err).Error("Failed to update memberDB")
 		return err
 	}
 	c.Send("Dime el nombre que quieres tener, Tu nombre actual es "+member.Nickname, renameMenu)
+	log.Info("Rename action requested")
 	return nil
 }
 
@@ -1044,7 +1047,7 @@ func (h *Handler) CancelRename(c tele.Context) error {
 }
 
 func (h *Handler) cancelRename(c tele.Context, member Member) error {
-	member.State = ""
+	member.State.Clear()
 	err := h.MembersDB.Update(context.Background(), member)
 	if err != nil {
 		return err
@@ -1067,11 +1070,11 @@ func (h *Handler) onRename(c tele.Context, member Member) error {
 	}
 
 	if newName == member.Nickname {
-		member.State = ""
+		member.State.Clear()
 		return c.Send("Okey, te dejo el mismo nombre", mainMenuReplyMarkup(member))
 	}
 
-	member.State = ""
+	member.State.Clear()
 	member.Nickname = newName
 	c.Send("Listo! ahora te llamas "+member.Nickname, mainMenuReplyMarkup(member))
 	return nil

@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "debug",
             "program": "${workspaceFolder}/cmd/acnilbot/main.go",
-            "envFile": "${workspaceFolder}/.env",
+            "envFile": "${workspaceFolder}/env/development.env",
             "cwd": "${workspaceFolder}"
         },
         {

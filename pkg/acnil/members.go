@@ -45,7 +45,7 @@ type Member struct {
 	Nickname         string            `col:"0"`
 	TelegramID       string            `col:"1"`
 	Permissions      MemberPermissions `col:"2"`
-	State            string            `col:"3"`
+	State            MemberState       `col:"3"`
 	TelegramName     string            `col:"4"`
 	TelegramUsername string            `col:"5"`
 }
@@ -84,7 +84,7 @@ func NewMemberFromTelegram(user *tele.User) Member {
 		Nickname:         strings.TrimSpace(nickname),
 		TelegramID:       strconv.Itoa(int(user.ID)),
 		Permissions:      PermissionNo,
-		State:            "",
+		State:            MemberState{},
 		TelegramName:     name,
 		TelegramUsername: strings.TrimSpace(user.Username),
 	}
@@ -136,9 +136,9 @@ func (db *SheetMembersDatabase) List(ctx context.Context) ([]Member, error) {
 }
 
 func (db *SheetMembersDatabase) Append(ctx context.Context, member Member) error {
-	values, err := sheetsparser.Marshal(member)
+	values, err := sheetsparser.Marshal(&member)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("unable to Unmarshal member, %w", err)
 	}
 
 	_, err = db.SRV.Spreadsheets.Values.Append(db.SheetID, db.fullReadRange(), &sheets.ValueRange{Values: [][]interface{}{values}}).ValueInputOption("USER_ENTERED").Do()
@@ -149,9 +149,9 @@ func (db *SheetMembersDatabase) Append(ctx context.Context, member Member) error
 }
 
 func (db *SheetMembersDatabase) Update(ctx context.Context, member Member) error {
-	values, err := sheetsparser.Marshal(member)
+	values, err := sheetsparser.Marshal(&member)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("unable to Unmarshal member, %w", err)
 	}
 
 	request := db.SRV.Spreadsheets.Values.Update(db.SheetID, member.Row, &sheets.ValueRange{
@@ -177,4 +177,26 @@ func ParseMemberPermissions(p string) MemberPermissions {
 	default:
 		return PermissionNo
 	}
+}
+
+type StateAction string
+
+const (
+	StateActionRename StateAction = "rename"
+)
+
+type MemberState struct {
+	Action StateAction `json:"action,omitempty"`
+}
+
+func (s *MemberState) Clear() {
+	s.Action = ""
+}
+
+func (s *MemberState) SetRename() {
+	s.Action = StateActionRename
+}
+
+func (s *MemberState) Is(action StateAction) bool {
+	return s.Action == StateActionRename
 }
