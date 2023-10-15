@@ -7,6 +7,7 @@ import (
 	. "github.com/metalblueberry/acnil-bot/pkg/acnil/matchers"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"gopkg.in/telebot.v3"
 )
 
 var _ = Describe("A game card", func() {
@@ -50,17 +51,41 @@ var _ = Describe("A game card", func() {
 				buttons := ToOneDimension(game.Buttons(member).InlineKeyboard)
 				Expect(buttons).To(ContainElement(WithButtonText("Tomar Prestado")))
 			})
-			It("should not have a button to increase the time by a few days", func() {
+			It("Must not have a button to increase the time by a few days", func() {
 				buttons := ToOneDimension(game.Buttons(member).InlineKeyboard)
 				Expect(buttons).ToNot(ContainElement(WithButtonText("Dar mas tiempo")))
+			})
+			It("Must contain > button", func() {
+				buttons := ToOneDimension(game.Buttons(member).InlineKeyboard)
+				Expect(buttons).To(ContainElement(WithButtonText(">")))
 			})
 			Describe("Ïf return date is set but holder is not", func() {
 				BeforeEach(func() {
 					game.ReturnDate = time.Now().Add(-24 * 30 * time.Hour)
 				})
-				It("should not have a button to increase the time by a few days", func() {
+				It("Must not have a button to increase the time by a few days", func() {
 					buttons := ToOneDimension(game.Buttons(member).InlineKeyboard)
 					Expect(buttons).ToNot(ContainElement(WithButtonText("Dar mas tiempo")))
+				})
+				It("Must append data to all buttons", func() {
+					buttons := ToOneDimension(game.Buttons(member).InlineKeyboard)
+					for _, button := range buttons {
+						Expect(button).To(WithButtonData(button.Data))
+					}
+				})
+			})
+			Describe("in the 2nd button page", func() {
+				It("Must contain < button", func() {
+					buttons := ToOneDimension(game.ButtonsForPage(member, 2).InlineKeyboard)
+					var button telebot.InlineButton
+					Expect(buttons).To(ContainElement(WithButtonText("<"), &button))
+					Expect(button).To(WithButtonData(game.Data()))
+				})
+				It("Must append data to all buttons", func() {
+					buttons := ToOneDimension(game.ButtonsForPage(member, 2).InlineKeyboard)
+					for _, button := range buttons {
+						Expect(button).To(WithButtonData(button.Data))
+					}
 				})
 			})
 		})

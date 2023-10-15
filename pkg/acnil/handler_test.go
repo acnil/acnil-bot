@@ -873,6 +873,182 @@ var _ = Describe("Handler", func() {
 				Expect(err).To(BeNil())
 			})
 		})
+
+		Describe("When a page is requested for a game card", func() {
+			BeforeEach(func() {
+				mockGameDatabase.EXPECT().Get(gomock.Any(), "1", "Game1").Return(&acnil.Game{
+					ID:       "1",
+					Name:     "Game1",
+					Holder:   member.Nickname,
+					TakeDate: time.Date(2023, 2, 11, 0, 0, 0, 0, time.UTC),
+				}, nil)
+
+				mockTeleContext.EXPECT().Data().Return(acnil.Game{
+					ID:   "1",
+					Name: "Game1",
+				}.Data()).AnyTimes()
+				mockTeleContext.EXPECT().Message().Return(&tele.Message{
+					Sender: sender,
+					Chat: &tele.Chat{
+						Type: tele.ChatPrivate,
+					},
+				}).AnyTimes()
+			})
+			It("the page number 1 must be returned", func() {
+				mockTeleContext.EXPECT().Edit(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+					Expect(sent).To(ContainSubstring("Game1"))
+					Expect(sent).To(ContainSubstring(member.Nickname))
+					Expect(opt[0]).To(BeAssignableToTypeOf(&tele.ReplyMarkup{}))
+
+					buttons := ToOneDimension(opt[0].(*tele.ReplyMarkup).InlineKeyboard)
+					Expect(buttons).To(ContainElement(WithButtonText(">")))
+					return nil
+				})
+				mockTeleContext.EXPECT().Respond(gomock.Any())
+
+				err := h.OnGamePage(1)(mockTeleContext)
+				Expect(err).To(BeNil())
+			})
+			It("the page number 2 must be returned", func() {
+				mockTeleContext.EXPECT().Edit(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+					Expect(sent).To(ContainSubstring("Game1"))
+					Expect(sent).To(ContainSubstring(member.Nickname))
+					Expect(opt[0]).To(BeAssignableToTypeOf(&tele.ReplyMarkup{}))
+
+					buttons := ToOneDimension(opt[0].(*tele.ReplyMarkup).InlineKeyboard)
+					Expect(buttons).To(ContainElement(WithButtonText("<")))
+					return nil
+				})
+				mockTeleContext.EXPECT().Respond(gomock.Any())
+
+				err := h.OnGamePage(2)(mockTeleContext)
+				Expect(err).To(BeNil())
+			})
+		})
+
+		Describe("When a game is switched locations", func() {
+			BeforeEach(func() {
+				mockTeleContext.EXPECT().Data().Return(acnil.Game{
+					ID:   "1",
+					Name: "Game1",
+				}.Data()).AnyTimes()
+
+				mockTeleContext.EXPECT().Message().Return(&tele.Message{
+					Sender: sender,
+					Chat: &tele.Chat{
+						Type: tele.ChatPrivate,
+					},
+				}).AnyTimes()
+			})
+			Describe("When it was in Gamonal", func() {
+				BeforeEach(func() {
+					mockGameDatabase.EXPECT().Get(gomock.Any(), "1", "Game1").Return(&acnil.Game{
+						ID:       "1",
+						Name:     "Game1",
+						Holder:   member.Nickname,
+						TakeDate: time.Date(2023, 2, 11, 0, 0, 0, 0, time.UTC),
+						Location: string(acnil.LocationGamonal),
+					}, nil)
+				})
+				It("Must be moved to Centro", func() {
+					mockGameDatabase.EXPECT().Update(gomock.Any(), gomock.AssignableToTypeOf(acnil.Game{
+						ID:   "1",
+						Name: "Game1",
+					})).Do(func(_ context.Context, g acnil.Game) {
+						Expect(g.Name).To(Equal("Game1"))
+						Expect(g.Location).To(Equal(string(acnil.LocationCentro)))
+					})
+
+					mockTeleContext.EXPECT().Edit(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+						Expect(sent).To(ContainSubstring("Game1"))
+						Expect(sent).To(ContainSubstring(member.Nickname))
+						Expect(sent).To(ContainSubstring(string(acnil.LocationCentro)))
+
+						Expect(opt[0]).To(BeAssignableToTypeOf(&tele.ReplyMarkup{}))
+
+						buttons := ToOneDimension(opt[0].(*tele.ReplyMarkup).InlineKeyboard)
+						Expect(buttons).To(ContainElement(WithButtonText("Mover a Gamonal")))
+						return nil
+					})
+					mockTeleContext.EXPECT().Respond(gomock.Any())
+
+					err := h.OnSwitchLocation(mockTeleContext)
+					Expect(err).To(BeNil())
+				})
+			})
+			Describe("When it was in Centro", func() {
+				BeforeEach(func() {
+					mockGameDatabase.EXPECT().Get(gomock.Any(), "1", "Game1").Return(&acnil.Game{
+						ID:       "1",
+						Name:     "Game1",
+						Holder:   member.Nickname,
+						TakeDate: time.Date(2023, 2, 11, 0, 0, 0, 0, time.UTC),
+						Location: string(acnil.LocationCentro),
+					}, nil)
+				})
+				It("Must be moved to Gamonal", func() {
+					mockGameDatabase.EXPECT().Update(gomock.Any(), gomock.AssignableToTypeOf(acnil.Game{
+						ID:   "1",
+						Name: "Game1",
+					})).Do(func(_ context.Context, g acnil.Game) {
+						Expect(g.Name).To(Equal("Game1"))
+						Expect(g.Location).To(Equal(string(acnil.LocationGamonal)))
+					})
+
+					mockTeleContext.EXPECT().Edit(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+						Expect(sent).To(ContainSubstring("Game1"))
+						Expect(sent).To(ContainSubstring(member.Nickname))
+						Expect(sent).To(ContainSubstring(string(acnil.LocationGamonal)))
+
+						Expect(opt[0]).To(BeAssignableToTypeOf(&tele.ReplyMarkup{}))
+
+						buttons := ToOneDimension(opt[0].(*tele.ReplyMarkup).InlineKeyboard)
+						Expect(buttons).To(ContainElement(WithButtonText("Mover al Centro")))
+						return nil
+					})
+					mockTeleContext.EXPECT().Respond(gomock.Any())
+
+					err := h.OnSwitchLocation(mockTeleContext)
+					Expect(err).To(BeNil())
+				})
+			})
+			Describe("When it was in an unknown location", func() {
+				BeforeEach(func() {
+					mockGameDatabase.EXPECT().Get(gomock.Any(), "1", "Game1").Return(&acnil.Game{
+						ID:       "1",
+						Name:     "Game1",
+						Holder:   member.Nickname,
+						TakeDate: time.Date(2023, 2, 11, 0, 0, 0, 0, time.UTC),
+						Location: "Invalid location",
+					}, nil)
+				})
+				It("Must be moved to Gamonal", func() {
+					mockGameDatabase.EXPECT().Update(gomock.Any(), gomock.AssignableToTypeOf(acnil.Game{
+						ID:   "1",
+						Name: "Game1",
+					})).Do(func(_ context.Context, g acnil.Game) {
+						Expect(g.Name).To(Equal("Game1"))
+						Expect(g.Location).To(Equal(string(acnil.LocationGamonal)))
+					})
+
+					mockTeleContext.EXPECT().Edit(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
+						Expect(sent).To(ContainSubstring("Game1"))
+						Expect(sent).To(ContainSubstring(member.Nickname))
+						Expect(sent).To(ContainSubstring(string(acnil.LocationGamonal)))
+
+						Expect(opt[0]).To(BeAssignableToTypeOf(&tele.ReplyMarkup{}))
+
+						buttons := ToOneDimension(opt[0].(*tele.ReplyMarkup).InlineKeyboard)
+						Expect(buttons).To(ContainElement(WithButtonText("Mover al Centro")))
+						return nil
+					})
+					mockTeleContext.EXPECT().Respond(gomock.Any())
+
+					err := h.OnSwitchLocation(mockTeleContext)
+					Expect(err).To(BeNil())
+				})
+			})
+		})
 	})
 
 })

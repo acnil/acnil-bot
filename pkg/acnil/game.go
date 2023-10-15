@@ -80,7 +80,7 @@ type Game struct {
 
 	ID         string    `col:"0,ro"`
 	Name       string    `col:"1,ro"`
-	Location   string    `col:"2,ro"`
+	Location   string    `col:"2"`
 	Holder     string    `col:"3"`
 	Comments   string    `col:"4"`
 	TakeDate   time.Time `col:"5"`
@@ -208,33 +208,58 @@ func (g Game) Data() string {
 }
 
 func (g Game) Buttons(member Member) *tele.ReplyMarkup {
+	return g.ButtonsForPage(member, 1)
+}
+
+func (g Game) ButtonsForPage(member Member, page int) *tele.ReplyMarkup {
 	selector := &tele.ReplyMarkup{}
 	data := g.Data()
 	rows := []tele.Row{}
 
-	if g.IsAvailable() {
-		rows = append(rows, selector.Row(
-			selector.Data("Tomar Prestado", "take", data),
-		))
-	} else {
-		rows = append(rows, selector.Row(
-			selector.Data("Devolver", "return", data),
-		))
-	}
+	switch page {
+	default:
+		if g.IsAvailable() {
+			rows = append(rows, selector.Row(
+				selector.Data("Tomar Prestado", "take", data),
+			))
+		} else {
+			rows = append(rows, selector.Row(
+				selector.Data("Devolver", "return", data),
+			))
+		}
 
-	if g.ContainsBGGData() {
+		if g.ContainsBGGData() {
+			rows = append(rows, selector.Row(
+				selector.Data("Mas información", "more", data),
+			))
+		}
+
 		rows = append(rows, selector.Row(
-			selector.Data("Mas información", "more", data),
+			selector.Data("Historial", "history", data),
 		))
-	}
 
-	rows = append(rows, selector.Row(
-		selector.Data("Historial", "history", data),
-	))
+		if (g.IsHeldBy(member) || (member.Permissions == PermissionAdmin && !g.IsAvailable())) && g.IsLeaseExpired() {
+			rows = append(rows, selector.Row(
+				selector.Data("Dar mas tiempo", "extendLease", data),
+			))
+		}
 
-	if (g.IsHeldBy(member) || (member.Permissions == PermissionAdmin && !g.IsAvailable())) && g.IsLeaseExpired() {
 		rows = append(rows, selector.Row(
-			selector.Data("Dar mas tiempo", "extendLease", data),
+			selector.Data(">", "game-page-2", data),
+		))
+	case 2:
+		switch {
+		case g.IsInLocation(LocationCentro):
+			rows = append(rows, selector.Row(
+				selector.Data("Mover a Gamonal", "switch-location", data),
+			))
+		default:
+			rows = append(rows, selector.Row(
+				selector.Data("Mover al Centro", "switch-location", data),
+			))
+		}
+		rows = append(rows, selector.Row(
+			selector.Data("<", "game-page-1", data),
 		))
 	}
 
@@ -377,11 +402,10 @@ func (games Games) FindDuplicates() (duplicate Games, unique Games) {
 type Location string
 
 const (
-	LocationGamonal = "Gamonal"
-	LocationCentro  = "Centro"
+	LocationGamonal Location = "Gamonal"
+	LocationCentro  Location = "Centro"
 )
 
 func (g Game) IsInLocation(location Location) bool {
-
 	return strings.EqualFold(strings.TrimSpace(g.Location), string(location))
 }

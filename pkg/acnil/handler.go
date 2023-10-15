@@ -126,6 +126,9 @@ func (h *Handler) Register(handlerGroup *tele.Group) {
 	handlerGroup.Handle("\fauthorise", h.OnAuthorise)
 	handlerGroup.Handle("\fhistory", h.OnHistory)
 	handlerGroup.Handle("\fextendLease", h.OnExtendLease)
+	handlerGroup.Handle("\fgame-page-1", h.OnGamePage(1))
+	handlerGroup.Handle("\fgame-page-2", h.OnGamePage(2))
+	handlerGroup.Handle("\fswitch-location", h.OnSwitchLocation)
 	handlerGroup.Handle(&btnMyGames, h.MyGames)
 	handlerGroup.Handle(&btnEnGamonal, h.IsAuthorized(h.InGamonal))
 	handlerGroup.Handle(&btnEnCentro, h.IsAuthorized(h.InCentro))
@@ -1115,7 +1118,6 @@ func (h *Handler) OnNotInAnyPlace(c tele.Context) error {
 }
 
 func (h *Handler) onNotInAnyPlace(c tele.Context, member Member) error {
-
 	games, err := h.GameDB.List(context.Background())
 	if err != nil {
 		c.Send("Wops! Algo ha ido mal!")
@@ -1140,4 +1142,91 @@ func (h *Handler) onNotInAnyPlace(c tele.Context, member Member) error {
 	}
 
 	return nil
+}
+
+func (h *Handler) OnGamePage(page int) func(c tele.Context) error {
+	return func(c tele.Context) error {
+		return h.IsAuthorized(h.onGamePage(page))(c)
+	}
+}
+
+func (h *Handler) onGamePage(page int) func(c tele.Context, member Member) error {
+	return func(c tele.Context, member Member) error {
+		log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "GamePage"), c.Sender()).WithField(ilog.FieldPage, page)
+
+		g := NewGameFromData(c.Data())
+		log = log.WithField("Game", g.Name)
+
+		getResult, err := h.GameDB.Get(context.TODO(), g.ID, g.Name)
+		if err != nil {
+			log.WithError(err).Error("Unable to get from GameDB")
+			c.Edit(err.Error())
+			return c.Respond()
+		}
+		if getResult == nil {
+			log.Warn("Unable to find game")
+			c.Edit("No he podido encontrar el juego. Intenta volver a buscarlo, tal vez se ha modificado el excel")
+			return c.Respond()
+		}
+
+		g = *getResult
+
+		err = c.Edit(g.Card(), g.ButtonsForPage(member, page))
+		if err != nil {
+			log.Errorf("Failed to edit card, %s", err)
+		}
+		log.Info("Display page")
+		return c.Respond()
+	}
+}
+
+func (h *Handler) OnSwitchLocation(c tele.Context) error {
+	return h.IsAuthorized(h.onSwitchLocation)(c)
+}
+
+func (h *Handler) onSwitchLocation(c tele.Context, member Member) error {
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "SwitchLocation"), c.Sender())
+
+	g := NewGameFromData(c.Data())
+	log = log.WithField("Game", g.Name)
+
+	getResult, err := h.GameDB.Get(context.TODO(), g.ID, g.Name)
+	if err != nil {
+		log.WithError(err).Error("Unable to get from GameDB")
+		c.Edit(err.Error())
+		return c.Respond()
+	}
+	if getResult == nil {
+		log.Warn("Unable to find game")
+		c.Edit("No he podido encontrar el juego. Intenta volver a buscarlo, tal vez se ha modificado el excel")
+		return c.Respond()
+	}
+
+	g = *getResult
+
+	switch {
+	case g.IsInLocation(LocationCentro):
+		g.Location = string(LocationGamonal)
+	case g.IsInLocation(LocationGamonal):
+		g.Location = string(LocationCentro)
+	default:
+		log.Warn("Failed to determine current location, moving to Gamonal")
+		g.Location = string(LocationGamonal)
+	}
+	log = log.WithField(ilog.FieldLocation, g.Location)
+
+	err = h.GameDB.Update(context.TODO(), g)
+	if err != nil {
+		c.Edit(err.Error())
+		log.Error("Failed to update game database")
+		return c.Respond()
+	}
+
+	err = c.Edit(g.Card(), g.ButtonsForPage(member, 2))
+	if err != nil {
+		log.WithError(err).Error("Failed to update card")
+	}
+	log.Info("Switched location")
+
+	return c.Respond()
 }
