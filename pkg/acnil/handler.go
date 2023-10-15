@@ -1294,7 +1294,6 @@ func (h *Handler) onUpdateComment(c tele.Context, member Member) error {
 		log.Error("Failed to update game DB")
 	}
 
-	// c.Send(fmt.Sprintf("Listo! he actualizado el comentario a \"%s\"", g.Comments))
 	c.Send(g.Card(), g.Buttons(member))
 
 	return c.Respond()
