@@ -63,16 +63,6 @@ func (m *Member) Recipient() string {
 	return m.TelegramID
 }
 
-func (m *Member) ToRow() (string, []interface{}) {
-
-	v, err := sheetsparser.Marshal(m)
-	if err != nil {
-		panic(err)
-	}
-
-	return m.Row, v
-}
-
 func NewMembersDatabase(srv *sheets.Service, sheetID string) *SheetMembersDatabase {
 	return &SheetMembersDatabase{
 		SRV:       srv,
@@ -146,11 +136,12 @@ func (db *SheetMembersDatabase) List(ctx context.Context) ([]Member, error) {
 }
 
 func (db *SheetMembersDatabase) Append(ctx context.Context, member Member) error {
-	values := []interface{}{}
+	values, err := sheetsparser.Marshal(member)
+	if err != nil {
+		panic(err)
+	}
 
-	_, values = member.ToRow()
-
-	_, err := db.SRV.Spreadsheets.Values.Append(db.SheetID, db.fullReadRange(), &sheets.ValueRange{Values: [][]interface{}{values}}).ValueInputOption("USER_ENTERED").Do()
+	_, err = db.SRV.Spreadsheets.Values.Append(db.SheetID, db.fullReadRange(), &sheets.ValueRange{Values: [][]interface{}{values}}).ValueInputOption("USER_ENTERED").Do()
 	if err != nil {
 		logrus.Fatalf("Unable to append data to sheet: %v", err)
 	}
@@ -158,16 +149,19 @@ func (db *SheetMembersDatabase) Append(ctx context.Context, member Member) error
 }
 
 func (db *SheetMembersDatabase) Update(ctx context.Context, member Member) error {
-	range_, row := member.ToRow()
+	values, err := sheetsparser.Marshal(member)
+	if err != nil {
+		panic(err)
+	}
 
 	request := db.SRV.Spreadsheets.Values.Update(db.SheetID, member.Row, &sheets.ValueRange{
-		Range: range_,
+		Range: member.Row,
 		Values: [][]interface{}{
-			row,
+			values,
 		},
 	})
 	request.ValueInputOption("USER_ENTERED")
-	_, err := request.Do()
+	_, err = request.Do()
 	if err != nil {
 		return err
 	}

@@ -927,6 +927,7 @@ var _ = Describe("Handler", func() {
 		})
 
 		Describe("When a game is switched locations", func() {
+
 			BeforeEach(func() {
 				mockTeleContext.EXPECT().Data().Return(acnil.Game{
 					ID:   "1",
