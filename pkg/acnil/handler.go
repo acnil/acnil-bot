@@ -10,9 +10,11 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/metalblueberry/acnil-bot/pkg/ilog"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/exp/slices"
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -26,10 +28,11 @@ var (
 
 	btnAdmin = mainMenu.Text("👮 Administrador")
 
-	adminMenu          = &tele.ReplyMarkup{ResizeKeyboard: true}
-	btnForgotten       = adminMenu.Text("Juegos olvidados?")
-	btnNotInAnyPlace   = adminMenu.Text("Juegos en ningún sitio")
-	btnCancelAdminMenu = adminMenu.Text("Atrás")
+	adminMenu           = &tele.ReplyMarkup{ResizeKeyboard: true}
+	btnForgotten        = adminMenu.Text("Juegos olvidados?")
+	btnNotInAnyPlace    = adminMenu.Text("Juegos en ningún sitio")
+	btnGamesTakenByUser = adminMenu.Text("Juegos cogidos por usuario")
+	btnCancelAdminMenu  = adminMenu.Text("Atrás")
 
 	renameMenu      = &tele.ReplyMarkup{ResizeKeyboard: true}
 	btnCancelRename = renameMenu.Text("Cancelar")
@@ -60,6 +63,7 @@ func adminMenuReplyMarkup(member Member) *tele.ReplyMarkup {
 	markup.Reply(
 		markup.Row(btnForgotten),
 		markup.Row(btnNotInAnyPlace),
+		markup.Row(btnGamesTakenByUser),
 		markup.Row(btnCancelAdminMenu),
 	)
 	markup.ResizeKeyboard = true
@@ -137,8 +141,10 @@ func (h *Handler) Register(handlerGroup *tele.Group) {
 	handlerGroup.Handle(&btnCancelRename, h.CancelRename)
 
 	handlerGroup.Handle(&btnAdmin, h.OnAdmin)
+	handlerGroup.Handle(&btnCancelAdminMenu, h.OnCancelAdminMenu)
 	handlerGroup.Handle(&btnForgotten, h.OnForgotten)
 	handlerGroup.Handle(&btnNotInAnyPlace, h.OnNotInAnyPlace)
+	handlerGroup.Handle(&btnGamesTakenByUser, h.OnGamesTakenByUser)
 }
 
 func OnlyPrivateChatMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
@@ -318,11 +324,20 @@ func (h *Handler) OnText(c tele.Context) error {
 
 func (h *Handler) onText(c tele.Context, member Member) error {
 	switch {
+	case isAnIDForSure.Match([]byte(c.Text())):
+		return h.onSearchByText(c, member)
 	case member.State.Is(StateActionRename):
 		return h.onRename(c, member)
 	case member.State.Is(StateActionUpdateComment):
 		return h.onUpdateComment(c, member)
+	case member.State.Is(StateGetGamesTakenByUser):
+		return h.onGetGamesTakenByUser(c, member)
+	default:
+		return h.onSearchByText(c, member)
 	}
+}
+
+func (h *Handler) onSearchByText(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Text"), c.Sender())
 
 	log = log.WithField(ilog.FieldText, c.Text())
@@ -1090,6 +1105,14 @@ func (h *Handler) onAdmin(c tele.Context, member Member) error {
 	return c.Send("This is the future admin section", adminMenuReplyMarkup(member))
 }
 
+func (h *Handler) OnCancelAdminMenu(c tele.Context) error {
+	return h.IsAuthorized(h.IsAdmin(h.onCancelAdminMenu))(c)
+}
+
+func (h *Handler) onCancelAdminMenu(c tele.Context, member Member) error {
+	return c.Send("Volviendo al menu principal", mainMenuReplyMarkup(member))
+}
+
 func (h *Handler) OnForgotten(c tele.Context) error {
 	return h.IsAuthorized(h.IsAdmin(h.onForgotten))(c)
 }
@@ -1297,4 +1320,125 @@ func (h *Handler) onUpdateComment(c tele.Context, member Member) error {
 	c.Send(g.Card(), g.Buttons(member))
 
 	return c.Respond()
+}
+
+func (h *Handler) OnGamesTakenByUser(c tele.Context) error {
+	return h.IsAuthorized(h.IsAdmin(h.onGamesTakenByUser))(c)
+}
+
+func (h *Handler) onGamesTakenByUser(c tele.Context, member Member) error {
+	games, err := h.GameDB.List(context.Background())
+	if err != nil {
+		c.Send("Wops! algo ha ido mal. Vuelve a intentarlo mas tarde")
+		return fmt.Errorf("Failed to load game list, %w", err)
+	}
+
+	names := []string{}
+	for _, g := range games {
+		if !g.IsAvailable() {
+			names = append(names, g.Holder)
+		}
+	}
+	slices.Sort(names)
+	uniqNames := slices.Compact(names)
+
+	markup := &tele.ReplyMarkup{ResizeKeyboard: true}
+
+	base := []tele.Row{
+		markup.Row(btnCancelAdminMenu),
+	}
+
+	for _, name := range uniqNames {
+		base = append(base, tele.Row{markup.Text(name)})
+	}
+
+	markup.ResizeKeyboard = true
+	markup.Reply(base...)
+
+	member.State.SetGetGamesTakenByUser()
+	err = h.MembersDB.Update(context.Background(), member)
+	if err != nil {
+		c.Send("Wops! algo ha ido mal, inténtalo de nuevo")
+		return fmt.Errorf("Failed to update membersDB, %w", err)
+	}
+
+	return c.Send("Dime la persona que quieres o utiliza el teclado", markup)
+
+}
+
+type GetGamesTakenByUserTemplateData struct {
+	Entries []struct {
+		Name      string
+		Timestamp time.Time
+		ID        string
+	}
+	TimeFormat string
+}
+
+func (h *Handler) onGetGamesTakenByUser(c tele.Context, member Member) error {
+	entries, err := h.Audit.Find(context.Background(), Query{
+		Member: &Member{
+			Nickname: c.Text(),
+		},
+	})
+	if err != nil {
+		c.Send("Wops! Algo ha ido mal, vuelve a intentarlo mas tarde")
+		return fmt.Errorf("Failed to get audit, %w", err)
+	}
+	if len(entries) == 0 {
+		return c.Send("No he encontrado juegos para este nombre")
+	}
+
+	data := GetGamesTakenByUserTemplateData{
+		TimeFormat: "2006-01-02",
+	}
+
+	for _, entry := range entries {
+		if len(data.Entries) == 0 {
+			timestamp := entry.TakeDate
+			if timestamp.IsZero() {
+				timestamp = entry.Timestamp
+			}
+			data.Entries = append(data.Entries, struct {
+				Name      string
+				Timestamp time.Time
+				ID        string
+			}{
+				Name:      entry.Name,
+				Timestamp: timestamp,
+				ID:        entry.ID,
+			})
+			continue
+		}
+		lastEntry := data.Entries[len(data.Entries)-1]
+		if lastEntry.Timestamp != entry.TakeDate || lastEntry.Name != entry.Name {
+			timestamp := entry.TakeDate
+			if timestamp.IsZero() {
+				timestamp = entry.Timestamp
+			}
+			data.Entries = append(data.Entries, struct {
+				Name      string
+				Timestamp time.Time
+				ID        string
+			}{
+				Name:      entry.Name,
+				Timestamp: timestamp,
+				ID:        entry.ID,
+			})
+		}
+	}
+
+	tpl, _ := tmpl.Parse(`
+{{- $g := . -}}
+{{ range .Entries -}}
+{{ .Timestamp.Format $g.TimeFormat }}: /{{.ID}} {{ .Name }}
+{{ end }}`)
+
+	buf := &bytes.Buffer{}
+	err = tpl.Execute(buf, data)
+	if err != nil {
+		return c.Send(err.Error())
+	}
+	return c.Send(buf.String())
+
 }

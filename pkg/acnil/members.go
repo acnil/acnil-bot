@@ -184,6 +184,7 @@ type StateAction string
 const (
 	StateActionRename        StateAction = "rename"
 	StateActionUpdateComment StateAction = "update-comment"
+	StateGetGamesTakenByUser StateAction = "get-games-taken-by-user"
 )
 
 type MemberState struct {
@@ -207,4 +208,8 @@ func (s *MemberState) SetRename() {
 func (s *MemberState) SetUpdateComment(g Game) {
 	s.Action = StateActionUpdateComment
 	s.Data = g.Data()
+}
+
+func (s *MemberState) SetGetGamesTakenByUser() {
+	s.Action = StateGetGamesTakenByUser
 }
