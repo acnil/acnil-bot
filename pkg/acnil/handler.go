@@ -1110,6 +1110,8 @@ func (h *Handler) OnCancelAdminMenu(c tele.Context) error {
 }
 
 func (h *Handler) onCancelAdminMenu(c tele.Context, member Member) error {
+	member.State.Clear()
+	h.MembersDB.Update(context.Background(), member)
 	return c.Send("Volviendo al menu principal", mainMenuReplyMarkup(member))
 }
 
