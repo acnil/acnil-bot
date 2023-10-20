@@ -324,7 +324,7 @@ func (h *Handler) OnText(c tele.Context) error {
 
 func (h *Handler) onText(c tele.Context, member Member) error {
 	switch {
-	case isAnIDForSure.Match([]byte(c.Text())):
+	case isACommandForSure.Match([]byte(c.Text())):
 		return h.onSearchByText(c, member)
 	case member.State.Is(StateActionRename):
 		return h.onRename(c, member)
@@ -420,9 +420,9 @@ Esto es todo lo que he encontrado`, mainMenu)
 
 var mayBeAnID = regexp.MustCompile(`^[/]?0*(\d+\w*)$`)
 var isAnIDForSure = regexp.MustCompile(`^[/]?(\d+)$`)
+var isACommandForSure = regexp.MustCompile(`^/.*$`)
 
 func (h *Handler) textSearchGame(log *logrus.Entry, c tele.Context, gameList Games, member Member, text string) ([]Game, error) {
-
 	if gameLineMatch.MatchString(text) {
 		game, err := NewGameFromLine(text)
 		if err != nil {
@@ -1110,8 +1110,10 @@ func (h *Handler) OnCancelAdminMenu(c tele.Context) error {
 }
 
 func (h *Handler) onCancelAdminMenu(c tele.Context, member Member) error {
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "CancelAdminMenu"), c.Sender())
 	member.State.Clear()
 	h.MembersDB.Update(context.Background(), member)
+	log.Info("Going back")
 	return c.Send("Volviendo al menu principal", mainMenuReplyMarkup(member))
 }
 
@@ -1329,6 +1331,7 @@ func (h *Handler) OnGamesTakenByUser(c tele.Context) error {
 }
 
 func (h *Handler) onGamesTakenByUser(c tele.Context, member Member) error {
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "GamesTakenByUser"), c.Sender())
 	games, err := h.GameDB.List(context.Background())
 	if err != nil {
 		c.Send("Wops! algo ha ido mal. Vuelve a intentarlo mas tarde")
@@ -1363,7 +1366,7 @@ func (h *Handler) onGamesTakenByUser(c tele.Context, member Member) error {
 		c.Send("Wops! algo ha ido mal, inténtalo de nuevo")
 		return fmt.Errorf("Failed to update membersDB, %w", err)
 	}
-
+	log.Info("Ready to return games taken by user")
 	return c.Send("Dime la persona que quieres o utiliza el teclado", markup)
 
 }
@@ -1378,6 +1381,8 @@ type GetGamesTakenByUserTemplateData struct {
 }
 
 func (h *Handler) onGetGamesTakenByUser(c tele.Context, member Member) error {
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "GetGamesTakenByUser"), c.Sender())
+
 	entries, err := h.Audit.Find(context.Background(), Query{
 		Member: &Member{
 			Nickname: c.Text(),
@@ -1388,7 +1393,8 @@ func (h *Handler) onGetGamesTakenByUser(c tele.Context, member Member) error {
 		return fmt.Errorf("Failed to get audit, %w", err)
 	}
 	if len(entries) == 0 {
-		return c.Send("No he encontrado juegos para este nombre")
+		log.Info("No games found")
+		return c.Send("No he encontrado juegos para este nombre. ¿Seguro que este miembro existe?")
 	}
 
 	data := GetGamesTakenByUserTemplateData{
@@ -1441,6 +1447,8 @@ func (h *Handler) onGetGamesTakenByUser(c tele.Context, member Member) error {
 	if err != nil {
 		return c.Send(err.Error())
 	}
+
+	log.WithField("member", c.Text()).Info("Served list for User")
 	return c.Send(buf.String())
 
 }
