@@ -25,10 +25,9 @@ var (
 		},
 	}).Parse(`
 {{ define "card" }}
-{{if .ID }}ID: /{{ .ID }}{{end}}
-{{ .Name }}
-{{ .Location }}
+{{ .Line }}
 
+{{ .Location }}
 {{ if .IsAvailable -}}
 🟢 Disponible
 {{- else -}}
@@ -44,8 +43,8 @@ Notas:
 {{ end }}
 
 {{ define "morecard" }}
-{{if .ID }}ID: /{{ .ID }}{{end}}
-{{ .Name }}
+{{ .Line }}
+
 {{ .Publisher}} {{if .Price}}({{ .Price }}){{end}}
 {{ .Location }}
 {{- if .ContainsBGGData }}
@@ -128,11 +127,23 @@ func NewGameFromLine(line string) (Game, error) {
 	}, nil
 }
 
-func (g Game) String() string {
+// NewGameFromCard attempts to parse a game card to know the game behind it.
+// The data must be completed by fetching the game from the database afterwards
+func NewGameFromCard(card string) (Game, error) {
+	card = strings.TrimSpace(card)
+	line := strings.Split(card, "\n")[0]
+	return NewGameFromLine(line)
+}
+
+func (g Game) Line() string {
 	if g.IsAvailable() {
 		return fmt.Sprintf("🟢 /%04s: %s", g.ID, g.Name)
 	}
 	return fmt.Sprintf("🔴 /%04s: %s (%s)", g.ID, g.Name, g.Holder)
+}
+
+func (g Game) String() string {
+	return g.Line()
 }
 
 func (g Game) ContainsBGGData() bool {

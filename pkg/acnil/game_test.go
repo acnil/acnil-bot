@@ -343,3 +343,23 @@ var _ = Describe("A game line", func() {
 	})
 
 })
+
+var _ = Describe("A game card", func() {
+	var (
+		game = acnil.Game{
+			ID:       "123",
+			Name:     "TestGame",
+			Location: string(acnil.LocationCentro),
+			Comments: "This is a test game",
+			Holder:   "",
+		}
+	)
+	It("Must be parsed from its card", func() {
+		gameCard := game.Card()
+		g, err := acnil.NewGameFromCard(gameCard)
+		Expect(err).To(BeNil())
+		Expect(g.ID).To(Equal(game.ID))
+		Expect(g.Name).To(Equal(game.Name))
+	})
+
+})
