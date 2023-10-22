@@ -101,7 +101,7 @@ type Game struct {
 	LanguageDependence string  `col:"17"`
 }
 
-func NewGameFromData(data string) Game {
+func NewGameFromLineData(data string) Game {
 	fields := strings.SplitN(data, "|", 2)
 	return Game{
 		ID:   fields[0],
@@ -213,7 +213,8 @@ func (g Game) ReturnInDays() int {
 	return int(g.ReturnDate.Sub(time.Now()).Hours()) / 24
 }
 
-func (g Game) Data() string {
+// LineData returns a simplified line data format used when a card is not suitable
+func (g Game) LineData() string {
 	data := strings.Join([]string{g.ID, g.Name}, "|")
 	return data
 }
@@ -224,56 +225,55 @@ func (g Game) Buttons(member Member) *tele.ReplyMarkup {
 
 func (g Game) ButtonsForPage(member Member, page int) *tele.ReplyMarkup {
 	selector := &tele.ReplyMarkup{}
-	data := g.Data()
 	rows := []tele.Row{}
 
 	switch page {
 	default:
 		if g.IsAvailable() {
 			rows = append(rows, selector.Row(
-				selector.Data("Tomar Prestado", "take", data),
+				selector.Data("Tomar Prestado", "take"),
 			))
 		} else {
 			rows = append(rows, selector.Row(
-				selector.Data("Devolver", "return", data),
+				selector.Data("Devolver", "return"),
 			))
 		}
 
 		if g.ContainsBGGData() {
 			rows = append(rows, selector.Row(
-				selector.Data("Mas información", "more", data),
+				selector.Data("Mas información", "more"),
 			))
 		}
 
 		rows = append(rows, selector.Row(
-			selector.Data("Historial", "history", data),
+			selector.Data("Historial", "history"),
 		))
 
 		if (g.IsHeldBy(member) || (member.Permissions == PermissionAdmin && !g.IsAvailable())) && g.IsLeaseExpired() {
 			rows = append(rows, selector.Row(
-				selector.Data("Dar mas tiempo", "extendLease", data),
+				selector.Data("Dar mas tiempo", "extendLease"),
 			))
 		}
 
 		rows = append(rows, selector.Row(
-			selector.Data(">", "game-page-2", data),
+			selector.Data(">", "game-page-2"),
 		))
 	case 2:
 		switch {
 		case g.IsInLocation(LocationCentro):
 			rows = append(rows, selector.Row(
-				selector.Data("Mover a Gamonal", "switch-location", data),
+				selector.Data("Mover a Gamonal", "switch-location"),
 			))
 		default:
 			rows = append(rows, selector.Row(
-				selector.Data("Mover al Centro", "switch-location", data),
+				selector.Data("Mover al Centro", "switch-location"),
 			))
 		}
 		rows = append(rows, selector.Row(
-			selector.Data("Actualizar comentario", "update-comment", data),
+			selector.Data("Actualizar comentario", "update-comment"),
 		))
 		rows = append(rows, selector.Row(
-			selector.Data("<", "game-page-1", data),
+			selector.Data("<", "game-page-1"),
 		))
 	}
 

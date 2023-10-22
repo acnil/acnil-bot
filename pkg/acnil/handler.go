@@ -34,11 +34,11 @@ var (
 	btnGamesTakenByUser = adminMenu.Text("Juegos cogidos por usuario")
 	btnCancelAdminMenu  = adminMenu.Text("Atrás")
 
-	renameMenu      = &tele.ReplyMarkup{ResizeKeyboard: true}
-	btnCancelRename = renameMenu.Text("Cancelar")
+	cancelMenu = &tele.ReplyMarkup{ResizeKeyboard: true}
+	btnCancel  = cancelMenu.Text("Cancel")
 
 	startMenu = &tele.ReplyMarkup{ResizeKeyboard: true}
-	btnStart  = renameMenu.Text("Empezar!")
+	btnStart  = startMenu.Text("Empezar!")
 )
 
 // mainMenuReplyMarkup Given a member, builds the main menu keyboard with appropriate buttons.
@@ -72,10 +72,10 @@ func adminMenuReplyMarkup(member Member) *tele.ReplyMarkup {
 }
 
 func init() {
-	renameMenu.Reply(
-		renameMenu.Row(btnCancelRename),
+	cancelMenu.Reply(
+		cancelMenu.Row(btnCancel),
 	)
-	renameMenu.RemoveKeyboard = true
+	cancelMenu.RemoveKeyboard = true
 
 	startMenu.Reply(
 		startMenu.Row(btnStart),
@@ -138,7 +138,8 @@ func (h *Handler) Register(handlerGroup *tele.Group) {
 	handlerGroup.Handle(&btnEnGamonal, h.IsAuthorized(h.InGamonal))
 	handlerGroup.Handle(&btnEnCentro, h.IsAuthorized(h.InCentro))
 	handlerGroup.Handle(&btnRename, h.Rename)
-	handlerGroup.Handle(&btnCancelRename, h.CancelRename)
+
+	handlerGroup.Handle(&btnCancel, h.Cancel)
 
 	handlerGroup.Handle(&btnAdmin, h.OnAdmin)
 	handlerGroup.Handle(&btnCancelAdminMenu, h.OnCancelAdminMenu)
@@ -558,7 +559,12 @@ func (h *Handler) OnTake(c tele.Context) error {
 func (h *Handler) onTake(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Take"), c.Sender())
 
-	g := NewGameFromData(c.Data())
+	g, err := NewGameFromCard(c.Message().Text)
+	if err != nil {
+		c.Edit("Wops! Algo ha ido mal....\nInténtalo de nuevo")
+		return fmt.Errorf("failed to load data form card, %w", err)
+	}
+
 	log = log.
 		WithField("Game", g.Name).
 		WithField("ID", g.ID)
@@ -684,7 +690,11 @@ func (h *Handler) OnReturn(c tele.Context) error {
 func (h *Handler) onReturn(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Return"), c.Sender())
 
-	g := NewGameFromData(c.Data())
+	g, err := NewGameFromCard(c.Message().Text)
+	if err != nil {
+		c.Edit("Wops! Algo ha ido mal....\nInténtalo de nuevo")
+		return fmt.Errorf("failed to load data form card, %w", err)
+	}
 	log = log.
 		WithField("Game", g.Name).
 		WithField("ID", g.ID)
@@ -737,8 +747,15 @@ func (h *Handler) OnMore(c tele.Context) error {
 func (h *Handler) onMore(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "More"), c.Sender())
 
-	g := NewGameFromData(c.Data())
-	log = log.WithField("Game", g.Name)
+	g, err := NewGameFromCard(c.Message().Text)
+	if err != nil {
+		c.Edit("Wops! Algo ha ido mal....\nInténtalo de nuevo")
+		return fmt.Errorf("failed to load data form card, %w", err)
+	}
+
+	log = log.
+		WithField("Game", g.Name).
+		WithField("ID", g.ID)
 
 	getResult, err := h.GameDB.Get(context.Background(), g.ID, g.Name)
 	if err != nil {
@@ -802,8 +819,15 @@ func (h *Handler) onHistory(c tele.Context, member Member) error {
 
 	defer c.Respond()
 
-	g := NewGameFromData(c.Data())
-	log = log.WithField("Game", g.Name)
+	g, err := NewGameFromCard(c.Message().Text)
+	if err != nil {
+		c.Edit("Wops! Algo ha ido mal....\nInténtalo de nuevo")
+		return fmt.Errorf("failed to load data form card, %w", err)
+	}
+
+	log = log.
+		WithField("Game", g.Name).
+		WithField("ID", g.ID)
 
 	entries, err := h.Audit.Find(context.TODO(), Query{
 		Game:  &g,
@@ -863,7 +887,12 @@ func (h *Handler) OnExtendLease(c tele.Context) error {
 func (h *Handler) onExtendLease(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "OnExtendLease"), c.Sender())
 
-	g := NewGameFromData(c.Data())
+	g, err := NewGameFromCard(c.Message().Text)
+	if err != nil {
+		c.Edit("Wops! Algo ha ido mal....\nInténtalo de nuevo")
+		return fmt.Errorf("failed to load data form card, %w", err)
+	}
+
 	log = log.WithField("Game", g.Name)
 
 	getResult, err := h.GameDB.Get(context.TODO(), g.ID, g.Name)
@@ -1054,12 +1083,12 @@ func (h *Handler) rename(c tele.Context, member Member) error {
 		log.WithError(err).Error("Failed to update memberDB")
 		return err
 	}
-	c.Send("Dime el nombre que quieres tener, Tu nombre actual es "+member.Nickname, renameMenu)
+	c.Send("Dime el nombre que quieres tener, Tu nombre actual es "+member.Nickname, cancelMenu)
 	log.Info("Rename action requested")
 	return nil
 }
 
-func (h *Handler) CancelRename(c tele.Context) error {
+func (h *Handler) Cancel(c tele.Context) error {
 	return h.IsAuthorized(h.cancelRename)(c)
 }
 
@@ -1070,7 +1099,7 @@ func (h *Handler) cancelRename(c tele.Context, member Member) error {
 		return err
 	}
 
-	return c.Send("Okey, Te llamas "+member.Nickname, mainMenuReplyMarkup(member))
+	return c.Send("Okey, Cancelado.", mainMenuReplyMarkup(member))
 }
 
 func (h *Handler) onRename(c tele.Context, member Member) error {
@@ -1083,7 +1112,7 @@ func (h *Handler) onRename(c tele.Context, member Member) error {
 
 	newName := strings.TrimSpace(c.Text())
 	if len(newName) > 25 {
-		return c.Send("No puedes usar un nombre tan largo...", renameMenu)
+		return c.Send("No puedes usar un nombre tan largo...", cancelMenu)
 	}
 
 	if newName == member.Nickname {
@@ -1186,7 +1215,11 @@ func (h *Handler) onGamePage(page int) func(c tele.Context, member Member) error
 	return func(c tele.Context, member Member) error {
 		log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "GamePage"), c.Sender()).WithField(ilog.FieldPage, page)
 
-		g := NewGameFromData(c.Data())
+		g, err := NewGameFromCard(c.Message().Text)
+		if err != nil {
+			c.Edit("Wops! Algo ha ido mal....\nInténtalo de nuevo")
+			return fmt.Errorf("failed to load data form card, %w", err)
+		}
 		log = log.WithField("Game", g.Name)
 
 		getResult, err := h.GameDB.Get(context.TODO(), g.ID, g.Name)
@@ -1219,8 +1252,15 @@ func (h *Handler) OnSwitchLocation(c tele.Context) error {
 func (h *Handler) onSwitchLocation(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "SwitchLocation"), c.Sender())
 
-	g := NewGameFromData(c.Data())
-	log = log.WithField("Game", g.Name)
+	g, err := NewGameFromCard(c.Message().Text)
+	if err != nil {
+		c.Edit("Wops! Algo ha ido mal....\nInténtalo de nuevo")
+		return fmt.Errorf("failed to load data form card, %w", err)
+	}
+
+	log = log.
+		WithField("Game", g.Name).
+		WithField("ID", g.ID)
 
 	getResult, err := h.GameDB.Get(context.TODO(), g.ID, g.Name)
 	if err != nil {
@@ -1270,14 +1310,19 @@ func (h *Handler) OnUpdateCommentButton(c tele.Context) error {
 func (h *Handler) onUpdateCommentButton(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "UpdateCommentButton"), c.Sender())
 
-	g := NewGameFromData(c.Data())
+	g, err := NewGameFromCard(c.Message().Text)
+	if err != nil {
+		c.Edit("Wops! Algo ha ido mal....\nInténtalo de nuevo")
+		return fmt.Errorf("failed to load data form card, %w", err)
+	}
+
 	log = log.WithField("Game", g.Name)
 
-	c.Send(fmt.Sprintf("Dime que comentario quieres dejar para el juego %s: %s", g.ID, g.Name))
+	c.Send(fmt.Sprintf("Dime que comentario quieres dejar para el juego %s: %s", g.ID, g.Name), cancelMenu)
 
 	member.State.SetUpdateComment(g)
 
-	err := h.MembersDB.Update(context.Background(), member)
+	err = h.MembersDB.Update(context.Background(), member)
 	if err != nil {
 		log.Error("Failed to updated memberDB")
 		return err
@@ -1286,10 +1331,30 @@ func (h *Handler) onUpdateCommentButton(c tele.Context, member Member) error {
 	return c.Respond()
 }
 
+func (h *Handler) OnCancelCommentButton(c tele.Context) error {
+	return h.IsAuthorized(h.onCancelCommentButton)(c)
+}
+
+func (h *Handler) onCancelCommentButton(c tele.Context, member Member) error {
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "CancelUpdateCommentButton"), c.Sender())
+	defer c.Respond()
+
+	member.State.Clear()
+
+	err := h.MembersDB.Update(context.Background(), member)
+	if err != nil {
+		log.Error("Failed to updated memberDB")
+		return err
+	}
+	return c.Send("Ok, no dejo ningún comentario", mainMenuReplyMarkup(member))
+
+}
+
 func (h *Handler) onUpdateComment(c tele.Context, member Member) error {
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "UpdateComment"), c.Sender())
 
-	g := NewGameFromData(member.State.Data)
+	g := NewGameFromLineData(member.State.Data)
+
 	log = log.WithField("Game", g.Name)
 
 	getResult, err := h.GameDB.Get(context.TODO(), g.ID, g.Name)

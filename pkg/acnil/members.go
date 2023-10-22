@@ -207,7 +207,7 @@ func (s *MemberState) SetRename() {
 
 func (s *MemberState) SetUpdateComment(g Game) {
 	s.Action = StateActionUpdateComment
-	s.Data = g.Data()
+	s.Data = g.LineData()
 }
 
 func (s *MemberState) SetGetGamesTakenByUser() {

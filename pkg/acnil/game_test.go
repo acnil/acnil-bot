@@ -83,7 +83,6 @@ var _ = Describe("A game card", func() {
 						buttons := ToOneDimension(game.ButtonsForPage(member, 2).InlineKeyboard)
 						var button telebot.InlineButton
 						Expect(buttons).To(ContainElement(WithButtonText("Mover al Centro"), &button))
-						Expect(button).To(WithButtonData(game.Data()))
 					})
 				})
 				Describe("When it is in Centro", func() {
@@ -94,7 +93,6 @@ var _ = Describe("A game card", func() {
 						buttons := ToOneDimension(game.ButtonsForPage(member, 2).InlineKeyboard)
 						var button telebot.InlineButton
 						Expect(buttons).To(ContainElement(WithButtonText("Mover a Gamonal"), &button))
-						Expect(button).To(WithButtonData(game.Data()))
 					})
 				})
 				It("Must contain Actualizar comentario button", func() {

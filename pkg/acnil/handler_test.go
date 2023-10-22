@@ -325,12 +325,12 @@ var _ = Describe("Handler", func() {
 					ReturnDate: time.Now(),
 				}
 				mockGameDatabase.EXPECT().Get(gomock.Any(), "1", "Game1").Return(game, nil)
-				mockTeleContext.EXPECT().Data().Return(game.Data()).AnyTimes()
 				mockTeleContext.EXPECT().Message().Return(&tele.Message{
 					Sender: sender,
 					Chat: &tele.Chat{
 						Type: tele.ChatPrivate,
 					},
+					Text: game.Card(),
 				}).AnyTimes()
 			})
 			It("Must update the return date", func() {
@@ -624,15 +624,15 @@ var _ = Describe("Handler", func() {
 					Name: "Game1",
 				}, nil)
 
-				mockTeleContext.EXPECT().Data().Return(acnil.Game{
-					ID:   "1",
-					Name: "Game1",
-				}.Data()).AnyTimes()
 				mockTeleContext.EXPECT().Message().Return(&tele.Message{
 					Sender: sender,
 					Chat: &tele.Chat{
 						Type: tele.ChatPrivate,
 					},
+					Text: acnil.Game{
+						ID:   "1",
+						Name: "Game1",
+					}.Card(),
 				}).AnyTimes()
 				mockGameDatabase.EXPECT().Update(gomock.Any(), gomock.AssignableToTypeOf(acnil.Game{})).Do(func(ctx context.Context, g acnil.Game) {
 					Expect(g.ID).To(Equal("1"))
@@ -661,16 +661,16 @@ var _ = Describe("Handler", func() {
 					Holder: "Other Person",
 				}, nil)
 
-				mockTeleContext.EXPECT().Data().Return(acnil.Game{
-					ID:     "1",
-					Name:   "Game1",
-					Holder: "Other Person",
-				}.Data()).AnyTimes()
 				mockTeleContext.EXPECT().Message().Return(&tele.Message{
 					Sender: sender,
 					Chat: &tele.Chat{
 						Type: tele.ChatPrivate,
 					},
+					Text: acnil.Game{
+						ID:     "1",
+						Name:   "Game1",
+						Holder: "Other Person",
+					}.Card(),
 				}).AnyTimes()
 			})
 			It("must not change the game ownership and send updated data", func() {
@@ -691,17 +691,17 @@ var _ = Describe("Handler", func() {
 		})
 		Describe("When an user attempts to take a game that doesn't exist", func() {
 			BeforeEach(func() {
-				mockTeleContext.EXPECT().Data().Return(acnil.Game{
-					ID:     "1",
-					Name:   "Game1",
-					Holder: "Other Person",
-				}.Data()).AnyTimes()
 				mockGameDatabase.EXPECT().Get(gomock.Any(), "1", "Game1").Return(nil, nil)
 				mockTeleContext.EXPECT().Message().Return(&tele.Message{
 					Sender: sender,
 					Chat: &tele.Chat{
 						Type: tele.ChatPrivate,
 					},
+					Text: acnil.Game{
+						ID:     "1",
+						Name:   "Game1",
+						Holder: "Other Person",
+					}.Card(),
 				}).AnyTimes()
 			})
 			It("must notify the user by editing the message", func() {
@@ -725,15 +725,15 @@ var _ = Describe("Handler", func() {
 					TakeDate: time.Date(2023, 2, 11, 0, 0, 0, 0, time.UTC),
 				}, nil)
 
-				mockTeleContext.EXPECT().Data().Return(acnil.Game{
-					ID:   "1",
-					Name: "Game1",
-				}.Data()).AnyTimes()
 				mockTeleContext.EXPECT().Message().Return(&tele.Message{
 					Sender: sender,
 					Chat: &tele.Chat{
 						Type: tele.ChatPrivate,
 					},
+					Text: acnil.Game{
+						ID:   "1",
+						Name: "Game1",
+					}.Card(),
 				}).AnyTimes()
 			})
 			It("the game must be updated with empty holder", func() {
@@ -764,15 +764,15 @@ var _ = Describe("Handler", func() {
 					Holder: "Other User",
 				}, nil)
 
-				mockTeleContext.EXPECT().Data().Return(acnil.Game{
-					ID:   "1",
-					Name: "Game1",
-				}.Data()).AnyTimes()
 				mockTeleContext.EXPECT().Message().Return(&tele.Message{
 					Sender: sender,
 					Chat: &tele.Chat{
 						Type: tele.ChatPrivate,
 					},
+					Text: acnil.Game{
+						ID:   "1",
+						Name: "Game1",
+					}.Card(),
 				}).AnyTimes()
 
 			})
@@ -917,15 +917,15 @@ var _ = Describe("Handler", func() {
 					TakeDate: time.Date(2023, 2, 11, 0, 0, 0, 0, time.UTC),
 				}, nil)
 
-				mockTeleContext.EXPECT().Data().Return(acnil.Game{
-					ID:   "1",
-					Name: "Game1",
-				}.Data()).AnyTimes()
 				mockTeleContext.EXPECT().Message().Return(&tele.Message{
 					Sender: sender,
 					Chat: &tele.Chat{
 						Type: tele.ChatPrivate,
 					},
+					Text: acnil.Game{
+						ID:   "1",
+						Name: "Game1",
+					}.Card(),
 				}).AnyTimes()
 			})
 			It("the page number 1 must be returned", func() {
@@ -963,16 +963,16 @@ var _ = Describe("Handler", func() {
 		Describe("When a game is switched locations", func() {
 
 			BeforeEach(func() {
-				mockTeleContext.EXPECT().Data().Return(acnil.Game{
-					ID:   "1",
-					Name: "Game1",
-				}.Data()).AnyTimes()
 
 				mockTeleContext.EXPECT().Message().Return(&tele.Message{
 					Sender: sender,
 					Chat: &tele.Chat{
 						Type: tele.ChatPrivate,
 					},
+					Text: acnil.Game{
+						ID:   "1",
+						Name: "Game1",
+					}.Card(),
 				}).AnyTimes()
 			})
 			Describe("When it was in Gamonal", func() {
@@ -1086,16 +1086,15 @@ var _ = Describe("Handler", func() {
 		})
 		Describe("When the button to update comments is used", func() {
 			BeforeEach(func() {
-				mockTeleContext.EXPECT().Data().Return(acnil.Game{
-					ID:   "1",
-					Name: "Game1",
-				}.Data()).AnyTimes()
-
 				mockTeleContext.EXPECT().Message().Return(&tele.Message{
 					Sender: sender,
 					Chat: &tele.Chat{
 						Type: tele.ChatPrivate,
 					},
+					Text: acnil.Game{
+						ID:   "1",
+						Name: "Game1",
+					}.Card(),
 				}).AnyTimes()
 			})
 			It("Must ask for the new comment", func() {
