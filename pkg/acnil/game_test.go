@@ -362,4 +362,12 @@ var _ = Describe("A game card", func() {
 		Expect(g.Name).To(Equal(game.Name))
 	})
 
+	It("Must be parsed from its morecard", func() {
+		gameCard := game.MoreCard()
+		g, err := acnil.NewGameFromCard(gameCard)
+		Expect(err).To(BeNil())
+		Expect(g.ID).To(Equal(game.ID))
+		Expect(g.Name).To(Equal(game.Name))
+	})
+
 })
