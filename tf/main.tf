@@ -8,8 +8,8 @@ terraform {
 
   required_version = ">= 1.2.0"
   backend "s3" {
-    bucket = "acnil-terraform"
-    key    = "tf"
+    bucket = "metalblueberry"
+    key    = "acnil"
     region = "eu-west-1"
   }
 }
