@@ -1556,7 +1556,7 @@ func (h *Handler) onJuegatron(c tele.Context, member Member) error {
 		return fmt.Errorf("Failed to update DB, %w", err)
 	}
 
-	return c.Send("Listo! Ahora estas en modo juegatron", juegatronReplyMarkup())
+	return c.Send("Listo! Ahora estas en modo juegatron. Puedes buscar juegos diciéndome parte del nombre.\nPor ejemplo, puedes buscar el \"Virus\" diciendo \"vir\".", juegatronReplyMarkup())
 
 }
 
