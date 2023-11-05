@@ -30,6 +30,11 @@ func main() {
 		logrus.Fatal("AUDIT_SHEET_ID must be defined")
 	}
 
+	juegatronSheetID := os.Getenv("JUEGATRON_SHEET_ID")
+	if juegatronSheetID == "" {
+		logrus.Fatal("JUEGATRON_SHEET_ID must be defined")
+	}
+
 	pref := tele.Settings{
 		Token:  botToken,
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
@@ -43,6 +48,13 @@ func main() {
 
 	srv := recipes.SheetsService()
 
+	juegatronAudit := &acnil.Audit{
+		AuditDB:   acnil.NewSheetAuditDatabase(srv, juegatronSheetID),
+		GameDB:    acnil.NewGameDatabase(srv, juegatronSheetID),
+		MembersDB: acnil.NewMembersDatabase(srv, sheetID),
+		Bot:       b,
+	}
+
 	if disableAudit == "" {
 		audit := &acnil.Audit{
 			AuditDB:   acnil.NewSheetAuditDatabase(srv, auditSheetID),
@@ -50,7 +62,13 @@ func main() {
 			MembersDB: acnil.NewMembersDatabase(srv, sheetID),
 			Bot:       b,
 		}
-		audit.Run(context.Background())
+		audit.Run(context.Background(), time.Hour)
+
+		juegatronAudit.Run(context.Background(), time.Hour)
+	}
+	err = juegatronAudit.Do(context.Background())
+	if err != nil {
+		logrus.WithError(err).Error("Failed to update juegatron audit")
 	}
 
 	auditQuery := &acnil.AuditQuery{
@@ -58,10 +76,12 @@ func main() {
 	}
 
 	handler := &acnil.Handler{
-		MembersDB: acnil.NewMembersDatabase(srv, sheetID),
-		GameDB:    acnil.NewGameDatabase(srv, sheetID),
-		Audit:     auditQuery,
-		Bot:       b,
+		MembersDB:       acnil.NewMembersDatabase(srv, sheetID),
+		GameDB:          acnil.NewGameDatabase(srv, sheetID),
+		JuegatronGameDB: acnil.NewGameDatabase(srv, juegatronSheetID),
+		JuegatronAudit:  juegatronAudit,
+		Audit:           auditQuery,
+		Bot:             b,
 	}
 
 	handlerGroup := b.Group()

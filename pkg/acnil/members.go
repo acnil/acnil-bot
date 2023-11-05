@@ -182,9 +182,11 @@ func ParseMemberPermissions(p string) MemberPermissions {
 type StateAction string
 
 const (
-	StateActionRename        StateAction = "rename"
-	StateActionUpdateComment StateAction = "update-comment"
-	StateGetGamesTakenByUser StateAction = "get-games-taken-by-user"
+	StateActionRename                  StateAction = "rename"
+	StateActionUpdateComment           StateAction = "update-comment"
+	StateGetGamesTakenByUser           StateAction = "get-games-taken-by-user"
+	StateActionJuegatron               StateAction = "juegatron"
+	StateActionJuegatronWaitingForName StateAction = "juegatron-waiting-for-name"
 )
 
 type MemberState struct {
@@ -212,4 +214,13 @@ func (s *MemberState) SetUpdateComment(g Game) {
 
 func (s *MemberState) SetGetGamesTakenByUser() {
 	s.Action = StateGetGamesTakenByUser
+}
+
+func (s *MemberState) SetJuegatron() {
+	s.Action = StateActionJuegatron
+}
+
+func (s *MemberState) SetJuegatronWaitingForName(g Game) {
+	s.Action = StateActionJuegatronWaitingForName
+	s.Data = g.LineData()
 }

@@ -21,10 +21,12 @@ import (
 var (
 	mainMenu = &tele.ReplyMarkup{ResizeKeyboard: true}
 	// Reply buttons.
-	btnMyGames   = mainMenu.Text("🎲 Mis Juegos")
-	btnEnGamonal = mainMenu.Text("Lista de Gamonal")
-	btnEnCentro  = mainMenu.Text("Lista del Centro")
-	btnRename    = mainMenu.Text("🧍 Cambiar Nombre")
+	btnMyGames       = mainMenu.Text("🎲 Mis Juegos")
+	btnEnGamonal     = mainMenu.Text("Lista de Gamonal")
+	btnEnCentro      = mainMenu.Text("Lista del Centro")
+	btnRename        = mainMenu.Text("🧍 Cambiar Nombre")
+	btnJuegatron     = mainMenu.Text("Juegatron!")
+	btnExitJuegatron = mainMenu.Text("Salir de Juegatron")
 
 	btnAdmin = mainMenu.Text("👮 Administrador")
 
@@ -49,6 +51,7 @@ func mainMenuReplyMarkup(member Member) *tele.ReplyMarkup {
 		markup.Row(btnMyGames),
 		markup.Row(btnEnGamonal, btnEnCentro),
 		markup.Row(btnRename),
+		markup.Row(btnJuegatron),
 	}
 	if member.Permissions == PermissionAdmin {
 		std = append(std, markup.Row(btnAdmin))
@@ -65,6 +68,16 @@ func adminMenuReplyMarkup(member Member) *tele.ReplyMarkup {
 		markup.Row(btnNotInAnyPlace),
 		markup.Row(btnGamesTakenByUser),
 		markup.Row(btnCancelAdminMenu),
+	)
+	markup.ResizeKeyboard = true
+	return markup
+
+}
+
+func juegatronReplyMarkup() *tele.ReplyMarkup {
+	markup := &tele.ReplyMarkup{ResizeKeyboard: true}
+	markup.Reply(
+		markup.Row(btnExitJuegatron),
 	)
 	markup.ResizeKeyboard = true
 	return markup
@@ -113,7 +126,11 @@ type Handler struct {
 	MembersDB MembersDatabase
 	GameDB    GameDatabase
 	Audit     ROAudit
-	Bot       Sender
+
+	JuegatronGameDB GameDatabase
+	JuegatronAudit  *Audit
+
+	Bot Sender
 }
 
 func (h *Handler) Register(handlerGroup *tele.Group) {
@@ -138,6 +155,10 @@ func (h *Handler) Register(handlerGroup *tele.Group) {
 	handlerGroup.Handle(&btnEnGamonal, h.IsAuthorized(h.InGamonal))
 	handlerGroup.Handle(&btnEnCentro, h.IsAuthorized(h.InCentro))
 	handlerGroup.Handle(&btnRename, h.Rename)
+	handlerGroup.Handle(&btnJuegatron, h.OnJuegatron)
+	handlerGroup.Handle(&btnExitJuegatron, h.OnExitJuegatron)
+	handlerGroup.Handle("\fjuegatron-return", h.OnJuegatronReturn)
+	handlerGroup.Handle("\fjuegatron-take", h.OnJuegatronTake)
 
 	handlerGroup.Handle(&btnCancel, h.Cancel)
 
@@ -325,6 +346,10 @@ func (h *Handler) OnText(c tele.Context) error {
 
 func (h *Handler) onText(c tele.Context, member Member) error {
 	switch {
+	case member.State.Is(StateActionJuegatron):
+		return h.onJuegatronText(c, member)
+	case member.State.Is(StateActionJuegatronWaitingForName):
+		return h.onJuegatronTakeWaitForName(c, member)
 	case isACommandForSure.Match([]byte(c.Text())):
 		return h.onSearchByText(c, member)
 	case member.State.Is(StateActionRename):
@@ -353,7 +378,7 @@ func (h *Handler) onSearchByText(c tele.Context, member Member) error {
 
 	list := Games{}
 	for _, line := range lines {
-		search, err := h.textSearchGame(log, c, gameList, member, line)
+		search, err := h.textSearchGame(log, c, gameList, line, mainMenuReplyMarkup(member))
 		if err != nil {
 			log.WithError(err).Error("Failed to search games")
 			return c.Send("No he podido buscar el juego, inténtalo otra vez")
@@ -423,7 +448,7 @@ var mayBeAnID = regexp.MustCompile(`^[/]?0*(\d+\w*)$`)
 var isAnIDForSure = regexp.MustCompile(`^[/]?(\d+)$`)
 var isACommandForSure = regexp.MustCompile(`^/.*$`)
 
-func (h *Handler) textSearchGame(log *logrus.Entry, c tele.Context, gameList Games, member Member, text string) ([]Game, error) {
+func (h *Handler) textSearchGame(log *logrus.Entry, c tele.Context, gameList Games, text string, markup *tele.ReplyMarkup) ([]Game, error) {
 	if gameLineMatch.MatchString(text) {
 		game, err := NewGameFromLine(text)
 		if err != nil {
@@ -435,13 +460,13 @@ func (h *Handler) textSearchGame(log *logrus.Entry, c tele.Context, gameList Gam
 		g, err := gameList.Get(game.ID, game.Name)
 		if err != nil {
 			if mmErr, ok := err.(MultipleMatchesError); ok {
-				c.Send(fmt.Sprintf("Parece que hay varios juegos con el mismo ID %s Nombre %s", game.ID, game.Name), mainMenuReplyMarkup(member))
+				c.Send(fmt.Sprintf("Parece que hay varios juegos con el mismo ID %s Nombre %s", game.ID, game.Name))
 				return mmErr.Matches, nil
 			}
 			return []Game{}, nil
 		}
 		if g == nil {
-			c.Send(fmt.Sprintf("No he encontrado ningún juego con ID %s, nombre %s", game.ID, game.Name), mainMenuReplyMarkup(member))
+			c.Send(fmt.Sprintf("No he encontrado ningún juego con ID %s, nombre %s", game.ID, game.Name), markup)
 			return []Game{}, nil
 		}
 		return []Game{*g}, nil
@@ -450,7 +475,7 @@ func (h *Handler) textSearchGame(log *logrus.Entry, c tele.Context, gameList Gam
 	if !isAnIDForSure.MatchString(text) {
 		list := gameList.Find(text)
 		if len(list) > 1 {
-			c.Send(fmt.Sprintf("He encontrado %d juegos con el nombre %s", len(list), text), mainMenuReplyMarkup(member))
+			c.Send(fmt.Sprintf("He encontrado %d juegos con el nombre %s", len(list), text), markup)
 			return list, nil
 		}
 		if len(list) == 1 {
@@ -463,19 +488,19 @@ func (h *Handler) textSearchGame(log *logrus.Entry, c tele.Context, gameList Gam
 		getResult, err := gameList.Get(id, "")
 		if err != nil {
 			if mmErr, ok := err.(MultipleMatchesError); ok {
-				c.Send(fmt.Sprintf("Parece que hay varios juegos con el mismo ID %s", id), mainMenuReplyMarkup(member))
+				c.Send(fmt.Sprintf("Parece que hay varios juegos con el mismo ID %s", id), markup)
 				return mmErr.Matches, nil
 			}
 			return nil, fmt.Errorf("failed to connect to GameDB, %w", err)
 		}
 		if getResult == nil {
-			c.Send(fmt.Sprintf("No he encontrado ningún juego con el ID %s", id), mainMenuReplyMarkup(member))
+			c.Send(fmt.Sprintf("No he encontrado ningún juego con el ID %s", id), markup)
 			return []Game{}, nil
 		}
 		return []Game{*getResult}, nil
 	}
 
-	c.Send(fmt.Sprintf("No he podido encontrar ningún juego con el nombre %s", text), mainMenuReplyMarkup(member))
+	c.Send(fmt.Sprintf("No he podido encontrar ningún juego con el nombre %s", text), markup)
 	return []Game{}, nil
 
 }
@@ -1516,4 +1541,239 @@ func (h *Handler) onGetGamesTakenByUser(c tele.Context, member Member) error {
 	log.WithField("member", c.Text()).Info("Served list for User")
 	return c.Send(buf.String())
 
+}
+
+func (h *Handler) OnJuegatron(c tele.Context) error {
+	return h.IsAuthorized(h.onJuegatron)(c)
+}
+
+func (h *Handler) onJuegatron(c tele.Context, member Member) error {
+
+	member.State.SetJuegatron()
+	err := h.MembersDB.Update(context.Background(), member)
+	if err != nil {
+		c.Send("Wops! Algo ha ido mal. Inténtalo de nuevo")
+		return fmt.Errorf("Failed to update DB, %w", err)
+	}
+
+	return c.Send("Listo! Ahora estas en modo juegatron", juegatronReplyMarkup())
+
+}
+
+func (h *Handler) OnExitJuegatron(c tele.Context) error {
+	return h.IsAuthorized(h.onExitJuegatron)(c)
+}
+
+func (h *Handler) onExitJuegatron(c tele.Context, member Member) error {
+
+	member.State.Clear()
+	err := h.MembersDB.Update(context.Background(), member)
+	if err != nil {
+		c.Send("Wops! Algo ha ido mal. Inténtalo de nuevo")
+		return fmt.Errorf("Failed to update DB, %w", err)
+	}
+
+	return c.Send("Vuelves a estar en modo normal", mainMenuReplyMarkup(member))
+
+}
+
+func (h *Handler) onJuegatronText(c tele.Context, member Member) error {
+
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "JuegatronText"), c.Sender())
+
+	log = log.WithField(ilog.FieldText, c.Text())
+
+	gameList, err := h.JuegatronGameDB.List(context.Background())
+	if err != nil {
+		log.WithError(err).Error("Failed to cache game data")
+		return c.Send("Wops! Algo ha ido mal, vuelve a intentarlo en unos momentos. Si el problema persiste, Avisa a @MetalBlueberry")
+	}
+
+	list, err := h.textSearchGame(log, c, gameList, c.Text(), juegatronReplyMarkup())
+
+	if len(list) == 0 {
+		return nil
+	}
+
+	for _, g := range list {
+		log.WithField("Game", g.Name).Info("Found Game")
+		err := c.Send(g.JuegatronCard(), g.JuegatronButtons())
+		if err != nil {
+			log.Error(err)
+		}
+	}
+	return nil
+}
+
+func (h *Handler) OnJuegatronReturn(c tele.Context) error {
+	return h.IsAuthorized(h.onJuegatronReturn)(c)
+}
+
+func (h *Handler) onJuegatronReturn(c tele.Context, member Member) error {
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "JuegatronReturn"), c.Sender())
+
+	g, err := NewGameFromCard(c.Message().Text)
+	if err != nil {
+		c.Edit("Wops! Algo ha ido mal....\nInténtalo de nuevo")
+		return fmt.Errorf("failed to load data form card, %w", err)
+	}
+	log = log.
+		WithField("Game", g.Name).
+		WithField("ID", g.ID)
+
+	getResult, err := h.JuegatronGameDB.Get(context.TODO(), g.ID, g.Name)
+	if err != nil {
+		log.WithError(err).Error("Unable to get from Juegatron GameDB")
+		c.Edit(err.Error())
+		return c.Respond()
+	}
+	if getResult == nil {
+		log.Warn("Unable to find game")
+		c.Edit("No he podido encontrar el juego. Intenta volver a buscarlo, tal vez se ha modificado el excel")
+		return c.Respond()
+	}
+
+	g = *getResult
+
+	if g.IsAvailable() {
+		err := c.Edit("Parece que alguien ha modificado los datos. te envío los últimos actualizados")
+		if err != nil {
+			log.Print(err)
+		}
+		err = c.Send(g.JuegatronCard(), g.JuegatronButtons())
+		if err != nil {
+			log.Print(err)
+		}
+		log.Info("Conflict on Return")
+		return c.Respond()
+	}
+
+	if g.IsAvailable() {
+		c.Edit(g.JuegatronCard(), g.JuegatronButtons())
+		return c.Send("Parece que alguien ha devuelvo ya este juego...")
+	}
+
+	g.Return()
+
+	h.JuegatronAudit.AuditDB.Append(context.Background(), []AuditEntry{
+		NewAuditEntry(g, AuditEntryTypeUpdate),
+	})
+
+	err = h.JuegatronGameDB.Update(context.TODO(), g)
+	if err != nil {
+		c.Edit(err.Error())
+		log.Error("Failed to update game database")
+		return c.Respond()
+	}
+
+	c.Edit(g.JuegatronCard(), g.JuegatronButtons())
+	log.Info("Game returned")
+	return c.Respond()
+}
+
+func (h *Handler) OnJuegatronTake(c tele.Context) error {
+	return h.IsAuthorized(h.onJuegatronTake)(c)
+}
+
+func (h *Handler) onJuegatronTake(c tele.Context, member Member) error {
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "JuegatronTake"), c.Sender())
+	defer c.Respond()
+
+	g, err := NewGameFromCard(c.Message().Text)
+	if err != nil {
+		c.Edit("Wops! Algo ha ido mal....\nInténtalo de nuevo")
+		return fmt.Errorf("failed to load data form card, %w", err)
+	}
+
+	log = log.
+		WithField("Game", g.Name).
+		WithField("ID", g.ID)
+
+	getResult, err := h.JuegatronGameDB.Get(context.TODO(), g.ID, g.Name)
+	if err != nil {
+		log.WithError(err).Error("Unable to get game from DB")
+		return c.Edit(err.Error())
+	}
+	if getResult == nil {
+		log.Warn("Unable to find game")
+		return c.Edit("No he podido encontrar el juego. Intenta volver a buscarlo, tal vez se ha modificado el excel")
+	}
+
+	g = *getResult
+
+	if !g.IsAvailable() {
+		err := c.Edit("Parece que alguien ha modificado los datos, te envío los últimos actualizados")
+		if err != nil {
+			log.Error(err)
+		}
+		err = c.Send(g.JuegatronCard(), g.JuegatronButtons())
+		if err != nil {
+			log.Error(err)
+		}
+		log.Info("Conflict on Take")
+		return err
+	}
+
+	member.State.SetJuegatronWaitingForName(g)
+
+	err = h.MembersDB.Update(context.Background(), member)
+	if err != nil {
+		log.WithError(err).Error("failed to update memberDB")
+		return c.Send("Algo ha ido mal, vuelve a intentarlo")
+	}
+	return c.Send("Dime el nombre de la persona o el DNI.")
+}
+
+func (h *Handler) onJuegatronTakeWaitForName(c tele.Context, member Member) error {
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "JuegatronTakeWaitForName"), c.Sender())
+
+	g := NewGameFromLineData(member.State.Data)
+	log = log.
+		WithField("Game", g.Name).
+		WithField("ID", g.ID)
+
+	member.State.SetJuegatron()
+	err := h.MembersDB.Update(context.Background(), member)
+	if err != nil {
+		log.WithError(err).Warn("Failed to update member DB")
+	}
+
+	getResult, err := h.JuegatronGameDB.Get(context.TODO(), g.ID, g.Name)
+	if err != nil {
+		log.WithError(err).Error("Unable to get from GameDB")
+		c.Edit(err.Error())
+		return c.Respond()
+	}
+	if getResult == nil {
+		log.Warn("Unable to find game")
+		c.Edit("No he podido encontrar el juego. Intenta volver a buscarlo, tal vez se ha modificado el excel")
+		return c.Respond()
+	}
+	g = *getResult
+
+	if !g.IsAvailable() {
+		c.Edit(g.JuegatronCard(), g.JuegatronButtons())
+		log.Info("Conflict on take")
+		return c.Send("El juego no está disponible")
+	}
+
+	g.Take(c.Text())
+
+	h.JuegatronAudit.AuditDB.Append(context.Background(), []AuditEntry{
+		NewAuditEntry(g, AuditEntryTypeUpdate),
+	})
+
+	err = h.JuegatronGameDB.Update(context.TODO(), g)
+	if err != nil {
+		c.Edit(err.Error())
+		log.WithError(err).Error("Failed to update game database")
+		return c.Respond()
+	}
+
+	c.Edit(g.JuegatronCard(), g.JuegatronButtons())
+	log.Info("Game taken")
+
+	c.Send(fmt.Sprintf("Listo! has dado el juego a %s", c.Text()))
+	c.Send(g.JuegatronCard(), g.JuegatronButtons())
+	return c.Respond()
 }

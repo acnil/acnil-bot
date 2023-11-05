@@ -70,6 +70,14 @@ Notas:
 {{ bgg . }}
 {{- end }}
 {{ end }}
+
+{{ define "juegatron" }}
+{{ .Line }}
+{{ if .Comments }}
+Notas: 
+{{ .Comments }}
+{{ end }}
+{{ end }}
 `))
 )
 
@@ -219,6 +227,24 @@ func (g Game) LineData() string {
 	return data
 }
 
+func (g Game) JuegatronButtons() *tele.ReplyMarkup {
+	selector := &tele.ReplyMarkup{}
+	rows := []tele.Row{}
+	if g.IsAvailable() {
+		rows = append(rows, selector.Row(
+			selector.Data("Prestar", "juegatron-take"),
+		))
+	} else {
+		rows = append(rows, selector.Row(
+			selector.Data("Devolver", "juegatron-return"),
+		))
+	}
+
+	selector.Inline(rows...)
+
+	return selector
+}
+
 func (g Game) Buttons(member Member) *tele.ReplyMarkup {
 	return g.ButtonsForPage(member, 1)
 }
@@ -282,6 +308,15 @@ func (g Game) ButtonsForPage(member Member, page int) *tele.ReplyMarkup {
 	return selector
 }
 
+func (g Game) JuegatronCard() string {
+	b := &bytes.Buffer{}
+	err := tmpl.ExecuteTemplate(b, "juegatron", g)
+	if err != nil {
+		logrus.Error("Unable to render template!!, ", err)
+	}
+	return b.String()
+}
+
 func (g Game) Card() string {
 	b := &bytes.Buffer{}
 	err := tmpl.ExecuteTemplate(b, "card", g)
@@ -324,7 +359,7 @@ func (g Game) Equals(other Game) bool {
 // Take sets the game holder to the given user and registers the take date
 func (g *Game) Take(holder string) {
 	g.Holder = holder
-	g.TakeDate = time.Now()
+	g.TakeDate = time.Now().Round(time.Hour * 24)
 	g.SetLeaseTimeDays(21)
 }
 

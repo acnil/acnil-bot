@@ -10,7 +10,8 @@ terraform -chdir=./tf apply -input=false --auto-approve \
      -var=bot_token=$TOKEN \
      -var=sheet_id=$SHEET_ID \
      -var=audit_sheet_id=$AUDIT_SHEET_ID \
-     -var=webhook_secret_token=$WEBHOOK_SECRET_TOKEN
+     -var=juegatron_sheet_id=$JUEGATRON_SHEET_ID \
+     -var=webhook_secret_token=$WEBHOOK_SECRET_TOKEN 
 
 
 echo "Bot token selected"

@@ -57,6 +57,10 @@ func main() {
 	if auditSheetID == "" {
 		logrus.Fatal("AUDIT_SHEET_ID must be defined")
 	}
+	juegatronSheetID := os.Getenv("JUEGATRON_SHEET_ID")
+	if auditSheetID == "" {
+		logrus.Fatal("JUEGATRON_SHEET_ID must be defined")
+	}
 
 	srv := recipes.SheetsService()
 
@@ -75,11 +79,20 @@ func main() {
 		AuditDB: acnil.NewSheetAuditDatabase(srv, auditSheetID),
 	}
 
-	handler := &acnil.Handler{
-		MembersDB: acnil.NewMembersDatabase(srv, sheetID),
-		GameDB:    acnil.NewGameDatabase(srv, sheetID),
-		Audit:     auditQuery,
+	juegatronAudit := &acnil.Audit{
+		AuditDB:   acnil.NewSheetAuditDatabase(srv, juegatronSheetID),
+		GameDB:    acnil.NewGameDatabase(srv, juegatronSheetID),
+		MembersDB: acnil.NewMembersDatabase(srv, juegatronSheetID),
 		Bot:       b,
+	}
+
+	handler := &acnil.Handler{
+		MembersDB:       acnil.NewMembersDatabase(srv, sheetID),
+		GameDB:          acnil.NewGameDatabase(srv, sheetID),
+		JuegatronGameDB: acnil.NewGameDatabase(srv, juegatronSheetID),
+		JuegatronAudit:  juegatronAudit,
+		Audit:           auditQuery,
+		Bot:             b,
 	}
 
 	handlerGroup := b.Group()

@@ -9,7 +9,7 @@ terraform {
   required_version = ">= 1.2.0"
   backend "s3" {
     bucket = "metalblueberry"
-    key    = "acnil"
+    key    = "acnil-bot"
     region = "eu-west-1"
   }
 }
@@ -48,6 +48,12 @@ variable "sheet_id" {
 
 variable "audit_sheet_id" {
   description = "sheet used for audit purposes"
+  type        = string
+  sensitive   = true
+}
+
+variable "juegatron_sheet_id" {
+  description = "sheet used for juegatron purposes"
   type        = string
   sensitive   = true
 }
@@ -106,6 +112,7 @@ module "bot_handler" {
     SHEETS_PRIVATE_KEY : var.sheets_private_key
     SHEETS_EMAIL : var.sheets_email
     WEBHOOK_SECRET_TOKEN : var.webhook_secret_token
+    JUEGATRON_SHEET_ID : var.juegatron_sheet_id
   }
   cloudwatch_logs_retention_in_days = 14
 }

@@ -31,7 +31,7 @@ func NewGameDatabase(srv *sheets.Service, sheetID string) *SheetGameDatabase {
 }
 
 const (
-	NCols = 8
+	NCols = 2
 )
 
 func (db *SheetGameDatabase) fullReadRange() string {

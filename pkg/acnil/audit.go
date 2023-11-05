@@ -58,7 +58,7 @@ type Audit struct {
 	Bot       Sender
 }
 
-func (a *Audit) Run(ctx context.Context) {
+func (a *Audit) Run(ctx context.Context, interval time.Duration) {
 	log := logrus.WithField(ilog.FieldHandler, "Audit Run")
 	if err := a.notifyAdmins("starting audit monitoring"); err != nil {
 		log.Error("Failed to notify admins, %w", err)
@@ -72,7 +72,7 @@ func (a *Audit) Run(ctx context.Context) {
 		}
 	}
 
-	ticker := time.NewTicker(time.Hour * 1)
+	ticker := time.NewTicker(interval)
 
 	go func() {
 		for {
@@ -335,8 +335,8 @@ func NewAuditEntry(game Game, entryType AuditEntryType) AuditEntry {
 		Location:   game.Location,
 		Holder:     game.Holder,
 		Comments:   game.Comments,
-		TakeDate:   game.TakeDate,
-		ReturnDate: game.ReturnDate,
+		TakeDate:   game.TakeDate.UTC(),
+		ReturnDate: game.ReturnDate.UTC(),
 		Price:      game.Price,
 		Publisher:  game.Publisher,
 		BGG:        game.BGG,
