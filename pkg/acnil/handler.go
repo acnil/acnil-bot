@@ -27,6 +27,7 @@ var (
 	btnRename        = mainMenu.Text("🧍 Cambiar Nombre")
 	btnJuegatron     = mainMenu.Text("Juegatron!")
 	btnExitJuegatron = mainMenu.Text("Salir de Juegatron")
+	btnListJuegatron = mainMenu.Text("Lista de Juegatron")
 
 	btnAdmin = mainMenu.Text("👮 Administrador")
 
@@ -78,6 +79,7 @@ func juegatronReplyMarkup() *tele.ReplyMarkup {
 	markup := &tele.ReplyMarkup{ResizeKeyboard: true}
 	markup.Reply(
 		markup.Row(btnExitJuegatron),
+		markup.Row(btnListJuegatron),
 	)
 	markup.ResizeKeyboard = true
 	return markup
@@ -128,7 +130,7 @@ type Handler struct {
 	Audit     ROAudit
 
 	JuegatronGameDB GameDatabase
-	JuegatronAudit  *Audit
+	JuegatronAudit  *JuegatronAudit
 
 	Bot Sender
 }
@@ -157,6 +159,7 @@ func (h *Handler) Register(handlerGroup *tele.Group) {
 	handlerGroup.Handle(&btnRename, h.Rename)
 	handlerGroup.Handle(&btnJuegatron, h.OnJuegatron)
 	handlerGroup.Handle(&btnExitJuegatron, h.OnExitJuegatron)
+	handlerGroup.Handle(&btnListJuegatron, h.OnListJuegatron)
 	handlerGroup.Handle("\fjuegatron-return", h.OnJuegatronReturn)
 	handlerGroup.Handle("\fjuegatron-take", h.OnJuegatronTake)
 
@@ -1655,8 +1658,8 @@ func (h *Handler) onJuegatronReturn(c tele.Context, member Member) error {
 
 	g.Return()
 
-	h.JuegatronAudit.AuditDB.Append(context.Background(), []AuditEntry{
-		NewAuditEntry(g, AuditEntryTypeUpdate),
+	h.JuegatronAudit.AuditDB.Append(context.Background(), []JuegatronAuditEntry{
+		NewJuegatronAuditEntry(g, ""),
 	})
 
 	err = h.JuegatronGameDB.Update(context.TODO(), g)
@@ -1759,8 +1762,8 @@ func (h *Handler) onJuegatronTakeWaitForName(c tele.Context, member Member) erro
 
 	g.Take(c.Text())
 
-	h.JuegatronAudit.AuditDB.Append(context.Background(), []AuditEntry{
-		NewAuditEntry(g, AuditEntryTypeUpdate),
+	h.JuegatronAudit.AuditDB.Append(context.Background(), []JuegatronAuditEntry{
+		NewJuegatronAuditEntry(g, c.Text()),
 	})
 
 	err = h.JuegatronGameDB.Update(context.TODO(), g)
@@ -1776,4 +1779,33 @@ func (h *Handler) onJuegatronTakeWaitForName(c tele.Context, member Member) erro
 	c.Send(fmt.Sprintf("Listo! has dado el juego a %s", c.Text()))
 	c.Send(g.JuegatronCard(), g.JuegatronButtons())
 	return c.Respond()
+}
+
+func (h *Handler) OnListJuegatron(c tele.Context) error {
+	return h.IsAuthorized(h.onListJuegatron)(c)
+}
+
+func (h *Handler) onListJuegatron(c tele.Context, member Member) error {
+
+	log := ilog.WithTelegramUser(logrus.
+		WithField(ilog.FieldHandler, "listJuegatron"),
+		c.Sender())
+
+	gameList, err := h.JuegatronGameDB.List(context.TODO())
+	if err != nil {
+		return c.Send(err.Error())
+	}
+
+	if len(gameList) == 0 {
+		return c.Send("No se han encontrado juegos")
+	}
+
+	for _, block := range SendList(gameList) {
+		err := c.Send(block, juegatronReplyMarkup())
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	return nil
 }

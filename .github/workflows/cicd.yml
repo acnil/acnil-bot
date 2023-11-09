@@ -17,6 +17,7 @@ env:
   SHEET_ID: ${{ secrets.SHEET_ID }}
   TOKEN: ${{ secrets.TOKEN }}
   WEBHOOK_SECRET_TOKEN: ${{ secrets.WEBHOOK_SECRET_TOKEN }}
+  JUEGATRON_SHEET_ID: ${{ secrets.JUEGATRON_SHEET_ID }}
 
 
 jobs:

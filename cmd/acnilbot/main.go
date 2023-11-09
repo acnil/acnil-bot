@@ -48,11 +48,8 @@ func main() {
 
 	srv := recipes.SheetsService()
 
-	juegatronAudit := &acnil.Audit{
-		AuditDB:   acnil.NewSheetAuditDatabase(srv, juegatronSheetID),
-		GameDB:    acnil.NewGameDatabase(srv, juegatronSheetID),
-		MembersDB: acnil.NewMembersDatabase(srv, sheetID),
-		Bot:       b,
+	juegatronAudit := &acnil.JuegatronAudit{
+		AuditDB: acnil.NewJuegatronSheetAuditDatabase(srv, juegatronSheetID),
 	}
 
 	if disableAudit == "" {
@@ -64,12 +61,12 @@ func main() {
 		}
 		audit.Run(context.Background(), time.Hour)
 
-		juegatronAudit.Run(context.Background(), time.Hour)
+		// juegatronAudit.Run(context.Background(), time.Hour)
 	}
-	err = juegatronAudit.Do(context.Background())
-	if err != nil {
-		logrus.WithError(err).Error("Failed to update juegatron audit")
-	}
+	// err = juegatronAudit.Do(context.Background())
+	// if err != nil {
+	// 	logrus.WithError(err).Error("Failed to update juegatron audit")
+	// }
 
 	auditQuery := &acnil.AuditQuery{
 		AuditDB: acnil.NewSheetAuditDatabase(srv, auditSheetID),

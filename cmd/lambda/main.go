@@ -79,11 +79,8 @@ func main() {
 		AuditDB: acnil.NewSheetAuditDatabase(srv, auditSheetID),
 	}
 
-	juegatronAudit := &acnil.Audit{
-		AuditDB:   acnil.NewSheetAuditDatabase(srv, juegatronSheetID),
-		GameDB:    acnil.NewGameDatabase(srv, juegatronSheetID),
-		MembersDB: acnil.NewMembersDatabase(srv, juegatronSheetID),
-		Bot:       b,
+	juegatronAudit := &acnil.JuegatronAudit{
+		AuditDB: acnil.NewJuegatronSheetAuditDatabase(srv, juegatronSheetID),
 	}
 
 	handler := &acnil.Handler{
