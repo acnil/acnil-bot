@@ -31,8 +31,9 @@ var (
 {{ if .IsAvailable -}}
 🟢 Disponible
 {{- else -}}
-🔴 Ocupado: {{ .Holder }} {{ .TakeDate.Format "2006-01-02" }} ({{ .LeaseDays }} días)
-A devolver antes del {{ .ReturnDate.Format "2006-01-02" }} ({{ if .IsLeaseExpired }}⚠️ Ya deberías haber devuelto este juego{{ else }}{{ .ReturnInDays }} días{{ end -}})
+🔴 Ocupado: {{ .Holder }}{{ if not .TakeDate.IsZero }} {{ .TakeDate.Format "2006-01-02" }} ({{ .LeaseDays }} días){{ end }}
+{{ if not .TakeDate.IsZero }}Prestado el día {{ .TakeDate.Format "2006-01-02" }} ({{ .LeaseDays }} días){{ end }}
+{{ if not .ReturnDate.IsZero }}A devolver antes del {{ .ReturnDate.Format "2006-01-02" }} ({{ if .IsLeaseExpired }}⚠️ Ya deberías haber devuelto este juego{{ else }}{{ .ReturnInDays }} días{{ end -}}){{ end -}}
 {{ end }}
 
 {{ if .Comments }}
@@ -58,9 +59,9 @@ Tiempo de juego : {{ .Playingtime }}m
 {{ if .IsAvailable -}}
 🟢 Disponible
 {{- else -}}
-🔴 Ocupado: {{ .Holder }} 
-Prestado el día {{ .TakeDate.Format "2006-01-02" }} ({{ .LeaseDays }} días)
-A devolver antes del {{ .ReturnDate.Format "2006-01-02" }} ({{ if .IsLeaseExpired }}⚠️ Ya deberías haber devuelto este juego{{ else }}{{ .ReturnInDays }} días{{ end -}})
+🔴 Ocupado: {{ .Holder }}{{ if not .TakeDate.IsZero }} {{ .TakeDate.Format "2006-01-02" }} ({{ .LeaseDays }} días){{ end }}
+{{ if not .TakeDate.IsZero }}Prestado el día {{ .TakeDate.Format "2006-01-02" }} ({{ .LeaseDays }} días){{ end }}
+{{ if not .ReturnDate.IsZero }}A devolver antes del {{ .ReturnDate.Format "2006-01-02" }} ({{ if .IsLeaseExpired }}⚠️ Ya deberías haber devuelto este juego{{ else }}{{ .ReturnInDays }} días{{ end -}}){{ end -}}
 {{ end }}
 {{- if .Comments }}
 Notas: 

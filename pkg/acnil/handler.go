@@ -401,7 +401,9 @@ func (h *Handler) onSearchByText(c tele.Context, member Member) error {
 		switch {
 		case len(list) <= 3:
 			for _, g := range list {
-				log.WithField("Game", g.Name).Info("Found Game")
+				log.
+					WithField("Game", g.Name).
+					Info("Found Game")
 				err := c.Send(g.Card(), g.Buttons(member))
 				if err != nil {
 					log.Error(err)
@@ -1610,7 +1612,7 @@ func (h *Handler) onJuegatronText(c tele.Context, member Member) error {
 	case len(list) <= 3:
 		for _, g := range list {
 			log.WithField("Game", g.Name).Info("Found Game")
-			err := c.Send(g.Card(), g.Buttons(member))
+			err := c.Send(g.JuegatronCard(), g.JuegatronButtons())
 			if err != nil {
 				log.Error(err)
 			}
@@ -1623,7 +1625,7 @@ También puedes seleccionar un juego por su ID, solo dime el número de la lista
 
 Esto es todo lo que he encontrado`, mainMenu)
 		for _, block := range SendList(list) {
-			err := c.Send(block, mainMenuReplyMarkup(member))
+			err := c.Send(block, juegatronReplyMarkup())
 			if err != nil {
 				log.Error(err)
 			}
