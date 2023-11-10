@@ -57,7 +57,7 @@ func NewJuegatronSheetAuditDatabase(srv *sheets.Service, sheetID string) *Juegat
 	return &JuegatronSheetAuditDatabase{
 		SRV:       srv,
 		ReadRange: "A:N",
-		Sheet:     "Prestamos",
+		Sheet:     "Préstamos",
 		SheetID:   sheetID,
 
 		parser: sheetsparser.SheetParser{
