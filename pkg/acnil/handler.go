@@ -21,13 +21,15 @@ import (
 var (
 	mainMenu = &tele.ReplyMarkup{ResizeKeyboard: true}
 	// Reply buttons.
-	btnMyGames       = mainMenu.Text("🎲 Mis Juegos")
-	btnEnGamonal     = mainMenu.Text("Lista de Gamonal")
-	btnEnCentro      = mainMenu.Text("Lista del Centro")
-	btnRename        = mainMenu.Text("🧍 Cambiar Nombre")
-	btnJuegatron     = mainMenu.Text("Juegatron!")
-	btnExitJuegatron = mainMenu.Text("Salir de Juegatron")
-	btnListJuegatron = mainMenu.Text("Lista de Juegatron")
+	btnMyGames          = mainMenu.Text("🎲 Mis Juegos")
+	btnEnGamonal        = mainMenu.Text("Lista de Gamonal")
+	btnEnCentro         = mainMenu.Text("Lista del Centro")
+	btnRename           = mainMenu.Text("🧍 Cambiar Nombre")
+	btnJuegatron        = mainMenu.Text("Juegatron!")
+	btnExitJuegatron    = mainMenu.Text("Salir de Juegatron")
+	btnListJuegatron    = mainMenu.Text("Lista de Juegatron")
+	cancelJuegatronMenu = &tele.ReplyMarkup{ResizeKeyboard: true}
+	btnCancelJuegatron  = cancelJuegatronMenu.Text("Cancelar préstamo")
 
 	btnAdmin = mainMenu.Text("👮 Administrador")
 
@@ -96,6 +98,11 @@ func init() {
 		startMenu.Row(btnStart),
 	)
 	startMenu.RemoveKeyboard = true
+
+	cancelJuegatronMenu.Reply(
+		cancelJuegatronMenu.Row(btnCancelJuegatron),
+	)
+	cancelJuegatronMenu.RemoveKeyboard = true
 }
 
 // MembersDatabase gives access the the current member using the application
@@ -162,6 +169,7 @@ func (h *Handler) Register(handlerGroup *tele.Group) {
 	handlerGroup.Handle(&btnListJuegatron, h.OnListJuegatron)
 	handlerGroup.Handle("\fjuegatron-return", h.OnJuegatronReturn)
 	handlerGroup.Handle("\fjuegatron-take", h.OnJuegatronTake)
+	handlerGroup.Handle(&btnCancelJuegatron, h.OnCancelJuegatron)
 
 	handlerGroup.Handle(&btnCancel, h.Cancel)
 
@@ -478,7 +486,7 @@ func (h *Handler) textSearchGame(log *logrus.Entry, c tele.Context, gameList Gam
 	if !isAnIDForSure.MatchString(text) {
 		list := gameList.Find(text)
 		if len(list) > 1 {
-			c.Send(fmt.Sprintf("He encontrado %d juegos con el nombre %s", len(list), text), markup)
+			c.Send(fmt.Sprintf("He encontrado %d juegos con el nombre \"%s\"", len(list), text), markup)
 			return list, nil
 		}
 		if len(list) == 1 {
@@ -1598,11 +1606,27 @@ func (h *Handler) onJuegatronText(c tele.Context, member Member) error {
 		return nil
 	}
 
-	for _, g := range list {
-		log.WithField("Game", g.Name).Info("Found Game")
-		err := c.Send(g.JuegatronCard(), g.JuegatronButtons())
-		if err != nil {
-			log.Error(err)
+	switch {
+	case len(list) <= 3:
+		for _, g := range list {
+			log.WithField("Game", g.Name).Info("Found Game")
+			err := c.Send(g.Card(), g.Buttons(member))
+			if err != nil {
+				log.Error(err)
+			}
+		}
+	default:
+		log.WithField("count", len(list)).Info("Found multiple games")
+		c.Send(`He encontrado varios juegos, 
+intenta darme el nombre concreto del juego que buscas. 
+También puedes seleccionar un juego por su ID, solo dime el número de la lista.
+
+Esto es todo lo que he encontrado`, mainMenu)
+		for _, block := range SendList(list) {
+			err := c.Send(block, mainMenuReplyMarkup(member))
+			if err != nil {
+				log.Error(err)
+			}
 		}
 	}
 	return nil
@@ -1734,7 +1758,7 @@ func (h *Handler) onJuegatronTake(c tele.Context, member Member) error {
 		log.WithError(err).Error("failed to update memberDB")
 		return c.Send("Algo ha ido mal, vuelve a intentarlo")
 	}
-	return c.Send("Dime el nombre de la persona o el DNI.")
+	return c.Send("Dime el nombre de la persona o el DNI.", cancelJuegatronMenu)
 }
 
 func (h *Handler) onJuegatronTakeWaitForName(c tele.Context, member Member) error {
@@ -1793,6 +1817,23 @@ func (h *Handler) onJuegatronTakeWaitForName(c tele.Context, member Member) erro
 	c.Send(fmt.Sprintf("Listo! has dado el juego a %s", c.Text()))
 	c.Send(g.JuegatronCard(), g.JuegatronButtons())
 	return c.Respond()
+}
+
+func (h *Handler) OnCancelJuegatron(c tele.Context) error {
+	return h.IsAuthorized(h.onCancelJuegatron)(c)
+}
+func (h *Handler) onCancelJuegatron(c tele.Context, member Member) error {
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "CancelJuegatron"), c.Sender())
+	member.State.SetJuegatron()
+
+	err := h.MembersDB.Update(context.Background(), member)
+	if err != nil {
+		log.WithError(err).Warn("Failed to update member DB")
+		return c.Send("Wops! Algo ha ido mal, inténtalo de nuevo")
+	}
+
+	log.Info("done")
+	return c.Send("Okey, Cancelo el préstamo", juegatronReplyMarkup())
 }
 
 func (h *Handler) OnListJuegatron(c tele.Context) error {
