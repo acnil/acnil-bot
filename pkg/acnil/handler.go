@@ -168,6 +168,7 @@ func (h *Handler) Register(handlerGroup *tele.Group) {
 	handlerGroup.Handle(&btnExitJuegatron, h.OnExitJuegatron)
 	handlerGroup.Handle(&btnListJuegatron, h.OnListJuegatron)
 	handlerGroup.Handle("\fjuegatron-return", h.OnJuegatronReturn)
+	handlerGroup.Handle("\fundo-juegatron-return", h.OnUndoJuegatronReturn)
 	handlerGroup.Handle("\fjuegatron-take", h.OnJuegatronTake)
 	handlerGroup.Handle(&btnCancelJuegatron, h.OnCancelJuegatron)
 
@@ -1696,7 +1697,61 @@ func (h *Handler) onJuegatronReturn(c tele.Context, member Member) error {
 
 	c.Edit(g.JuegatronCard(), g.JuegatronButtons())
 	log.Info("Game returned")
+
+	selector := &tele.ReplyMarkup{}
+	rows := []tele.Row{}
+
+	rows = append(rows, selector.Row(
+		selector.Data("Deshacer", "undo-juegatron-return", g.LineData()),
+	))
+
+	selector.Inline(rows...)
+	c.Send("Juego devuelto", selector)
 	return c.Respond()
+}
+
+func (h *Handler) OnUndoJuegatronReturn(c tele.Context) error {
+	return h.IsAuthorized(h.onUndoJuegatronReturn)(c)
+}
+
+func (h *Handler) onUndoJuegatronReturn(c tele.Context, member Member) error {
+	defer c.Respond()
+
+	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "UndoJuegatronReturn"), c.Sender())
+	g := NewGameFromLineData(c.Data())
+	log = log.
+		WithField("Game", g.Name).
+		WithField("ID", g.ID)
+
+	entries, err := h.JuegatronAudit.AuditDB.List(context.Background())
+	if err != nil {
+		log.WithError(err).Error("Failed to list entries")
+		return c.Send("Wops! Algo ha ido mal, vuelve a intentarlo")
+
+	}
+	var lastEntry *JuegatronAuditEntry
+	for i := range entries {
+		if entries[i].ID == g.ID && entries[i].Actor == member.Nickname {
+			lastEntry = &entries[i]
+		}
+	}
+	if lastEntry == nil {
+		return c.Send("Wops! No he podido encontrar tu ultima acción. Mejor revisa el excel a mano por si acaso")
+	}
+	err = h.JuegatronAudit.AuditDB.Delete(context.Background(), *lastEntry)
+	if err != nil {
+		log.WithError(err).Error("Failed to delete entries")
+		return c.Send("Wops! Algo ha ido mal, vuelve a intentarlo")
+	}
+	c.Edit("Okey! Hemos vuelto atrás en el tiempo")
+
+	games, err := h.JuegatronGameDB.List(context.Background())
+	if err != nil {
+		log.WithError(err).Error("Failed to list games")
+		return nil
+	}
+	getGame, _ := Games(games).Get(g.ID, g.Name)
+	return c.Send(getGame.JuegatronCard(), getGame.JuegatronButtons())
 }
 
 func (h *Handler) OnJuegatronTake(c tele.Context) error {
@@ -1816,7 +1871,7 @@ func (h *Handler) onJuegatronTakeWaitForName(c tele.Context, member Member) erro
 	c.Edit(g.JuegatronCard(), g.JuegatronButtons())
 	log.Info("Game taken")
 
-	c.Send(fmt.Sprintf("Listo! has dado el juego a %s", c.Text()))
+	c.Send(fmt.Sprintf("Listo! has dado el juego a %s", c.Text()), juegatronReplyMarkup())
 	c.Send(g.JuegatronCard(), g.JuegatronButtons())
 	return c.Respond()
 }
