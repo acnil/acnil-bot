@@ -10,17 +10,14 @@ import (
 )
 
 type JuegatronAuditDatabase interface {
-	// Find(ctx context.Context, name string) ([]AuditEntry, error)
-	// List(ctx context.Context) ([]JuegatronAuditEntry, error)
-	// Get(ctx context.Context, id string, name string) (*AuditEntry, error)
 	Append(ctx context.Context, entries []JuegatronAuditEntry) error
 }
 
 type JuegatronAuditEntry struct {
 	ID        string    `col:"0"`
-	Name      string    `col:"1"`
 	Holder    string    `col:"2"`
-	Timestamp time.Time `col:"3"`
+	Actor     string    `col:"3"`
+	Timestamp time.Time `col:"4"`
 }
 
 type JuegatronAudit struct {
@@ -31,18 +28,17 @@ func (e JuegatronAuditEntry) Game() *Game {
 	return &Game{
 		Row:    "",
 		ID:     e.ID,
-		Name:   e.Name,
 		Holder: e.Holder,
 	}
 }
 
-func NewJuegatronAuditEntry(game Game, holder string) JuegatronAuditEntry {
+func NewJuegatronAuditEntry(game Game, actor Member) JuegatronAuditEntry {
 	entry := JuegatronAuditEntry{
 		ID:     game.ID,
-		Name:   game.Name,
 		Holder: game.Holder,
+		Actor:  actor.Nickname,
 	}
-	if holder == "" {
+	if entry.Holder == "" {
 		entry.Holder = "devuelto"
 	}
 

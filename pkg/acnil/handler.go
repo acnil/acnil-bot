@@ -129,7 +129,7 @@ type Handler struct {
 	GameDB    GameDatabase
 	Audit     ROAudit
 
-	JuegatronGameDB GameDatabase
+	JuegatronGameDB ROGameDatabase
 	JuegatronAudit  *JuegatronAudit
 
 	Bot Sender
@@ -1624,7 +1624,13 @@ func (h *Handler) onJuegatronReturn(c tele.Context, member Member) error {
 		WithField("Game", g.Name).
 		WithField("ID", g.ID)
 
-	getResult, err := h.JuegatronGameDB.Get(context.TODO(), g.ID, g.Name)
+	games, err := h.JuegatronGameDB.List(context.Background())
+	if err != nil {
+		log.WithError(err).Error("Unable to list from Juegatron GameDB")
+		c.Edit(err.Error())
+		return c.Respond()
+	}
+	getResult, err := Games(games).Get(g.ID, g.Name)
 	if err != nil {
 		log.WithError(err).Error("Unable to get from Juegatron GameDB")
 		c.Edit(err.Error())
@@ -1659,15 +1665,8 @@ func (h *Handler) onJuegatronReturn(c tele.Context, member Member) error {
 	g.Return()
 
 	h.JuegatronAudit.AuditDB.Append(context.Background(), []JuegatronAuditEntry{
-		NewJuegatronAuditEntry(g, ""),
+		NewJuegatronAuditEntry(g, member),
 	})
-
-	err = h.JuegatronGameDB.Update(context.TODO(), g)
-	if err != nil {
-		c.Edit(err.Error())
-		log.Error("Failed to update game database")
-		return c.Respond()
-	}
 
 	c.Edit(g.JuegatronCard(), g.JuegatronButtons())
 	log.Info("Game returned")
@@ -1692,7 +1691,18 @@ func (h *Handler) onJuegatronTake(c tele.Context, member Member) error {
 		WithField("Game", g.Name).
 		WithField("ID", g.ID)
 
-	getResult, err := h.JuegatronGameDB.Get(context.TODO(), g.ID, g.Name)
+	games, err := h.JuegatronGameDB.List(context.Background())
+	if err != nil {
+		log.WithError(err).Error("Unable to list from Juegatron GameDB")
+		c.Edit(err.Error())
+		return c.Respond()
+	}
+	getResult, err := Games(games).Get(g.ID, g.Name)
+	if err != nil {
+		log.WithError(err).Error("Unable to get from Juegatron GameDB")
+		c.Edit(err.Error())
+		return c.Respond()
+	}
 	if err != nil {
 		log.WithError(err).Error("Unable to get game from DB")
 		return c.Edit(err.Error())
@@ -1741,7 +1751,18 @@ func (h *Handler) onJuegatronTakeWaitForName(c tele.Context, member Member) erro
 		log.WithError(err).Warn("Failed to update member DB")
 	}
 
-	getResult, err := h.JuegatronGameDB.Get(context.TODO(), g.ID, g.Name)
+	games, err := h.JuegatronGameDB.List(context.Background())
+	if err != nil {
+		log.WithError(err).Error("Unable to list from Juegatron GameDB")
+		c.Edit(err.Error())
+		return c.Respond()
+	}
+	getResult, err := Games(games).Get(g.ID, g.Name)
+	if err != nil {
+		log.WithError(err).Error("Unable to get from Juegatron GameDB")
+		c.Edit(err.Error())
+		return c.Respond()
+	}
 	if err != nil {
 		log.WithError(err).Error("Unable to get from GameDB")
 		c.Edit(err.Error())
@@ -1763,15 +1784,8 @@ func (h *Handler) onJuegatronTakeWaitForName(c tele.Context, member Member) erro
 	g.Take(c.Text())
 
 	h.JuegatronAudit.AuditDB.Append(context.Background(), []JuegatronAuditEntry{
-		NewJuegatronAuditEntry(g, c.Text()),
+		NewJuegatronAuditEntry(g, member),
 	})
-
-	err = h.JuegatronGameDB.Update(context.TODO(), g)
-	if err != nil {
-		c.Edit(err.Error())
-		log.WithError(err).Error("Failed to update game database")
-		return c.Respond()
-	}
 
 	c.Edit(g.JuegatronCard(), g.JuegatronButtons())
 	log.Info("Game taken")
