@@ -1689,6 +1689,8 @@ func (h *Handler) onJuegatronReturn(c tele.Context, member Member) error {
 		return c.Send("Parece que alguien ha devuelvo ya este juego...")
 	}
 
+	previousHolder := g.Holder
+
 	g.Return()
 
 	h.JuegatronAudit.AuditDB.Append(context.Background(), []JuegatronAuditEntry{
@@ -1706,7 +1708,8 @@ func (h *Handler) onJuegatronReturn(c tele.Context, member Member) error {
 	))
 
 	selector.Inline(rows...)
-	c.Send("Juego devuelto", selector)
+	c.Send(fmt.Sprintf("Devuelto %s %s\nLo tenia....", g.ID, g.Name), selector)
+	c.Send(previousHolder)
 	return c.Respond()
 }
 
