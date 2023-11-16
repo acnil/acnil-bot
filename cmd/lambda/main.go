@@ -34,6 +34,9 @@ func Handler(b *tele.Bot) func(ctx context.Context, request httplambda.Request) 
 		}
 
 		logrus.Println("sending update, ", update.ID)
+		httplambda.SetContext(update.ID, ctx)
+		defer httplambda.DeleteContext(update.ID)
+
 		b.ProcessUpdate(update)
 		return nil
 	}

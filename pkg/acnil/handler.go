@@ -12,6 +12,7 @@ import (
 	"text/template"
 	"time"
 
+	httplambda "github.com/metalblueberry/acnil-bot/pkg/httpLambda"
 	"github.com/metalblueberry/acnil-bot/pkg/ilog"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/exp/slices"
@@ -142,8 +143,18 @@ type Handler struct {
 	Bot Sender
 }
 
+func AttatchLambdaContext(next tele.HandlerFunc) tele.HandlerFunc {
+	return func(ctx tele.Context) error {
+		update := ctx.Update()
+		ctx.Set(strconv.Itoa(update.ID), httplambda.GetContext(update.ID))
+		return next(ctx)
+	}
+}
+
 func (h *Handler) Register(handlerGroup *tele.Group) {
+	handlerGroup.Use(AttatchLambdaContext)
 	handlerGroup.Use(OnlyPrivateChatMiddleware)
+
 	handlerGroup.Handle("/start", h.Start)
 	handlerGroup.Handle(&btnStart, h.Start)
 
@@ -375,15 +386,34 @@ func (h *Handler) onText(c tele.Context, member Member) error {
 	}
 }
 
+func GetContext(c tele.Context) (_ context.Context, cancelFunc func()) {
+	ctx, ok := c.Get(strconv.Itoa(c.Update().ID)).(context.Context)
+	if !ok {
+		logrus.Info("using background")
+		ctx = context.Background()
+	}
+
+	m := c.Message()
+	if m == nil {
+		logrus.Info("using default deadine")
+		return context.WithDeadline(ctx, time.Now().Add(5*time.Second))
+	}
+	logrus.Info("using msg deadine ", m)
+	return context.WithDeadline(ctx, m.Time().Add(5*time.Second))
+}
+
 func (h *Handler) onSearchByText(c tele.Context, member Member) error {
+	ctx, cancel := GetContext(c)
+	defer cancel()
+
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "Text"), c.Sender())
 
 	log = log.WithField(ilog.FieldText, c.Text())
 
-	gameList, err := h.GameDB.List(context.Background())
+	gameList, err := h.GameDB.List(ctx)
 	if err != nil {
 		log.WithError(err).Error("Failed to cache game data")
-		return c.Send("Wops! Algo ha ido mal, vuelve a intentarlo en unos momentos. Si el problema persiste, Avisa a @MetalBlueberry")
+		return c.Send("Wops! Algo ha ido mal, vuelve a intentarlo en unos momentos.\n" + err.Error())
 	}
 
 	lines := strings.Split(c.Text(), "\n")
@@ -396,6 +426,9 @@ func (h *Handler) onSearchByText(c tele.Context, member Member) error {
 			return c.Send("No he podido buscar el juego, inténtalo otra vez")
 		}
 		list = append(list, search...)
+		if ctx.Err() != nil {
+			return c.Send(fmt.Sprintf("Wops! Parece que no me ha dado tiempo... Envíame algo mas simple.\n%s", ctx.Err()))
+		}
 	}
 
 	if len(lines) == 1 {
@@ -422,6 +455,9 @@ Esto es todo lo que he encontrado`, mainMenu)
 				if err != nil {
 					log.Error(err)
 				}
+				if ctx.Err() != nil {
+					return c.Send(fmt.Sprintf("Wops! Parece que no me ha dado tiempo... Envíame algo mas simple.\n%s", ctx.Err()))
+				}
 			}
 		}
 	} else {
@@ -432,6 +468,9 @@ Esto es todo lo que he encontrado`, mainMenu)
 				err := c.Send(block)
 				if err != nil {
 					log.Error(err)
+				}
+				if ctx.Err() != nil {
+					return c.Send(fmt.Sprintf("Wops! Parece que no me ha dado tiempo... Envíame algo mas simple.\n%s", ctx.Err()))
 				}
 			}
 		}
@@ -451,6 +490,9 @@ Esto es todo lo que he encontrado`, mainMenu)
 			err := c.Send(block, selector)
 			if err != nil {
 				log.Error(err)
+			}
+			if ctx.Err() != nil {
+				return c.Send(fmt.Sprintf("Wops! Parece que no me ha dado tiempo... Envíame algo mas simple.\n%s", ctx.Err()))
 			}
 		}
 	}
@@ -854,6 +896,9 @@ Comentarios:
 `))
 
 func (h *Handler) onHistory(c tele.Context, member Member) error {
+	ctx, cancel := GetContext(c)
+	defer cancel()
+
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "History"), c.Sender())
 
 	defer c.Respond()
@@ -868,7 +913,7 @@ func (h *Handler) onHistory(c tele.Context, member Member) error {
 		WithField("Game", g.Name).
 		WithField("ID", g.ID)
 
-	entries, err := h.Audit.Find(context.TODO(), Query{
+	entries, err := h.Audit.Find(ctx, Query{
 		Game:  &g,
 		Limit: 100,
 	})
@@ -890,6 +935,9 @@ func (h *Handler) onHistory(c tele.Context, member Member) error {
 			AuditEntry: e,
 			TimeFormat: "2006-01-02",
 		})
+		if ctx.Err() != nil {
+			return c.Send("Wops! No me ha dado tiempo... avisa a @MetalBlueberry, es posible que el fichero sea demasiado grande")
+		}
 	}
 
 	commentChanged := make([]CommentChanged, 0, len(entries))
@@ -903,6 +951,9 @@ func (h *Handler) onHistory(c tele.Context, member Member) error {
 			AuditEntry: e,
 			TimeFormat: "2006-01-02",
 		})
+		if ctx.Err() != nil {
+			return c.Send("Wops! No me ha dado tiempo... avisa a @MetalBlueberry, es posible que el fichero sea demasiado grande")
+		}
 	}
 
 	if len(holderChanged) == 0 {
@@ -1592,12 +1643,14 @@ func (h *Handler) onExitJuegatron(c tele.Context, member Member) error {
 }
 
 func (h *Handler) onJuegatronText(c tele.Context, member Member) error {
+	ctx, cancel := GetContext(c)
+	defer cancel()
 
 	log := ilog.WithTelegramUser(logrus.WithField(ilog.FieldHandler, "JuegatronText"), c.Sender())
 
 	log = log.WithField(ilog.FieldText, c.Text())
 
-	gameList, err := h.JuegatronGameDB.List(context.Background())
+	gameList, err := h.JuegatronGameDB.List(ctx)
 	if err != nil {
 		log.WithError(err).Error("Failed to cache game data")
 		return c.Send("Wops! Algo ha ido mal, vuelve a intentarlo en unos momentos. Si el problema persiste, Avisa a @MetalBlueberry")
@@ -1629,6 +1682,9 @@ Esto es todo lo que he encontrado`, mainMenu)
 			err := c.Send(block, juegatronReplyMarkup())
 			if err != nil {
 				log.Error(err)
+			}
+			if ctx.Err() != nil {
+				return c.Send(fmt.Sprintf("Wops! Parece que no me ha dado tiempo... Envíame algo mas simple.\n%s", ctx.Err()))
 			}
 		}
 	}

@@ -89,6 +89,9 @@ func (db *SheetAuditDatabase) List(ctx context.Context) ([]AuditEntry, error) {
 			return nil, err
 		}
 		entries = append(entries, g)
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
 
 	}
 

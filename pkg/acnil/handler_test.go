@@ -385,6 +385,9 @@ var _ = Describe("Handler", func() {
 			}
 			mockTeleContext.EXPECT().Sender().Return(sender).AnyTimes()
 
+			mockTeleContext.EXPECT().Update().Return(tele.Update{}).AnyTimes()
+			mockTeleContext.EXPECT().Get(gomock.Any()).Return(context.Background()).AnyTimes()
+
 		})
 
 		Describe("When /start message is received", func() {
@@ -397,6 +400,7 @@ var _ = Describe("Handler", func() {
 					Chat: &tele.Chat{
 						Type: tele.ChatPrivate,
 					},
+					Unixtime: time.Now().Unix(),
 				}).AnyTimes()
 			})
 			It("Should reply with welcome message message", func() {
@@ -423,6 +427,7 @@ var _ = Describe("Handler", func() {
 					Chat: &tele.Chat{
 						Type: tele.ChatPrivate,
 					},
+					Unixtime: time.Now().Unix(),
 				}).AnyTimes()
 				mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
 				mockTeleContext.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(func(sent string, opt ...interface{}) error {
@@ -449,6 +454,7 @@ var _ = Describe("Handler", func() {
 						Chat: &tele.Chat{
 							Type: tele.ChatPrivate,
 						},
+						Unixtime: time.Now().Unix(),
 					}).AnyTimes()
 					mockTeleContext.EXPECT().Text().Return(text).AnyTimes()
 					mockGameDatabase.EXPECT().Update(gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, game acnil.Game) error {
@@ -493,6 +499,7 @@ var _ = Describe("Handler", func() {
 					Chat: &tele.Chat{
 						Type: tele.ChatPrivate,
 					},
+					Unixtime: time.Now().Unix(),
 				}).AnyTimes()
 			})
 			It("Should reply with game details for each line", func() {
@@ -522,6 +529,7 @@ var _ = Describe("Handler", func() {
 						Chat: &tele.Chat{
 							Type: tele.ChatPrivate,
 						},
+						Unixtime: time.Now().Unix(),
 					}).AnyTimes()
 				})
 				It("Should reply with game details by ID", func() {
@@ -549,6 +557,7 @@ var _ = Describe("Handler", func() {
 						Chat: &tele.Chat{
 							Type: tele.ChatPrivate,
 						},
+						Unixtime: time.Now().Unix(),
 					}).AnyTimes()
 				})
 				It("Should reply with game details by ID", func() {
@@ -578,6 +587,7 @@ var _ = Describe("Handler", func() {
 						Chat: &tele.Chat{
 							Type: tele.ChatPrivate,
 						},
+						Unixtime: time.Now().Unix(),
 					}).AnyTimes()
 				})
 				It("Should reply with game details by ID", func() {
@@ -605,6 +615,7 @@ var _ = Describe("Handler", func() {
 						Chat: &tele.Chat{
 							Type: tele.ChatPrivate,
 						},
+						Unixtime: time.Now().Unix(),
 					}).AnyTimes()
 				})
 				It("Should reply with game details by ID", func() {

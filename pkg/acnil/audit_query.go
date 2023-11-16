@@ -51,6 +51,9 @@ func (a *AuditQuery) Find(ctx context.Context, query Query) ([]AuditEntry, error
 		if query.Limit != 0 && len(result) == query.Limit {
 			break
 		}
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
 	}
 	reverse(result)
 	return result, nil
