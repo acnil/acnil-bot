@@ -54,7 +54,7 @@ func mainMenuReplyMarkup(member Member) *tele.ReplyMarkup {
 		markup.Row(btnMyGames),
 		markup.Row(btnEnGamonal, btnEnCentro),
 		markup.Row(btnRename),
-		markup.Row(btnJuegatron),
+		// markup.Row(btnJuegatron),
 	}
 	if member.Permissions == PermissionAdmin {
 		std = append(std, markup.Row(btnAdmin))
