@@ -99,7 +99,7 @@ module "bot_handler" {
   create_lambda_function_url = true
   architectures              = ["x86_64"]
   memory_size                = "128"
-  timeout                    = "3"
+  timeout                    = "30"
 
   create_package         = false
   local_existing_package = "../cmd/lambda/package.zip"
