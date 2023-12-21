@@ -398,7 +398,7 @@ func GetContext(c tele.Context) (_ context.Context, cancelFunc func()) {
 		logrus.Info("using default deadine")
 		return context.WithDeadline(ctx, time.Now().Add(5*time.Second))
 	}
-	logrus.Info("using msg deadine ", m)
+	logrus.Infof("using msg deadine %s", m.Time().Format(time.RFC3339))
 	return context.WithDeadline(ctx, m.Time().Add(5*time.Second))
 }
 
