@@ -393,13 +393,8 @@ func GetContext(c tele.Context) (_ context.Context, cancelFunc func()) {
 		ctx = context.Background()
 	}
 
-	m := c.Message()
-	if m == nil {
-		logrus.Info("using default deadine")
-		return context.WithDeadline(ctx, time.Now().Add(5*time.Second))
-	}
-	logrus.Infof("using msg deadine %s", m.Time().Format(time.RFC3339))
-	return context.WithDeadline(ctx, m.Time().Add(5*time.Second))
+	logrus.Info("using default deadline")
+	return context.WithDeadline(ctx, time.Now().Add(5*time.Second))
 }
 
 func (h *Handler) onSearchByText(c tele.Context, member Member) error {
