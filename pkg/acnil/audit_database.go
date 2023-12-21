@@ -71,7 +71,7 @@ func (db *SheetAuditDatabase) List(ctx context.Context) ([]AuditEntry, error) {
 
 	resp, err := db.SRV.Spreadsheets.Values.Get(db.SheetID, db.fullReadRange()).Context(ctx).Do()
 	if err != nil {
-		log.Fatalf("Unable to retrieve data from sheet: %v", err)
+		return nil, fmt.Errorf("Unable to retrieve data from sheet: %w", err)
 	}
 	entries := []AuditEntry{}
 
