@@ -8,7 +8,7 @@
   "playingtime": 240,
   "yearpublished": 2019,
   "language_dependence": "Extensive use of text - massive conversion needed to be playable",
-  "avg_rate": 6.4,
+  "avg_rate": 6.42857,
   "avg_weight": 1.8
  },
  {
@@ -20,8 +20,8 @@
   "playingtime": 30,
   "yearpublished": 2010,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.69232,
-  "avg_weight": 2.3197
+  "avg_rate": 7.68815,
+  "avg_weight": 2.3179
  },
  {
   "name": "7 Wonders: Cities",
@@ -32,8 +32,8 @@
   "playingtime": 40,
   "yearpublished": 2012,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.81357,
-  "avg_weight": 2.3463
+  "avg_rate": 7.81355,
+  "avg_weight": 2.3479
  },
  {
   "name": "7 Wonders Duel",
@@ -44,8 +44,8 @@
   "playingtime": 30,
   "yearpublished": 2015,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 8.09733,
-  "avg_weight": 2.2268
+  "avg_rate": 8.09585,
+  "avg_weight": 2.2282
  },
  {
   "name": "Linko",
@@ -56,8 +56,8 @@
   "playingtime": 20,
   "yearpublished": 2014,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.99332,
-  "avg_weight": 1.3917
+  "avg_rate": 6.99085,
+  "avg_weight": 1.3862
  },
  {
   "name": "Cupcake Academy",
@@ -68,7 +68,7 @@
   "playingtime": 10,
   "yearpublished": 2020,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.80312,
+  "avg_rate": 6.81665,
   "avg_weight": 1.25
  },
  {
@@ -80,7 +80,7 @@
   "playingtime": 20,
   "yearpublished": 2023,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.62308
+  "avg_rate": 7.41724
  },
  {
   "name": "Alan's Adventureland",
@@ -90,7 +90,7 @@
   "age": 14,
   "playingtime": 90,
   "yearpublished": 2016,
-  "avg_rate": 5.79434,
+  "avg_rate": 5.79159,
   "avg_weight": 2
  },
  {
@@ -102,8 +102,8 @@
   "playingtime": 30,
   "yearpublished": 2014,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.45197,
-  "avg_weight": 1.1151
+  "avg_rate": 6.45017,
+  "avg_weight": 1.1095
  },
  {
   "name": "Agricola",
@@ -114,8 +114,8 @@
   "playingtime": 150,
   "yearpublished": 2007,
   "language_dependence": "Extensive use of text - massive conversion needed to be playable",
-  "avg_rate": 7.88527,
-  "avg_weight": 3.6371
+  "avg_rate": 7.88041,
+  "avg_weight": 3.6366
  },
  {
   "name": "Alex Colt: Cadete Espacial",
@@ -126,7 +126,7 @@
   "playingtime": 15,
   "yearpublished": 2017,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 5.59667,
+  "avg_rate": 5.69696,
   "avg_weight": 1
  },
  {
@@ -138,7 +138,7 @@
   "playingtime": 15,
   "yearpublished": 2012,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 5.82387,
+  "avg_rate": 5.83126,
   "avg_weight": 1.125
  },
  {
@@ -150,7 +150,7 @@
   "playingtime": 45,
   "yearpublished": 2017,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.59878,
+  "avg_rate": 6.57847,
   "avg_weight": 2.3571
  },
  {
@@ -161,7 +161,7 @@
   "age": 6,
   "playingtime": 30,
   "yearpublished": 2019,
-  "avg_rate": 6.62115,
+  "avg_rate": 6.686,
   "avg_weight": 1.5
  },
  {
@@ -173,8 +173,8 @@
   "playingtime": 30,
   "yearpublished": 2012,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.58505,
-  "avg_weight": 1.9231
+  "avg_rate": 6.58019,
+  "avg_weight": 2
  },
  {
   "name": "ARKA V",
@@ -184,7 +184,8 @@
   "age": 10,
   "playingtime": 30,
   "yearpublished": 2022,
-  "avg_rate": 7.43406,
+  "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
+  "avg_rate": 7.14972,
   "avg_weight": 1.75
  },
  {
@@ -196,7 +197,7 @@
   "playingtime": 10,
   "yearpublished": 2017,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 6.40751,
+  "avg_rate": 6.39941,
   "avg_weight": 1.2308
  },
  {
@@ -208,8 +209,8 @@
   "playingtime": 30,
   "yearpublished": 2010,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 7.03316,
-  "avg_weight": 2.1445
+  "avg_rate": 7.03513,
+  "avg_weight": 2.1443
  },
  {
   "name": "Ascension: Skulls \u0026 Sails",
@@ -220,7 +221,7 @@
   "playingtime": 30,
   "yearpublished": 2019,
   "language_dependence": "Extensive use of text - massive conversion needed to be playable",
-  "avg_rate": 7.54374,
+  "avg_rate": 7.51462,
   "avg_weight": 2
  },
  {
@@ -232,8 +233,8 @@
   "playingtime": 120,
   "yearpublished": 2022,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.5605,
-  "avg_weight": 2.7143
+  "avg_rate": 7.51417,
+  "avg_weight": 2.7216
  },
  {
   "name": "Attack on Titan: Deck-Building Game",
@@ -244,8 +245,8 @@
   "playingtime": 90,
   "yearpublished": 2016,
   "language_dependence": "Extensive use of text - massive conversion needed to be playable",
-  "avg_rate": 6.94458,
-  "avg_weight": 2.2381
+  "avg_rate": 6.94126,
+  "avg_weight": 2.2727
  },
  {
   "name": "The Resistance: Avalon",
@@ -256,8 +257,8 @@
   "playingtime": 30,
   "yearpublished": 2012,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 7.52504,
-  "avg_weight": 1.7378
+  "avg_rate": 7.52066,
+  "avg_weight": 1.7357
  },
  {
   "name": "Ticket to Ride: Ghost Train",
@@ -268,8 +269,8 @@
   "playingtime": 30,
   "yearpublished": 2022,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.88482,
-  "avg_weight": 1.3333
+  "avg_rate": 6.83943,
+  "avg_weight": 1.5
  },
  {
   "name": "Ticket to Ride: Europe",
@@ -280,8 +281,8 @@
   "playingtime": 60,
   "yearpublished": 2005,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.5303,
-  "avg_weight": 1.922
+  "avg_rate": 7.53024,
+  "avg_weight": 1.9187
  },
  {
   "name": "Azul",
@@ -292,8 +293,8 @@
   "playingtime": 45,
   "yearpublished": 2017,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.75941,
-  "avg_weight": 1.7601
+  "avg_rate": 7.75733,
+  "avg_weight": 1.7608
  },
  {
   "name": "Azul: Queen's Garden",
@@ -304,8 +305,8 @@
   "playingtime": 60,
   "yearpublished": 2021,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.52064,
-  "avg_weight": 2.9605
+  "avg_rate": 7.50971,
+  "avg_weight": 2.9438
  },
  {
   "name": "Baby Dinosaur Rescue",
@@ -316,7 +317,7 @@
   "playingtime": 30,
   "yearpublished": 2019,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 4.80237,
+  "avg_rate": 4.95065,
   "avg_weight": 1.2
  },
  {
@@ -328,8 +329,8 @@
   "playingtime": 15,
   "yearpublished": 2020,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.51029,
-  "avg_weight": 1.4286
+  "avg_rate": 6.48719,
+  "avg_weight": 1.375
  },
  {
   "name": "Bandido",
@@ -340,20 +341,20 @@
   "playingtime": 15,
   "yearpublished": 2016,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.44664,
-  "avg_weight": 1.1096
+  "avg_rate": 6.43668,
+  "avg_weight": 1.1081
  },
  {
   "name": "BANG!",
   "bggid": "3955",
   "min_players": 4,
   "max_player": 7,
-  "age": 10,
+  "age": 8,
   "playingtime": 40,
   "yearpublished": 2002,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 6.4916,
-  "avg_weight": 1.6339
+  "avg_rate": 6.48877,
+  "avg_weight": 1.6327
  },
  {
   "name": "Fight for Olympus",
@@ -364,7 +365,7 @@
   "playingtime": 30,
   "yearpublished": 2016,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 6.69053,
+  "avg_rate": 6.6888,
   "avg_weight": 2.1064
  },
  {
@@ -376,7 +377,7 @@
   "playingtime": 10,
   "yearpublished": 1985,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 4.42244,
+  "avg_rate": 4.44167,
   "avg_weight": 1.0625
  },
  {
@@ -412,8 +413,8 @@
   "playingtime": 30,
   "yearpublished": 2013,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 6.54786,
-  "avg_weight": 1.2327
+  "avg_rate": 6.54294,
+  "avg_weight": 1.2287
  },
  {
   "name": "Welcome Back to the Dungeon",
@@ -424,8 +425,8 @@
   "playingtime": 30,
   "yearpublished": 2016,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 6.72229,
-  "avg_weight": 1.3385
+  "avg_rate": 6.71593,
+  "avg_weight": 1.3231
  },
  {
   "name": "Black Stories",
@@ -436,8 +437,8 @@
   "playingtime": 20,
   "yearpublished": 2004,
   "language_dependence": "Extensive use of text - massive conversion needed to be playable",
-  "avg_rate": 6.00951,
-  "avg_weight": 1.2705
+  "avg_rate": 6.00231,
+  "avg_weight": 1.2679
  },
  {
   "name": "Blind Business",
@@ -448,8 +449,8 @@
   "playingtime": 30,
   "yearpublished": 2023,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.67823,
-  "avg_weight": 1.5
+  "avg_rate": 6.66703,
+  "avg_weight": 1.6667
  },
  {
   "name": "BomBarDum",
@@ -458,7 +459,7 @@
   "max_player": 6,
   "age": 6,
   "yearpublished": 2020,
-  "avg_rate": 6.06923,
+  "avg_rate": 5.97857,
   "avg_weight": 1
  },
  {
@@ -470,8 +471,8 @@
   "playingtime": 120,
   "yearpublished": 2018,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 8.60931,
-  "avg_weight": 3.894
+  "avg_rate": 8.60394,
+  "avg_weight": 3.8883
  },
  {
   "name": "Burn the Festival",
@@ -482,7 +483,7 @@
   "playingtime": 20,
   "yearpublished": 2022,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.125,
+  "avg_rate": 7.21667,
   "avg_weight": 1
  },
  {
@@ -494,7 +495,7 @@
   "playingtime": 30,
   "yearpublished": 2010,
   "language_dependence": "Extensive use of text - massive conversion needed to be playable",
-  "avg_rate": 5.65197,
+  "avg_rate": 5.6594,
   "avg_weight": 1.1111
  },
  {
@@ -505,7 +506,8 @@
   "age": 5,
   "playingtime": 20,
   "yearpublished": 2021,
-  "avg_rate": 6.46979,
+  "language_dependence": "No necessary in-game text",
+  "avg_rate": 6.51043,
   "avg_weight": 1
  },
  {
@@ -516,7 +518,7 @@
   "age": 8,
   "playingtime": 20,
   "yearpublished": 2015,
-  "avg_rate": 6.6775,
+  "avg_rate": 6.701,
   "avg_weight": 1.5
  },
  {
@@ -528,7 +530,7 @@
   "playingtime": 45,
   "yearpublished": 2021,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.53404
+  "avg_rate": 7.42778
  },
  {
   "name": "Carcassonne: South Seas",
@@ -539,8 +541,8 @@
   "playingtime": 35,
   "yearpublished": 2013,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.05709,
-  "avg_weight": 1.8844
+  "avg_rate": 7.05971,
+  "avg_weight": 1.8859
  },
  {
   "name": "Ribbit",
@@ -551,7 +553,7 @@
   "playingtime": 20,
   "yearpublished": 2004,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.77409,
+  "avg_rate": 6.7676,
   "avg_weight": 1.0896
  },
  {
@@ -563,7 +565,7 @@
   "playingtime": 30,
   "yearpublished": 2005,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.5558,
+  "avg_rate": 6.55484,
   "avg_weight": 1.2748
  },
  {
@@ -575,8 +577,8 @@
   "playingtime": 30,
   "yearpublished": 2021,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.14094,
-  "avg_weight": 1.1071
+  "avg_rate": 7.10045,
+  "avg_weight": 1.1
  },
  {
   "name": "Castle Party",
@@ -587,7 +589,7 @@
   "playingtime": 30,
   "yearpublished": 2021,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.78066,
+  "avg_rate": 6.71972,
   "avg_weight": 1.6
  },
  {
@@ -599,8 +601,8 @@
   "playingtime": 30,
   "yearpublished": 2015,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.94598,
-  "avg_weight": 1.3281
+  "avg_rate": 6.94335,
+  "avg_weight": 1.3206
  },
  {
   "name": "Cerberus",
@@ -611,8 +613,8 @@
   "playingtime": 45,
   "yearpublished": 2018,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.72248,
-  "avg_weight": 1.7647
+  "avg_rate": 6.71324,
+  "avg_weight": 1.7429
  },
  {
   "name": "Circus",
@@ -634,7 +636,7 @@
   "playingtime": 60,
   "yearpublished": 2000,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 7.06585,
+  "avg_rate": 7.06445,
   "avg_weight": 2.0498
  },
  {
@@ -646,8 +648,8 @@
   "playingtime": 25,
   "yearpublished": 2017,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.96629,
-  "avg_weight": 1.697
+  "avg_rate": 6.95958,
+  "avg_weight": 1.6931
  },
  {
   "name": "Claim 2",
@@ -658,8 +660,8 @@
   "playingtime": 25,
   "yearpublished": 2018,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.98187,
-  "avg_weight": 1.5758
+  "avg_rate": 6.97462,
+  "avg_weight": 1.5714
  },
  {
   "name": "Co-Mix",
@@ -670,7 +672,7 @@
   "playingtime": 30,
   "yearpublished": 2014,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.05921,
+  "avg_rate": 6.04802,
   "avg_weight": 1.1
  },
  {
@@ -681,7 +683,7 @@
   "age": 10,
   "playingtime": 15,
   "yearpublished": 2017,
-  "avg_rate": 6.06868,
+  "avg_rate": 6.05041,
   "avg_weight": 1.2
  },
  {
@@ -693,8 +695,8 @@
   "playingtime": 120,
   "yearpublished": 1995,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 7.10367,
-  "avg_weight": 2.2986
+  "avg_rate": 7.10124,
+  "avg_weight": 2.2967
  },
  {
   "name": "Star Trek: Catan",
@@ -705,7 +707,7 @@
   "playingtime": 75,
   "yearpublished": 2012,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 6.98867,
+  "avg_rate": 6.98655,
   "avg_weight": 2.3485
  },
  {
@@ -716,7 +718,7 @@
   "age": 14,
   "playingtime": 15,
   "yearpublished": 2019,
-  "avg_rate": 7.06722,
+  "avg_rate": 7.03386,
   "avg_weight": 1
  },
  {
@@ -738,7 +740,7 @@
   "playingtime": 20,
   "yearpublished": 2011,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 5.50919,
+  "avg_rate": 5.50882,
   "avg_weight": 1.1957
  },
  {
@@ -750,7 +752,7 @@
   "playingtime": 30,
   "yearpublished": 2017,
   "language_dependence": "Extensive use of text - massive conversion needed to be playable",
-  "avg_rate": 6.31634,
+  "avg_rate": 6.29849,
   "avg_weight": 1
  },
  {
@@ -762,7 +764,7 @@
   "playingtime": 60,
   "yearpublished": 2006,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 7.7727,
+  "avg_rate": 7.77459,
   "avg_weight": 2.693
  },
  {
@@ -774,7 +776,7 @@
   "playingtime": 20,
   "yearpublished": 2019,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.44577,
+  "avg_rate": 6.44677,
   "avg_weight": 1.3333
  },
  {
@@ -786,7 +788,7 @@
   "playingtime": 20,
   "yearpublished": 2017,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 5.83179,
+  "avg_rate": 5.8262,
   "avg_weight": 1
  },
  {
@@ -797,7 +799,8 @@
   "age": 8,
   "playingtime": 30,
   "yearpublished": 2021,
-  "avg_rate": 6.42424
+  "avg_rate": 6.43601,
+  "avg_weight": 1
  },
  {
   "name": "Cortex + Challenge",
@@ -808,8 +811,8 @@
   "playingtime": 15,
   "yearpublished": 2018,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.37658,
-  "avg_weight": 1.3333
+  "avg_rate": 6.37605,
+  "avg_weight": 1.25
  },
  {
   "name": "Braintopia Kids",
@@ -820,7 +823,7 @@
   "playingtime": 30,
   "yearpublished": 2016,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.24317,
+  "avg_rate": 6.23577,
   "avg_weight": 1
  },
  {
@@ -832,8 +835,8 @@
   "playingtime": 90,
   "yearpublished": 2022,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.37953,
-  "avg_weight": 3.1143
+  "avg_rate": 7.34829,
+  "avg_weight": 3.1111
  },
  {
   "name": "Slam Cup",
@@ -842,7 +845,7 @@
   "max_player": 4,
   "age": 6,
   "yearpublished": 2020,
-  "avg_rate": 6
+  "avg_rate": 5.71429
  },
  {
   "name": "Dancing Eggs",
@@ -853,7 +856,7 @@
   "playingtime": 10,
   "yearpublished": 2003,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.33667,
+  "avg_rate": 6.33161,
   "avg_weight": 1.0485
  },
  {
@@ -865,7 +868,7 @@
   "playingtime": 45,
   "yearpublished": 2017,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.883,
+  "avg_rate": 6.86231,
   "avg_weight": 2.2
  },
  {
@@ -877,7 +880,7 @@
   "playingtime": 30,
   "yearpublished": 2022,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 6.65526,
+  "avg_rate": 6.57202,
   "avg_weight": 1.6364
  },
  {
@@ -889,7 +892,7 @@
   "playingtime": 30,
   "yearpublished": 2022,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.21857,
+  "avg_rate": 6.14474,
   "avg_weight": 1.5
  },
  {
@@ -901,7 +904,7 @@
   "playingtime": 240,
   "yearpublished": 2005,
   "language_dependence": "Extensive use of text - massive conversion needed to be playable",
-  "avg_rate": 7.2807,
+  "avg_rate": 7.27913,
   "avg_weight": 3.3437
  },
  {
@@ -913,7 +916,7 @@
   "playingtime": 30,
   "yearpublished": 2019,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.01214,
+  "avg_rate": 7.07216,
   "avg_weight": 1.25
  },
  {
@@ -925,8 +928,8 @@
   "playingtime": 30,
   "yearpublished": 2005,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.82946,
-  "avg_weight": 1.1112
+  "avg_rate": 6.83205,
+  "avg_weight": 1.1102
  },
  {
   "name": "Dice Forge",
@@ -937,8 +940,8 @@
   "playingtime": 45,
   "yearpublished": 2017,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.23229,
-  "avg_weight": 1.9768
+  "avg_rate": 7.23023,
+  "avg_weight": 1.9729
  },
  {
   "name": "¡Guka Croka!",
@@ -949,7 +952,7 @@
   "playingtime": 20,
   "yearpublished": 2012,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 5.67056,
+  "avg_rate": 5.68373,
   "avg_weight": 1
  },
  {
@@ -961,7 +964,7 @@
   "playingtime": 15,
   "yearpublished": 2017,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.13943,
+  "avg_rate": 6.15881,
   "avg_weight": 1
  },
  {
@@ -972,7 +975,7 @@
   "age": 7,
   "playingtime": 20,
   "yearpublished": 2022,
-  "avg_rate": 6.6319,
+  "avg_rate": 6.5649,
   "avg_weight": 1.2
  },
  {
@@ -984,7 +987,7 @@
   "playingtime": 30,
   "yearpublished": 2012,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.72282,
+  "avg_rate": 6.72314,
   "avg_weight": 1.7685
  },
  {
@@ -996,8 +999,8 @@
   "playingtime": 30,
   "yearpublished": 2008,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.20947,
-  "avg_weight": 1.2005
+  "avg_rate": 7.20553,
+  "avg_weight": 1.1993
  },
  {
   "name": "Dixit: Odyssey",
@@ -1008,8 +1011,8 @@
   "playingtime": 30,
   "yearpublished": 2011,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.40764,
-  "avg_weight": 1.1699
+  "avg_rate": 7.40328,
+  "avg_weight": 1.1675
  },
  {
   "name": "Dodo",
@@ -1020,8 +1023,8 @@
   "playingtime": 10,
   "yearpublished": 2020,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.56425,
-  "avg_weight": 1.0909
+  "avg_rate": 6.56937,
+  "avg_weight": 1.0667
  },
  {
   "name": "Dragondraft",
@@ -1032,7 +1035,7 @@
   "playingtime": 60,
   "yearpublished": 2020,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.49443,
+  "avg_rate": 6.47125,
   "avg_weight": 1.5
  },
  {
@@ -1043,7 +1046,7 @@
   "age": 10,
   "playingtime": 60,
   "yearpublished": 2018,
-  "avg_rate": 6.6
+  "avg_rate": 6.45217
  },
  {
   "name": "Dry Bones: 4 Culturas",
@@ -1064,8 +1067,8 @@
   "playingtime": 45,
   "yearpublished": 2021,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 7.08534,
-  "avg_weight": 1.8636
+  "avg_rate": 7.04826,
+  "avg_weight": 1.8696
  },
  {
   "name": "Dune: Imperium",
@@ -1076,8 +1079,8 @@
   "playingtime": 120,
   "yearpublished": 2020,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 8.4184,
-  "avg_weight": 3.0279
+  "avg_rate": 8.42646,
+  "avg_weight": 3.0371
  },
  {
   "name": "El Club de los Martes",
@@ -1088,7 +1091,7 @@
   "playingtime": 60,
   "yearpublished": 2007,
   "language_dependence": "Extensive use of text - massive conversion needed to be playable",
-  "avg_rate": 7.08114,
+  "avg_rate": 7.05393,
   "avg_weight": 2.0435
  },
  {
@@ -1100,7 +1103,7 @@
   "playingtime": 30,
   "yearpublished": 2014,
   "language_dependence": "Unplayable in another language",
-  "avg_rate": 4.96384,
+  "avg_rate": 4.96333,
   "avg_weight": 1
  },
  {
@@ -1112,8 +1115,8 @@
   "playingtime": 60,
   "yearpublished": 2017,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 7.66384,
-  "avg_weight": 1.9277
+  "avg_rate": 7.6729,
+  "avg_weight": 1.9236
  },
  {
   "name": "Spyfall",
@@ -1124,8 +1127,8 @@
   "playingtime": 15,
   "yearpublished": 2014,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 6.79178,
-  "avg_weight": 1.241
+  "avg_rate": 6.78325,
+  "avg_weight": 1.2376
  },
  {
   "name": "Intime Conviction n°1: L'Affaire des Poissons de Chine",
@@ -1135,7 +1138,7 @@
   "age": 15,
   "playingtime": 60,
   "yearpublished": 2019,
-  "avg_rate": 5.63518,
+  "avg_rate": 5.54803,
   "avg_weight": 1
  },
  {
@@ -1146,7 +1149,7 @@
   "age": 8,
   "playingtime": 40,
   "yearpublished": 2019,
-  "avg_rate": 5.9248,
+  "avg_rate": 5.95401,
   "avg_weight": 1.3333
  },
  {
@@ -1158,7 +1161,7 @@
   "playingtime": 60,
   "yearpublished": 2017,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 7.11667,
+  "avg_rate": 7.0871,
   "avg_weight": 1.8571
  },
  {
@@ -1168,7 +1171,8 @@
   "max_player": 4,
   "age": 5,
   "playingtime": 15,
-  "yearpublished": 2022
+  "yearpublished": 2022,
+  "avg_rate": 7
  },
  {
   "name": "King of the Dice",
@@ -1179,8 +1183,8 @@
   "playingtime": 30,
   "yearpublished": 2017,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.83412,
-  "avg_weight": 1.0882
+  "avg_rate": 6.83637,
+  "avg_weight": 1.0833
  },
  {
   "name": "King of the Dice: The Board Game",
@@ -1190,8 +1194,8 @@
   "age": 8,
   "playingtime": 60,
   "yearpublished": 2021,
-  "avg_rate": 6.9363,
-  "avg_weight": 1.3333
+  "avg_rate": 6.90477,
+  "avg_weight": 1.5
  },
  {
   "name": "The Lord of the Rings: Journeys in Middle-Earth",
@@ -1202,8 +1206,8 @@
   "playingtime": 120,
   "yearpublished": 2019,
   "language_dependence": "Extensive use of text - massive conversion needed to be playable",
-  "avg_rate": 7.93021,
-  "avg_weight": 2.6468
+  "avg_rate": 7.9234,
+  "avg_weight": 2.6537
  },
  {
   "name": "Dragons",
@@ -1214,7 +1218,7 @@
   "playingtime": 30,
   "yearpublished": 2018,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.39065,
+  "avg_rate": 6.39837,
   "avg_weight": 1.5
  },
  {
@@ -1226,8 +1230,8 @@
   "playingtime": 20,
   "yearpublished": 2019,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.65569,
-  "avg_weight": 1.3636
+  "avg_rate": 6.6496,
+  "avg_weight": 1.3478
  },
  {
   "name": "ICECOOL",
@@ -1238,8 +1242,8 @@
   "playingtime": 30,
   "yearpublished": 2016,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.79447,
-  "avg_weight": 1.0364
+  "avg_rate": 6.79003,
+  "avg_weight": 1.0355
  },
  {
   "name": "Espinas",
@@ -1249,7 +1253,7 @@
   "age": 14,
   "playingtime": 120,
   "yearpublished": 2017,
-  "avg_rate": 6.61739,
+  "avg_rate": 6.62647,
   "avg_weight": 1
  },
  {
@@ -1261,8 +1265,8 @@
   "playingtime": 60,
   "yearpublished": 2014,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 7.06662,
-  "avg_weight": 2.4291
+  "avg_rate": 7.06126,
+  "avg_weight": 2.4307
  },
  {
   "name": "Exploding Kittens",
@@ -1273,8 +1277,8 @@
   "playingtime": 15,
   "yearpublished": 2015,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 6.0527,
-  "avg_weight": 1.0889
+  "avg_rate": 6.05786,
+  "avg_weight": 1.0855
  },
  {
   "name": "Exploding Kittens: Party Pack",
@@ -1285,8 +1289,8 @@
   "playingtime": 15,
   "yearpublished": 2017,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 7.1003,
-  "avg_weight": 1.0278
+  "avg_rate": 7.10616,
+  "avg_weight": 1.0526
  },
  {
   "name": "Fiesta de los Muertos",
@@ -1297,8 +1301,8 @@
   "playingtime": 15,
   "yearpublished": 2019,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 7.10839,
-  "avg_weight": 1.0769
+  "avg_rate": 7.05786,
+  "avg_weight": 1.0741
  },
  {
   "name": "Gift Party",
@@ -1308,7 +1312,7 @@
   "age": 5,
   "playingtime": 10,
   "yearpublished": 2018,
-  "avg_rate": 5.73,
+  "avg_rate": 5.71302,
   "avg_weight": 1
  },
  {
@@ -1332,8 +1336,8 @@
   "playingtime": 150,
   "yearpublished": 2017,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 8.39834,
-  "avg_weight": 4.3956
+  "avg_rate": 8.38955,
+  "avg_weight": 4.3963
  },
  {
   "name": "Galaxies: The UFO Project",
@@ -1344,7 +1348,7 @@
   "playingtime": 25,
   "yearpublished": 2022,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.55385,
+  "avg_rate": 6.51429,
   "avg_weight": 1
  },
  {
@@ -1356,8 +1360,8 @@
   "playingtime": 40,
   "yearpublished": 2018,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.17002,
-  "avg_weight": 2.25
+  "avg_rate": 7.15279,
+  "avg_weight": 2.2459
  },
  {
   "name": "Gardens",
@@ -1368,7 +1372,7 @@
   "playingtime": 45,
   "yearpublished": 2014,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.60475,
+  "avg_rate": 6.59776,
   "avg_weight": 1.8125
  },
  {
@@ -1380,8 +1384,8 @@
   "playingtime": 45,
   "yearpublished": 2004,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.10401,
-  "avg_weight": 1.9093
+  "avg_rate": 7.10309,
+  "avg_weight": 1.9094
  },
  {
   "name": "Ghost Adventure",
@@ -1392,7 +1396,7 @@
   "playingtime": 30,
   "yearpublished": 2020,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.95171,
+  "avg_rate": 6.91387,
   "avg_weight": 1.1667
  },
  {
@@ -1404,7 +1408,7 @@
   "playingtime": 20,
   "yearpublished": 2014,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.17148,
+  "avg_rate": 6.19735,
   "avg_weight": 1.0714
  },
  {
@@ -1427,8 +1431,8 @@
   "playingtime": 20,
   "yearpublished": 2018,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.18499,
-  "avg_weight": 1.8889
+  "avg_rate": 6.17984,
+  "avg_weight": 1.8
  },
  {
   "name": "Happy Bee",
@@ -1438,7 +1442,7 @@
   "age": 8,
   "playingtime": 15,
   "yearpublished": 2023,
-  "avg_rate": 6.7509,
+  "avg_rate": 6.75181,
   "avg_weight": 1.5
  },
  {
@@ -1450,8 +1454,8 @@
   "playingtime": 60,
   "yearpublished": 2022,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 8.1233,
-  "avg_weight": 2.1706
+  "avg_rate": 8.09423,
+  "avg_weight": 2.1829
  },
  {
   "name": "Hidden Leaders",
@@ -1462,8 +1466,8 @@
   "playingtime": 40,
   "yearpublished": 2022,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 6.86981,
-  "avg_weight": 1.7656
+  "avg_rate": 6.85177,
+  "avg_weight": 1.7681
  },
  {
   "name": "Hungry Shark",
@@ -1485,8 +1489,8 @@
   "playingtime": 25,
   "yearpublished": 2021,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.56028,
-  "avg_weight": 1.125
+  "avg_rate": 6.56166,
+  "avg_weight": 1.1111
  },
  {
   "name": "Forbidden Island",
@@ -1497,8 +1501,8 @@
   "playingtime": 30,
   "yearpublished": 2010,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 6.7665,
-  "avg_weight": 1.7384
+  "avg_rate": 6.76371,
+  "avg_weight": 1.7379
  },
  {
   "name": "Jerusalem",
@@ -1509,8 +1513,8 @@
   "playingtime": 90,
   "yearpublished": 2010,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.70061,
-  "avg_weight": 2.9079
+  "avg_rate": 6.70137,
+  "avg_weight": 2.9091
  },
  {
   "name": "Just One",
@@ -1521,15 +1525,18 @@
   "playingtime": 60,
   "yearpublished": 2018,
   "language_dependence": "Unplayable in another language",
-  "avg_rate": 7.59409,
-  "avg_weight": 1.0418
+  "avg_rate": 7.60014,
+  "avg_weight": 1.0408
  },
  {
   "name": "Justice",
   "bggid": "395004",
   "min_players": 3,
   "max_player": 5,
-  "yearpublished": 2024
+  "age": 12,
+  "playingtime": 50,
+  "yearpublished": 2024,
+  "avg_rate": 7.5
  },
  {
   "name": "Justice League: Dawn of Heroes",
@@ -1540,7 +1547,7 @@
   "playingtime": 90,
   "yearpublished": 2017,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.44057,
+  "avg_rate": 6.45766,
   "avg_weight": 2.3333
  },
  {
@@ -1552,8 +1559,8 @@
   "playingtime": 20,
   "yearpublished": 2021,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.02971,
-  "avg_weight": 1.25
+  "avg_rate": 7.02608,
+  "avg_weight": 1.2222
  },
  {
   "name": "Karak",
@@ -1564,8 +1571,8 @@
   "playingtime": 45,
   "yearpublished": 2017,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.22216,
-  "avg_weight": 1.3402
+  "avg_rate": 7.21393,
+  "avg_weight": 1.3304
  },
  {
   "name": "Karuba",
@@ -1576,8 +1583,8 @@
   "playingtime": 40,
   "yearpublished": 2015,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.17539,
-  "avg_weight": 1.4348
+  "avg_rate": 7.17314,
+  "avg_weight": 1.428
  },
  {
   "name": "Kingdomino",
@@ -1588,8 +1595,8 @@
   "playingtime": 25,
   "yearpublished": 2016,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.3165,
-  "avg_weight": 1.2219
+  "avg_rate": 7.31427,
+  "avg_weight": 1.2204
  },
  {
   "name": "Krosmaster: Arena",
@@ -1600,7 +1607,7 @@
   "playingtime": 60,
   "yearpublished": 2012,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 6.71649,
+  "avg_rate": 6.71045,
   "avg_weight": 2.6778
  },
  {
@@ -1612,7 +1619,7 @@
   "playingtime": 15,
   "yearpublished": 2022,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.57143
+  "avg_rate": 6.44444
  },
  {
   "name": "Descent: Journeys in the Dark (Second Edition) – Crown of Destiny",
@@ -1620,7 +1627,7 @@
   "min_players": 2,
   "max_player": 5,
   "yearpublished": 2014,
-  "avg_rate": 7.97439,
+  "avg_rate": 7.97072,
   "avg_weight": 3
  },
  {
@@ -1632,8 +1639,8 @@
   "playingtime": 40,
   "yearpublished": 2020,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.39618,
-  "avg_weight": 1.4286
+  "avg_rate": 7.29465,
+  "avg_weight": 1.4
  },
  {
   "name": "La Marche du Crabe",
@@ -1644,7 +1651,7 @@
   "playingtime": 15,
   "yearpublished": 2020,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.72655,
+  "avg_rate": 6.73073,
   "avg_weight": 1.5
  },
  {
@@ -1656,8 +1663,8 @@
   "playingtime": 60,
   "yearpublished": 2015,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 7.05765,
-  "avg_weight": 2.3624
+  "avg_rate": 7.06094,
+  "avg_weight": 2.3672
  },
  {
   "name": "Labyrinth",
@@ -1668,8 +1675,8 @@
   "playingtime": 20,
   "yearpublished": 1986,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.40249,
-  "avg_weight": 1.3518
+  "avg_rate": 6.4056,
+  "avg_weight": 1.3485
  },
  {
   "name": "The Witches of Cernégula",
@@ -1679,7 +1686,7 @@
   "age": 10,
   "playingtime": 45,
   "yearpublished": 2017,
-  "avg_rate": 6.47813,
+  "avg_rate": 6.54194,
   "avg_weight": 1
  },
  {
@@ -1691,7 +1698,7 @@
   "playingtime": 45,
   "yearpublished": 2015,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 6.61146,
+  "avg_rate": 6.61209,
   "avg_weight": 2.1556
  },
  {
@@ -1703,7 +1710,7 @@
   "playingtime": 90,
   "yearpublished": 2017,
   "language_dependence": "Extensive use of text - massive conversion needed to be playable",
-  "avg_rate": 7.86944,
+  "avg_rate": 7.85044,
   "avg_weight": 3.1739
  },
  {
@@ -1715,8 +1722,8 @@
   "playingtime": 180,
   "yearpublished": 2011,
   "language_dependence": "Extensive use of text - massive conversion needed to be playable",
-  "avg_rate": 7.26563,
-  "avg_weight": 3.246
+  "avg_rate": 7.26352,
+  "avg_weight": 3.2457
  },
  {
   "name": "Lost Ruins of Arnak",
@@ -1727,8 +1734,8 @@
   "playingtime": 120,
   "yearpublished": 2020,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 8.07798,
-  "avg_weight": 2.904
+  "avg_rate": 8.0818,
+  "avg_weight": 2.9075
  },
  {
   "name": "Wits \u0026 Wagers",
@@ -1739,8 +1746,8 @@
   "playingtime": 25,
   "yearpublished": 2005,
   "language_dependence": "Unplayable in another language",
-  "avg_rate": 6.92629,
-  "avg_weight": 1.2097
+  "avg_rate": 6.92398,
+  "avg_weight": 1.2089
  },
  {
   "name": "Letra+Letra",
@@ -1761,8 +1768,8 @@
   "playingtime": 90,
   "yearpublished": 2011,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 8.13131,
-  "avg_weight": 2.9869
+  "avg_rate": 8.13557,
+  "avg_weight": 2.9844
  },
  {
   "name": "Moonlight Castle",
@@ -1773,7 +1780,7 @@
   "playingtime": 30,
   "yearpublished": 2021,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.37333,
+  "avg_rate": 7.34402,
   "avg_weight": 1.5
  },
  {
@@ -1785,7 +1792,7 @@
   "playingtime": 20,
   "yearpublished": 2018,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 6.08692,
+  "avg_rate": 6.07615,
   "avg_weight": 1.25
  },
  {
@@ -1797,8 +1804,8 @@
   "playingtime": 20,
   "yearpublished": 1993,
   "language_dependence": "Unplayable in another language",
-  "avg_rate": 7.56839,
-  "avg_weight": 3.2502
+  "avg_rate": 7.57304,
+  "avg_weight": 3.2554
  },
  {
   "name": "Magna Roma",
@@ -1809,8 +1816,8 @@
   "playingtime": 90,
   "yearpublished": 2022,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 7.25826,
-  "avg_weight": 2.6667
+  "avg_rate": 7.2423,
+  "avg_weight": 2.6875
  },
  {
   "name": "Poison",
@@ -1821,8 +1828,8 @@
   "playingtime": 30,
   "yearpublished": 2005,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.45391,
-  "avg_weight": 1.1944
+  "avg_rate": 6.45075,
+  "avg_weight": 1.194
  },
  {
   "name": "Mascotas",
@@ -1833,7 +1840,7 @@
   "playingtime": 30,
   "yearpublished": 2017,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.1745,
+  "avg_rate": 6.15301,
   "avg_weight": 1.4286
  },
  {
@@ -1845,8 +1852,8 @@
   "playingtime": 20,
   "yearpublished": 2016,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.25631,
-  "avg_weight": 1.1
+  "avg_rate": 6.20474,
+  "avg_weight": 1.0909
  },
  {
   "name": "Matryoshka",
@@ -1857,7 +1864,7 @@
   "playingtime": 20,
   "yearpublished": 2016,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.59991,
+  "avg_rate": 6.6036,
   "avg_weight": 1.7333
  },
  {
@@ -1869,7 +1876,7 @@
   "playingtime": 30,
   "yearpublished": 2017,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.23542,
+  "avg_rate": 6.19793,
   "avg_weight": 1.3333
  },
  {
@@ -1880,7 +1887,7 @@
   "age": 8,
   "playingtime": 25,
   "yearpublished": 2021,
-  "avg_rate": 6.14286
+  "avg_rate": 6.0625
  },
  {
   "name": "Last Message",
@@ -1891,8 +1898,8 @@
   "playingtime": 15,
   "yearpublished": 2021,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.72705,
-  "avg_weight": 1.1
+  "avg_rate": 6.71264,
+  "avg_weight": 1.0909
  },
  {
   "name": "Herd Mentality",
@@ -1900,10 +1907,10 @@
   "min_players": 4,
   "max_player": 20,
   "age": 10,
-  "playingtime": 20,
+  "playingtime": 30,
   "yearpublished": 2020,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 6.7046,
+  "avg_rate": 6.71057,
   "avg_weight": 1
  },
  {
@@ -1914,7 +1921,8 @@
   "age": 4,
   "playingtime": 30,
   "yearpublished": 2020,
-  "avg_rate": 6.61429
+  "avg_rate": 6.35385,
+  "avg_weight": 1
  },
  {
   "name": "¡MÍA!",
@@ -1925,7 +1933,7 @@
   "playingtime": 20,
   "yearpublished": 2018,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.58247,
+  "avg_rate": 6.57685,
   "avg_weight": 1.3333
  },
  {
@@ -1937,8 +1945,8 @@
   "playingtime": 45,
   "yearpublished": 2020,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 7.53635,
-  "avg_weight": 1.1063
+  "avg_rate": 7.52036,
+  "avg_weight": 1.1111
  },
  {
   "name": "MicroMacro: Crime City – Full House",
@@ -1949,8 +1957,8 @@
   "playingtime": 45,
   "yearpublished": 2021,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 7.71334,
-  "avg_weight": 1.2063
+  "avg_rate": 7.70654,
+  "avg_weight": 1.2113
  },
  {
   "name": "Minecraft: Builders \u0026 Biomes",
@@ -1961,8 +1969,8 @@
   "playingtime": 60,
   "yearpublished": 2019,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.96847,
-  "avg_weight": 1.9818
+  "avg_rate": 6.94228,
+  "avg_weight": 1.9828
  },
  {
   "name": "Mixmo",
@@ -1973,7 +1981,7 @@
   "playingtime": 15,
   "yearpublished": 2009,
   "language_dependence": "Unplayable in another language",
-  "avg_rate": 6.35182,
+  "avg_rate": 6.35192,
   "avg_weight": 1.4737
  },
  {
@@ -1985,8 +1993,8 @@
   "playingtime": 45,
   "yearpublished": 2022,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 7.08465,
-  "avg_weight": 2.0909
+  "avg_rate": 7.05175,
+  "avg_weight": 2.0833
  },
  {
   "name": "Monster Kit",
@@ -1997,7 +2005,7 @@
   "playingtime": 10,
   "yearpublished": 2016,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.9618,
+  "avg_rate": 6.94574,
   "avg_weight": 1.1429
  },
  {
@@ -2009,8 +2017,8 @@
   "playingtime": 30,
   "yearpublished": 2013,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 6.27204,
-  "avg_weight": 1.8537
+  "avg_rate": 6.26998,
+  "avg_weight": 1.8528
  },
  {
   "name": "MONSTArgh!",
@@ -2032,7 +2040,7 @@
   "age": 6,
   "playingtime": 21,
   "yearpublished": 2022,
-  "avg_rate": 6.6635,
+  "avg_rate": 6.7378,
   "avg_weight": 1.3333
  },
  {
@@ -2044,7 +2052,7 @@
   "playingtime": 45,
   "yearpublished": 2020,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 8.02183,
+  "avg_rate": 7.90775,
   "avg_weight": 2.7143
  },
  {
@@ -2056,7 +2064,7 @@
   "playingtime": 30,
   "yearpublished": 2014,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.39502,
+  "avg_rate": 6.36916,
   "avg_weight": 1.2667
  },
  {
@@ -2068,7 +2076,7 @@
   "playingtime": 30,
   "yearpublished": 2016,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 6.245,
+  "avg_rate": 6.22994,
   "avg_weight": 1.5556
  },
  {
@@ -2080,7 +2088,7 @@
   "playingtime": 30,
   "yearpublished": 2022,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.69823,
+  "avg_rate": 6.65463,
   "avg_weight": 1.8182
  },
  {
@@ -2092,7 +2100,7 @@
   "playingtime": 20,
   "yearpublished": 2020,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.87983,
+  "avg_rate": 6.82256,
   "avg_weight": 1.5
  },
  {
@@ -2104,8 +2112,8 @@
   "playingtime": 40,
   "yearpublished": 2019,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.14643,
-  "avg_weight": 1.8833
+  "avg_rate": 7.13694,
+  "avg_weight": 1.873
  },
  {
   "name": "Omerta",
@@ -2115,8 +2123,8 @@
   "age": 10,
   "playingtime": 20,
   "yearpublished": 2019,
-  "avg_rate": 6.88225,
-  "avg_weight": 1.3333
+  "avg_rate": 6.93641,
+  "avg_weight": 1.3
  },
  {
   "name": "Orbito",
@@ -2127,8 +2135,8 @@
   "playingtime": 10,
   "yearpublished": 2022,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.71,
-  "avg_weight": 1
+  "avg_rate": 6.81913,
+  "avg_weight": 1.5
  },
  {
   "name": "Black Orchestra",
@@ -2139,8 +2147,8 @@
   "playingtime": 90,
   "yearpublished": 2016,
   "language_dependence": "Extensive use of text - massive conversion needed to be playable",
-  "avg_rate": 7.51168,
-  "avg_weight": 2.4237
+  "avg_rate": 7.50881,
+  "avg_weight": 2.4231
  },
  {
   "name": "Ouch!",
@@ -2151,7 +2159,7 @@
   "playingtime": 15,
   "yearpublished": 2022,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.06385,
+  "avg_rate": 6.11365,
   "avg_weight": 1
  },
  {
@@ -2163,8 +2171,8 @@
   "playingtime": 150,
   "yearpublished": 2022,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 7.1295,
-  "avg_weight": 3.641
+  "avg_rate": 7.11067,
+  "avg_weight": 3.5952
  },
  {
   "name": "Pajarracos",
@@ -2174,7 +2182,7 @@
   "age": 6,
   "playingtime": 10,
   "yearpublished": 2018,
-  "avg_rate": 6.35041,
+  "avg_rate": 6.33639,
   "avg_weight": 1
  },
  {
@@ -2186,8 +2194,8 @@
   "playingtime": 45,
   "yearpublished": 2021,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 7.01427,
-  "avg_weight": 2.4286
+  "avg_rate": 6.96249,
+  "avg_weight": 2.2727
  },
  {
   "name": "Patchwork",
@@ -2198,11 +2206,11 @@
   "playingtime": 30,
   "yearpublished": 2014,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.60355,
-  "avg_weight": 1.6047
+  "avg_rate": 7.60014,
+  "avg_weight": 1.6033
  },
  {
-  "name": "PATIOS",
+  "name": "Patios",
   "bggid": "299803",
   "min_players": 2,
   "max_player": 5,
@@ -2210,8 +2218,8 @@
   "playingtime": 45,
   "yearpublished": 2021,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.56911,
-  "avg_weight": 2.2
+  "avg_rate": 6.49951,
+  "avg_weight": 2.1667
  },
  {
   "name": "Pattern Party!",
@@ -2221,7 +2229,7 @@
   "age": 5,
   "playingtime": 20,
   "yearpublished": 2022,
-  "avg_rate": 6.62
+  "avg_rate": 6.7625
  },
  {
   "name": "Pentago",
@@ -2232,8 +2240,8 @@
   "playingtime": 5,
   "yearpublished": 2005,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.37945,
-  "avg_weight": 1.8324
+  "avg_rate": 6.38092,
+  "avg_weight": 1.8343
  },
  {
   "name": "Droll",
@@ -2243,7 +2251,7 @@
   "age": 10,
   "playingtime": 25,
   "yearpublished": 2020,
-  "avg_rate": 6.12071,
+  "avg_rate": 6.15257,
   "avg_weight": 1
  },
  {
@@ -2255,7 +2263,7 @@
   "playingtime": 15,
   "yearpublished": 2023,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.88636,
+  "avg_rate": 7.30682,
   "avg_weight": 1
  },
  {
@@ -2267,7 +2275,7 @@
   "playingtime": 20,
   "yearpublished": 2017,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 6.50085,
+  "avg_rate": 6.5062,
   "avg_weight": 1.3333
  },
  {
@@ -2279,7 +2287,7 @@
   "playingtime": 40,
   "yearpublished": 2021,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.99904,
+  "avg_rate": 6.9899,
   "avg_weight": 1.3333
  },
  {
@@ -2291,8 +2299,8 @@
   "playingtime": 20,
   "yearpublished": 2016,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.96125,
-  "avg_weight": 1.1444
+  "avg_rate": 6.95594,
+  "avg_weight": 1.1368
  },
  {
   "name": "Poc!",
@@ -2302,7 +2310,7 @@
   "age": 8,
   "playingtime": 15,
   "yearpublished": 2018,
-  "avg_rate": 5.87929,
+  "avg_rate": 5.86865,
   "avg_weight": 1
  },
  {
@@ -2314,8 +2322,8 @@
   "playingtime": 30,
   "yearpublished": 2011,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.42592,
-  "avg_weight": 1.1489
+  "avg_rate": 6.41887,
+  "avg_weight": 1.1575
  },
  {
   "name": "Potion Explosion",
@@ -2326,8 +2334,8 @@
   "playingtime": 45,
   "yearpublished": 2015,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.12741,
-  "avg_weight": 1.7723
+  "avg_rate": 7.12841,
+  "avg_weight": 1.7722
  },
  {
   "name": "Prohis",
@@ -2338,7 +2346,7 @@
   "playingtime": 20,
   "yearpublished": 2014,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.19607,
+  "avg_rate": 6.19662,
   "avg_weight": 1.8235
  },
  {
@@ -2350,8 +2358,8 @@
   "playingtime": 25,
   "yearpublished": 2018,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.83524,
-  "avg_weight": 1.0227
+  "avg_rate": 6.84129,
+  "avg_weight": 1.0213
  },
  {
   "name": "Rail Raiders Infinite",
@@ -2362,8 +2370,8 @@
   "playingtime": 30,
   "yearpublished": 2017,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 5.55076,
-  "avg_weight": 1.3077
+  "avg_rate": 5.54941,
+  "avg_weight": 1.4
  },
  {
   "name": "Rainbow",
@@ -2373,7 +2381,7 @@
   "age": 5,
   "playingtime": 30,
   "yearpublished": 2018,
-  "avg_rate": 6.5609,
+  "avg_rate": 6.50516,
   "avg_weight": 1
  },
  {
@@ -2396,7 +2404,7 @@
   "playingtime": 30,
   "yearpublished": 2016,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.25461,
+  "avg_rate": 6.25178,
   "avg_weight": 2.5
  },
  {
@@ -2408,8 +2416,8 @@
   "playingtime": 30,
   "yearpublished": 2014,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 6.87439,
-  "avg_weight": 1.6911
+  "avg_rate": 6.87177,
+  "avg_weight": 1.6887
  },
  {
   "name": "Regicide",
@@ -2420,8 +2428,8 @@
   "playingtime": 30,
   "yearpublished": 2020,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.47098,
-  "avg_weight": 1.94
+  "avg_rate": 7.46421,
+  "avg_weight": 1.9369
  },
  {
   "name": "Rhino Hero",
@@ -2432,8 +2440,8 @@
   "playingtime": 15,
   "yearpublished": 2011,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.91655,
-  "avg_weight": 1.0228
+  "avg_rate": 6.91331,
+  "avg_weight": 1.0224
  },
  {
   "name": "Rhino Hero: Super Battle",
@@ -2444,8 +2452,8 @@
   "playingtime": 20,
   "yearpublished": 2017,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.24486,
-  "avg_weight": 1.1067
+  "avg_rate": 7.24421,
+  "avg_weight": 1.1039
  },
  {
   "name": "Rick and Morty: 100 Días",
@@ -2456,7 +2464,7 @@
   "playingtime": 70,
   "yearpublished": 2017,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 6.55951,
+  "avg_rate": 6.51674,
   "avg_weight": 2.875
  },
  {
@@ -2468,8 +2476,8 @@
   "playingtime": 90,
   "yearpublished": 2016,
   "language_dependence": "Extensive use of text - massive conversion needed to be playable",
-  "avg_rate": 7.46301,
-  "avg_weight": 2.4328
+  "avg_rate": 7.4564,
+  "avg_weight": 2.4341
  },
  {
   "name": "Roll to the Top!",
@@ -2480,8 +2488,8 @@
   "playingtime": 25,
   "yearpublished": 2018,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.75864,
-  "avg_weight": 1
+  "avg_rate": 6.74508,
+  "avg_weight": 1.04
  },
  {
   "name": "Room 25",
@@ -2492,8 +2500,8 @@
   "playingtime": 30,
   "yearpublished": 2013,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 6.70946,
-  "avg_weight": 1.9305
+  "avg_rate": 6.70492,
+  "avg_weight": 1.9313
  },
  {
   "name": "Root",
@@ -2504,8 +2512,8 @@
   "playingtime": 90,
   "yearpublished": 2018,
   "language_dependence": "Extensive use of text - massive conversion needed to be playable",
-  "avg_rate": 8.0772,
-  "avg_weight": 3.7827
+  "avg_rate": 8.07469,
+  "avg_weight": 3.79
  },
  {
   "name": "Santorini",
@@ -2516,8 +2524,8 @@
   "playingtime": 20,
   "yearpublished": 2016,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.37715,
-  "avg_weight": 1.7289
+  "avg_rate": 7.37104,
+  "avg_weight": 1.7265
  },
  {
   "name": "SCOPE Stalingrad",
@@ -2528,7 +2536,7 @@
   "playingtime": 15,
   "yearpublished": 2020,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 6.90355,
+  "avg_rate": 6.89482,
   "avg_weight": 1.6
  },
  {
@@ -2540,7 +2548,7 @@
   "playingtime": 15,
   "yearpublished": 2023,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.66935,
+  "avg_rate": 7.43366,
   "avg_weight": 2
  },
  {
@@ -2552,8 +2560,8 @@
   "playingtime": 60,
   "yearpublished": 2022,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.23179,
-  "avg_weight": 2
+  "avg_rate": 7.13808,
+  "avg_weight": 2.6667
  },
  {
   "name": "Scotland Yard: The Dice Game",
@@ -2564,7 +2572,7 @@
   "playingtime": 15,
   "yearpublished": 2019,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.53763,
+  "avg_rate": 6.5102,
   "avg_weight": 1.8
  },
  {
@@ -2576,8 +2584,8 @@
   "playingtime": 115,
   "yearpublished": 2016,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 8.16196,
-  "avg_weight": 3.4408
+  "avg_rate": 8.15464,
+  "avg_weight": 3.4436
  },
  {
   "name": "Sector 6",
@@ -2588,7 +2596,7 @@
   "playingtime": 60,
   "yearpublished": 2017,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.02366,
+  "avg_rate": 6.0063,
   "avg_weight": 2.1667
  },
  {
@@ -2600,8 +2608,8 @@
   "playingtime": 180,
   "yearpublished": 2011,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 8.00214,
-  "avg_weight": 2.788
+  "avg_rate": 8.00666,
+  "avg_weight": 2.7925
  },
  {
   "name": "Sherlock Express",
@@ -2612,7 +2620,7 @@
   "playingtime": 10,
   "yearpublished": 2019,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.02672,
+  "avg_rate": 5.99509,
   "avg_weight": 1
  },
  {
@@ -2624,8 +2632,8 @@
   "playingtime": 120,
   "yearpublished": 1982,
   "language_dependence": "Unplayable in another language",
-  "avg_rate": 7.64862,
-  "avg_weight": 2.6776
+  "avg_rate": 7.64212,
+  "avg_weight": 2.6754
  },
  {
   "name": "Aye, Dark Overlord! The Green Box",
@@ -2636,7 +2644,7 @@
   "playingtime": 60,
   "yearpublished": 2015,
   "language_dependence": "Unplayable in another language",
-  "avg_rate": 6.15487,
+  "avg_rate": 6.14498,
   "avg_weight": 1.2222
  },
  {
@@ -2648,8 +2656,8 @@
   "playingtime": 45,
   "yearpublished": 2015,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.74013,
-  "avg_weight": 1.0714
+  "avg_rate": 6.72913,
+  "avg_weight": 1.0645
  },
  {
   "name": "Smart10",
@@ -2659,9 +2667,9 @@
   "age": 10,
   "playingtime": 120,
   "yearpublished": 2017,
-  "language_dependence": "Extensive use of text - massive conversion needed to be playable",
-  "avg_rate": 7.51408,
-  "avg_weight": 1.1887
+  "language_dependence": "Unplayable in another language",
+  "avg_rate": 7.51445,
+  "avg_weight": 1.1754
  },
  {
   "name": "Sound Box",
@@ -2672,7 +2680,7 @@
   "playingtime": 45,
   "yearpublished": 2022,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 6.85941,
+  "avg_rate": 6.83255,
   "avg_weight": 1
  },
  {
@@ -2684,7 +2692,7 @@
   "playingtime": 30,
   "yearpublished": 2018,
   "language_dependence": "Unplayable in another language",
-  "avg_rate": 5.85613,
+  "avg_rate": 5.86277,
   "avg_weight": 1
  },
  {
@@ -2696,7 +2704,7 @@
   "playingtime": 60,
   "yearpublished": 2013,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 6.83688,
+  "avg_rate": 6.83208,
   "avg_weight": 2.1187
  },
  {
@@ -2708,7 +2716,7 @@
   "playingtime": 45,
   "yearpublished": 2017,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.51882,
+  "avg_rate": 6.52863,
   "avg_weight": 2
  },
  {
@@ -2720,8 +2728,8 @@
   "playingtime": 90,
   "yearpublished": 2008,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.53207,
-  "avg_weight": 2.4616
+  "avg_rate": 7.52873,
+  "avg_weight": 2.4607
  },
  {
   "name": "Rory's Story Cubes: Harry Potter",
@@ -2732,7 +2740,7 @@
   "playingtime": 10,
   "yearpublished": 2021,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.17949,
+  "avg_rate": 6.18478,
   "avg_weight": 1
  },
  {
@@ -2756,8 +2764,8 @@
   "playingtime": 15,
   "yearpublished": 2012,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.92901,
-  "avg_weight": 1.0315
+  "avg_rate": 6.9442,
+  "avg_weight": 1.031
  },
  {
   "name": "Super Mega Lucky Box",
@@ -2768,8 +2776,8 @@
   "playingtime": 20,
   "yearpublished": 2021,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.18579,
-  "avg_weight": 1.225
+  "avg_rate": 7.18749,
+  "avg_weight": 1.2222
  },
  {
   "name": "Sushizock im Gockelwok",
@@ -2780,7 +2788,7 @@
   "playingtime": 20,
   "yearpublished": 2008,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.49169,
+  "avg_rate": 6.49213,
   "avg_weight": 1.235
  },
  {
@@ -2792,8 +2800,8 @@
   "playingtime": 15,
   "yearpublished": 2013,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.0117,
-  "avg_weight": 1.157
+  "avg_rate": 7.00793,
+  "avg_weight": 1.1594
  },
  {
   "name": "Takenoko",
@@ -2804,8 +2812,8 @@
   "playingtime": 45,
   "yearpublished": 2011,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.22319,
-  "avg_weight": 1.9777
+  "avg_rate": 7.21929,
+  "avg_weight": 1.9761
  },
  {
   "name": "Tampoco somos tan amigos",
@@ -2825,8 +2833,8 @@
   "playingtime": 40,
   "yearpublished": 2021,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.16778,
-  "avg_weight": 1.7179
+  "avg_rate": 7.14998,
+  "avg_weight": 1.7333
  },
  {
   "name": "Terraforming Mars",
@@ -2837,8 +2845,8 @@
   "playingtime": 120,
   "yearpublished": 2016,
   "language_dependence": "Extensive use of text - massive conversion needed to be playable",
-  "avg_rate": 8.36978,
-  "avg_weight": 3.2608
+  "avg_rate": 8.36626,
+  "avg_weight": 3.2587
  },
  {
   "name": "Tesauro",
@@ -2848,7 +2856,7 @@
   "age": 10,
   "playingtime": 20,
   "yearpublished": 2021,
-  "avg_rate": 7.50172,
+  "avg_rate": 7.64219,
   "avg_weight": 1
  },
  {
@@ -2860,7 +2868,7 @@
   "playingtime": 15,
   "yearpublished": 2023,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.08355,
+  "avg_rate": 7.1432,
   "avg_weight": 1
  },
  {
@@ -2872,8 +2880,8 @@
   "playingtime": 15,
   "yearpublished": 2019,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.37727,
-  "avg_weight": 1.0926
+  "avg_rate": 6.3467,
+  "avg_weight": 1.0862
  },
  {
   "name": "Tic dice town",
@@ -2883,7 +2891,7 @@
   "age": 8,
   "playingtime": 20,
   "yearpublished": 2022,
-  "avg_rate": 7.04118
+  "avg_rate": 6.87407
  },
  {
   "name": "Time's Up!",
@@ -2894,8 +2902,8 @@
   "playingtime": 90,
   "yearpublished": 1999,
   "language_dependence": "Unplayable in another language",
-  "avg_rate": 7.28601,
-  "avg_weight": 1.2048
+  "avg_rate": 7.28419,
+  "avg_weight": 1.2042
  },
  {
   "name": "Timeline: General Interest",
@@ -2906,7 +2914,7 @@
   "playingtime": 15,
   "yearpublished": 2012,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 6.76921,
+  "avg_rate": 6.76867,
   "avg_weight": 1.0667
  },
  {
@@ -2918,7 +2926,7 @@
   "playingtime": 60,
   "yearpublished": 2008,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.25466,
+  "avg_rate": 6.25133,
   "avg_weight": 2.1698
  },
  {
@@ -2929,7 +2937,7 @@
   "age": 8,
   "playingtime": 30,
   "yearpublished": 2018,
-  "avg_rate": 6.37752,
+  "avg_rate": 6.35449,
   "avg_weight": 1.6667
  },
  {
@@ -2952,7 +2960,7 @@
   "playingtime": 20,
   "yearpublished": 2015,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 5.77082,
+  "avg_rate": 5.76643,
   "avg_weight": 1.0385
  },
  {
@@ -2963,7 +2971,7 @@
   "age": 6,
   "playingtime": 15,
   "yearpublished": 2019,
-  "avg_rate": 6.15667,
+  "avg_rate": 6.15954,
   "avg_weight": 1.3333
  },
  {
@@ -2975,7 +2983,7 @@
   "playingtime": 30,
   "yearpublished": 2020,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.54167,
+  "avg_rate": 7.40789,
   "avg_weight": 1.5
  },
  {
@@ -2986,7 +2994,7 @@
   "age": 12,
   "playingtime": 30,
   "yearpublished": 2015,
-  "avg_rate": 6.22969,
+  "avg_rate": 6.06912,
   "avg_weight": 1
  },
  {
@@ -2997,7 +3005,7 @@
   "age": 8,
   "playingtime": 45,
   "yearpublished": 2022,
-  "avg_rate": 7.55,
+  "avg_rate": 7.54167,
   "avg_weight": 1
  },
  {
@@ -3009,7 +3017,7 @@
   "playingtime": 10,
   "yearpublished": 2017,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 5.94828,
+  "avg_rate": 5.98333,
   "avg_weight": 1
  },
  {
@@ -3021,8 +3029,8 @@
   "playingtime": 30,
   "yearpublished": 1990,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 7.15135,
-  "avg_weight": 1.1538
+  "avg_rate": 7.13247,
+  "avg_weight": 1.1481
  },
  {
   "name": "Unanimo Party",
@@ -3033,7 +3041,7 @@
   "playingtime": 30,
   "yearpublished": 2018,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 7.20637,
+  "avg_rate": 7.19113,
   "avg_weight": 1
  },
  {
@@ -3045,8 +3053,8 @@
   "playingtime": 60,
   "yearpublished": 2019,
   "language_dependence": "Unplayable in another language",
-  "avg_rate": 7.75295,
-  "avg_weight": 2.1875
+  "avg_rate": 7.74577,
+  "avg_weight": 2.1667
  },
  {
   "name": "Unlock!: Mystery Adventures",
@@ -3057,8 +3065,8 @@
   "playingtime": 75,
   "yearpublished": 2017,
   "language_dependence": "Unplayable in another language",
-  "avg_rate": 7.358,
-  "avg_weight": 2.0488
+  "avg_rate": 7.35053,
+  "avg_weight": 2.0476
  },
  {
   "name": "Unlock!: Secret Adventures",
@@ -3069,8 +3077,8 @@
   "playingtime": 60,
   "yearpublished": 2017,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 7.55423,
-  "avg_weight": 2.0833
+  "avg_rate": 7.54432,
+  "avg_weight": 2.0789
  },
  {
   "name": "Unlock!: Timeless Adventures",
@@ -3081,8 +3089,8 @@
   "playingtime": 90,
   "yearpublished": 2019,
   "language_dependence": "Extensive use of text - massive conversion needed to be playable",
-  "avg_rate": 7.79765,
-  "avg_weight": 2.0588
+  "avg_rate": 7.78338,
+  "avg_weight": 2.0526
  },
  {
   "name": "Unmatched: Cobble \u0026 Fog",
@@ -3093,8 +3101,8 @@
   "playingtime": 40,
   "yearpublished": 2020,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 8.0179,
-  "avg_weight": 1.9691
+  "avg_rate": 8.00576,
+  "avg_weight": 1.9608
  },
  {
   "name": "Valeria: Card Kingdoms",
@@ -3105,8 +3113,8 @@
   "playingtime": 45,
   "yearpublished": 2016,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 7.45337,
-  "avg_weight": 1.9776
+  "avg_rate": 7.45228,
+  "avg_weight": 1.9779
  },
  {
   "name": "Villa Paletti",
@@ -3117,7 +3125,7 @@
   "playingtime": 30,
   "yearpublished": 2001,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.41855,
+  "avg_rate": 6.42019,
   "avg_weight": 1.1622
  },
  {
@@ -3129,8 +3137,8 @@
   "playingtime": 25,
   "yearpublished": 2022,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.69816,
-  "avg_weight": 1
+  "avg_rate": 6.60409,
+  "avg_weight": 1.2
  },
  {
   "name": "Disney Villainous",
@@ -3141,8 +3149,8 @@
   "playingtime": 120,
   "yearpublished": 2018,
   "language_dependence": "Extensive use of text - massive conversion needed to be playable",
-  "avg_rate": 6.98204,
-  "avg_weight": 2.4824
+  "avg_rate": 6.97151,
+  "avg_weight": 2.488
  },
  {
   "name": "Marvel Villainous: Infinite Power",
@@ -3153,8 +3161,8 @@
   "playingtime": 80,
   "yearpublished": 2020,
   "language_dependence": "Extensive use of text - massive conversion needed to be playable",
-  "avg_rate": 6.84469,
-  "avg_weight": 2.6957
+  "avg_rate": 6.81737,
+  "avg_weight": 2.6875
  },
  {
   "name": "Virus!",
@@ -3165,8 +3173,8 @@
   "playingtime": 20,
   "yearpublished": 2015,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.73589,
-  "avg_weight": 1.0638
+  "avg_rate": 6.73038,
+  "avg_weight": 1.0612
  },
  {
   "name": "Virus! 2 Evolution",
@@ -3177,8 +3185,8 @@
   "playingtime": 20,
   "yearpublished": 2018,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 6.98839,
-  "avg_weight": 1.5
+  "avg_rate": 6.97856,
+  "avg_weight": 1.4444
  },
  {
   "name": "Wavelength",
@@ -3189,8 +3197,8 @@
   "playingtime": 45,
   "yearpublished": 2019,
   "language_dependence": "Moderate in-game text - needs crib sheet or paste ups",
-  "avg_rate": 7.29558,
-  "avg_weight": 1.1202
+  "avg_rate": 7.29065,
+  "avg_weight": 1.1179
  },
  {
   "name": "Welcome To...",
@@ -3201,8 +3209,8 @@
   "playingtime": 25,
   "yearpublished": 2018,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.54801,
-  "avg_weight": 1.8352
+  "avg_rate": 7.5438,
+  "avg_weight": 1.8351
  },
  {
   "name": "Wingspan",
@@ -3213,8 +3221,8 @@
   "playingtime": 70,
   "yearpublished": 2019,
   "language_dependence": "Extensive use of text - massive conversion needed to be playable",
-  "avg_rate": 8.06721,
-  "avg_weight": 2.4574
+  "avg_rate": 8.06155,
+  "avg_weight": 2.4595
  },
  {
   "name": "Winter",
@@ -3225,8 +3233,8 @@
   "playingtime": 10,
   "yearpublished": 2022,
   "language_dependence": "No necessary in-game text",
-  "avg_rate": 7.14652,
-  "avg_weight": 1.25
+  "avg_rate": 7.08324,
+  "avg_weight": 1.5
  },
  {
   "name": "Zodiac Duel",
@@ -3236,7 +3244,7 @@
   "age": 10,
   "playingtime": 15,
   "yearpublished": 2022,
-  "avg_rate": 7.82183,
+  "avg_rate": 7.78176,
   "avg_weight": 2
  },
  {
@@ -3248,8 +3256,8 @@
   "playingtime": 180,
   "yearpublished": 2015,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 7.62622,
-  "avg_weight": 2.4863
+  "avg_rate": 7.62044,
+  "avg_weight": 2.4865
  },
  {
   "name": "Zombicide: Black Plague – Wulfsburg",
@@ -3260,7 +3268,65 @@
   "playingtime": 60,
   "yearpublished": 2016,
   "language_dependence": "Some necessary text - easily memorized or small crib sheet",
-  "avg_rate": 8.02498,
-  "avg_weight": 2.4828
+  "avg_rate": 8.02193,
+  "avg_weight": 2.5
+ },
+ {
+  "name": "Mysterium Park",
+  "bggid": "301767",
+  "min_players": 2,
+  "max_player": 6,
+  "age": 10,
+  "playingtime": 45,
+  "yearpublished": 2020,
+  "language_dependence": "No necessary in-game text",
+  "avg_rate": 7.08432,
+  "avg_weight": 1.4507
+ },
+ {
+  "name": "Perudo",
+  "bggid": "45",
+  "min_players": 2,
+  "max_player": 6,
+  "age": 8,
+  "playingtime": 30,
+  "yearpublished": 1800,
+  "language_dependence": "No necessary in-game text",
+  "avg_rate": 6.91307,
+  "avg_weight": 1.2563
+ },
+ {
+  "name": "No Mercy",
+  "bggid": "339214",
+  "min_players": 2,
+  "max_player": 5,
+  "age": 8,
+  "playingtime": 20,
+  "yearpublished": 2021,
+  "language_dependence": "No necessary in-game text",
+  "avg_rate": 7.20684,
+  "avg_weight": 1.0345
+ },
+ {
+  "name": "Golden Train",
+  "bggid": "389493",
+  "min_players": 2,
+  "max_player": 4,
+  "age": 6,
+  "playingtime": 15,
+  "yearpublished": 2023,
+  "avg_rate": 6
+ },
+ {
+  "name": "Unlock!: Mythic Adventures",
+  "bggid": "302425",
+  "min_players": 1,
+  "max_player": 6,
+  "age": 10,
+  "playingtime": 60,
+  "yearpublished": 2020,
+  "language_dependence": "Some necessary text - easily memorized or small crib sheet",
+  "avg_rate": 7.73168,
+  "avg_weight": 2.125
  }
 ]
