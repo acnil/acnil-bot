@@ -67,7 +67,7 @@ func NewMembersDatabase(srv *sheets.Service, sheetID string) *SheetMembersDataba
 	return &SheetMembersDatabase{
 		SRV:       srv,
 		ReadRange: "A:F",
-		Sheet:     "Miembros",
+		Sheet:     "Miembros Telegram",
 		SheetID:   sheetID,
 	}
 }
