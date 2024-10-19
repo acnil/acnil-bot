@@ -1,4 +1,4 @@
-module github.com/metalblueberry/acnil-bot
+module github.com/acnil/acnil-bot
 
 go 1.21
 
