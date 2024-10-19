@@ -8,8 +8,8 @@ import (
 	. "github.com/onsi/gomega"
 	"go.uber.org/mock/gomock"
 
-	"github.com/metalblueberry/acnil-bot/pkg/acnil"
-	"github.com/metalblueberry/acnil-bot/pkg/acnil/mock_acnil"
+	"github.com/acnil/acnil-bot/pkg/acnil"
+	"github.com/acnil/acnil-bot/pkg/acnil/mock_acnil"
 )
 
 //go:generate mockgen -source=audit.go -destination mock_acnil/audit.go

@@ -12,8 +12,8 @@ import (
 	"text/template"
 	"time"
 
-	httplambda "github.com/metalblueberry/acnil-bot/pkg/httpLambda"
-	"github.com/metalblueberry/acnil-bot/pkg/ilog"
+	httplambda "github.com/acnil/acnil-bot/pkg/httpLambda"
+	"github.com/acnil/acnil-bot/pkg/ilog"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/exp/slices"
 	tele "gopkg.in/telebot.v3"

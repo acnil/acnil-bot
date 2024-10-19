@@ -3,8 +3,8 @@ package acnil_test
 import (
 	"time"
 
-	"github.com/metalblueberry/acnil-bot/pkg/acnil"
-	. "github.com/metalblueberry/acnil-bot/pkg/acnil/matchers"
+	"github.com/acnil/acnil-bot/pkg/acnil"
+	. "github.com/acnil/acnil-bot/pkg/acnil/matchers"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"gopkg.in/telebot.v3"

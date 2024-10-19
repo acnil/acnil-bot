@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/metalblueberry/acnil-bot/pkg/ilog"
+	"github.com/acnil/acnil-bot/pkg/ilog"
 	"github.com/sirupsen/logrus"
 )
 

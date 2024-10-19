@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/metalblueberry/acnil-bot/pkg/sheetsparser"
+	"github.com/acnil/acnil-bot/pkg/sheetsparser"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/sheets/v4"
 	tele "gopkg.in/telebot.v3"

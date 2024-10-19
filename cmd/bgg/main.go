@@ -10,10 +10,10 @@ import (
 	"strconv"
 	"syscall"
 
+	"github.com/acnil/acnil-bot/pkg/acnil"
+	"github.com/acnil/acnil-bot/pkg/bgg"
+	"github.com/acnil/acnil-bot/pkg/recipes"
 	"github.com/manifoldco/promptui"
-	"github.com/metalblueberry/acnil-bot/pkg/acnil"
-	"github.com/metalblueberry/acnil-bot/pkg/bgg"
-	"github.com/metalblueberry/acnil-bot/pkg/recipes"
 	"github.com/pkg/browser"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"

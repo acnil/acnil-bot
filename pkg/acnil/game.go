@@ -8,8 +8,8 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/metalblueberry/acnil-bot/pkg/bgg"
-	"github.com/metalblueberry/acnil-bot/pkg/sheetsparser"
+	"github.com/acnil/acnil-bot/pkg/bgg"
+	"github.com/acnil/acnil-bot/pkg/sheetsparser"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )

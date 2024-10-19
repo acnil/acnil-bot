@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"os"
 
+	"github.com/acnil/acnil-bot/pkg/acnil"
+	httplambda "github.com/acnil/acnil-bot/pkg/httpLambda"
+	"github.com/acnil/acnil-bot/pkg/recipes"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/metalblueberry/acnil-bot/pkg/acnil"
-	httplambda "github.com/metalblueberry/acnil-bot/pkg/httpLambda"
-	"github.com/metalblueberry/acnil-bot/pkg/recipes"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/telebot.v3"
 	tele "gopkg.in/telebot.v3"

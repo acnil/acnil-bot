@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/metalblueberry/acnil-bot/pkg/acnil"
-	"github.com/metalblueberry/acnil-bot/pkg/recipes"
+	"github.com/acnil/acnil-bot/pkg/acnil"
+	"github.com/acnil/acnil-bot/pkg/recipes"
 	"github.com/sirupsen/logrus"
 	tele "gopkg.in/telebot.v3"
 )

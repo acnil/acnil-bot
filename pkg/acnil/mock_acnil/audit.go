@@ -12,7 +12,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	acnil "github.com/metalblueberry/acnil-bot/pkg/acnil"
+	acnil "github.com/acnil/acnil-bot/pkg/acnil"
 	gomock "go.uber.org/mock/gomock"
 )
 

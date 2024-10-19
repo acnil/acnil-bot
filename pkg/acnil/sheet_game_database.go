@@ -6,7 +6,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/metalblueberry/acnil-bot/pkg/sheetsparser"
+	"github.com/acnil/acnil-bot/pkg/sheetsparser"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
