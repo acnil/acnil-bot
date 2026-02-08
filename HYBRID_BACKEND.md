@@ -29,7 +29,7 @@ This provides the benefits of database storage for audit data while maintaining 
 Run the simplified migration script (audit entries only):
 
 ```bash
-psql -h localhost -U postgres -d acnil_audit -f migrations/002_audit_only_schema.sql
+psql -h localhost -U postgres -d acnil_audit -f migrations/001_audit_only_schema.sql
 ```
 
 ### 2. Environment Variables
@@ -139,7 +139,7 @@ AUDIT_BACKEND=sheets
 createdb acnil_audit
 
 # Run migration
-psql acnil_audit < migrations/002_audit_only_schema.sql
+psql acnil_audit < migrations/001_audit_only_schema.sql
 ```
 
 ### Step 3: Switch to PostgreSQL Audit

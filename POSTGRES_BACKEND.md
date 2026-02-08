@@ -1,6 +1,10 @@
-# PostgreSQL Backend for AuditLambda
+# PostgreSQL Backend for AuditLambda (Legacy Full Migration)
 
-This document explains how to use the new PostgreSQL backend as an alternative to Google Sheets for the auditlambda system.
+**⚠️ This document describes a full migration approach that has been superseded by the hybrid backend.**
+
+**For the recommended approach, see [HYBRID_BACKEND.md](./HYBRID_BACKEND.md) which moves only audit data to PostgreSQL while keeping games and members in Google Sheets.**
+
+This document explains how to use the PostgreSQL backend as a complete alternative to Google Sheets for the auditlambda system.
 
 ## Overview
 
@@ -84,35 +88,19 @@ export TOKEN=your_telegram_bot_token
 
 ### Tables
 
-#### `games`
-Stores game inventory data (replaces "Juegos de mesa" sheet):
-- `id` - Game identifier (primary key)
-- `name` - Game name
-- `location`, `holder`, `comments` - Current status
-- `take_date`, `return_date` - Loan tracking
-- `price`, `publisher`, `bgg` - Game metadata
-- BGG fields: `avg_rate`, `avg_weight`, `age`, `min_players`, `max_players`, `playingtime`, `yearpublished`, `language_dependence`
-
 #### `audit_entries`
 Stores audit trail (replaces "Audit" sheet):
 - `timestamp` - When the change occurred
 - `type` - Type of change: 'new', 'removed', 'update'
 - All game fields at the time of change
 
-#### `members`
-Stores member data (replaces "Miembros Telegram" sheet):
-- `nickname` - Member nickname
-- `telegram_id` - Telegram user ID
-- `permissions` - 'no', 'si', 'admin'
-- `state_action`, `state_data` - Bot state management
-- Telegram profile fields
+**Note:** Games and members data remain in Google Sheets. Only audit entries are stored in PostgreSQL.
 
 ### Indexes
 
 Performance indexes are created for:
-- Game searches by name, holder, location
 - Audit queries by timestamp and game_id
-- Member lookups by telegram_id
+- Audit filtering by type and holder
 
 ## Migration from Google Sheets
 
