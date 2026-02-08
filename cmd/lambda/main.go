@@ -61,9 +61,11 @@ func main() {
 		logrus.Fatal("AUDIT_SHEET_ID must be defined")
 	}
 	juegatronSheetID := os.Getenv("JUEGATRON_SHEET_ID")
-	if auditSheetID == "" {
+	if juegatronSheetID == "" {
 		logrus.Fatal("JUEGATRON_SHEET_ID must be defined")
 	}
+
+	auditBackend := getEnv("AUDIT_BACKEND", "sheets")
 
 	srv := recipes.SheetsService()
 
@@ -78,20 +80,45 @@ func main() {
 		return
 	}
 
-	auditQuery := &acnil.AuditQuery{
-		AuditDB: acnil.NewSheetAuditDatabase(srv, auditSheetID),
+	// Configure audit database based on backend selection
+	var auditQuery acnil.ROAudit
+	switch auditBackend {
+	case "postgres":
+		// PostgreSQL backend for audit only
+		dbConfig := acnil.NewDatabaseConfigFromEnv()
+		db, err := dbConfig.Connect()
+		if err != nil {
+			logrus.Fatalf("Failed to connect to audit database: %v", err)
+		}
+		defer db.Close()
+
+		auditQuery = &acnil.AuditQuery{
+			AuditDB: acnil.NewPostgresAuditDatabase(db),
+		}
+		logrus.Info("Using PostgreSQL backend for audit")
+
+	case "sheets":
+		// Google Sheets backend for audit (default)
+		auditQuery = &acnil.AuditQuery{
+			AuditDB: acnil.NewSheetAuditDatabase(srv, auditSheetID),
+		}
+		logrus.Info("Using Google Sheets backend for audit")
+
+	default:
+		logrus.Fatalf("Unknown audit backend: %s. Supported backends: sheets, postgres", auditBackend)
 	}
 
 	juegatronAudit := &acnil.JuegatronAudit{
 		AuditDB: acnil.NewJuegatronSheetAuditDatabase(srv, juegatronSheetID),
 	}
 
+	// All other databases remain in Google Sheets
 	handler := &acnil.Handler{
-		MembersDB:       acnil.NewMembersDatabase(srv, sheetID),
-		GameDB:          acnil.NewGameDatabase(srv, sheetID),
-		JuegatronGameDB: acnil.NewGameDatabase(srv, juegatronSheetID),
-		JuegatronAudit:  juegatronAudit,
-		Audit:           auditQuery,
+		MembersDB:       acnil.NewMembersDatabase(srv, sheetID),       // Google Sheets
+		GameDB:          acnil.NewGameDatabase(srv, sheetID),          // Google Sheets
+		JuegatronGameDB: acnil.NewGameDatabase(srv, juegatronSheetID), // Google Sheets
+		JuegatronAudit:  juegatronAudit,                               // Google Sheets
+		Audit:           auditQuery,                                   // PostgreSQL or Sheets
 		Bot:             b,
 	}
 
@@ -102,7 +129,7 @@ func main() {
 	lambda.Start(Handler(b))
 }
 
-func GetEnv(key string, def string) string {
+func getEnv(key string, def string) string {
 	v, ok := os.LookupEnv(key)
 	if !ok {
 		return def

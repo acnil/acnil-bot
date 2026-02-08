@@ -19,7 +19,17 @@ func main() {
 		logrus.Fatal("TOKEN must be defined")
 	}
 
-	backend := getEnv("BACKEND", "sheets")
+	sheetID := os.Getenv("SHEET_ID")
+	if sheetID == "" {
+		logrus.Fatal("SHEET_ID must be defined")
+	}
+
+	auditSheetID := os.Getenv("AUDIT_SHEET_ID")
+	if auditSheetID == "" {
+		logrus.Fatal("AUDIT_SHEET_ID must be defined")
+	}
+
+	auditBackend := getEnv("AUDIT_BACKEND", "sheets")
 
 	pref := tele.Settings{
 		Token:       botToken,
@@ -32,50 +42,39 @@ func main() {
 		return
 	}
 
-	var audit *acnil.Audit
-
-	switch backend {
+	// Configure audit database based on backend selection
+	var auditDB acnil.AuditDatabase
+	switch auditBackend {
 	case "postgres":
-		// PostgreSQL backend
+		// PostgreSQL backend for audit only
 		dbConfig := acnil.NewDatabaseConfigFromEnv()
 		db, err := dbConfig.Connect()
 		if err != nil {
-			logrus.Fatalf("Failed to connect to database: %v", err)
+			logrus.Fatalf("Failed to connect to audit database: %v", err)
 		}
 		defer db.Close()
 
-		audit = &acnil.Audit{
-			AuditDB:   acnil.NewPostgresAuditDatabase(db),
-			GameDB:    acnil.NewPostgresGameDatabase(db),
-			MembersDB: acnil.NewPostgresMembersDatabase(db),
-			Bot:       b,
-		}
-		logrus.Info("Using PostgreSQL backend")
+		auditDB = acnil.NewPostgresAuditDatabase(db)
+		logrus.Info("Using PostgreSQL backend for audit")
 
 	case "sheets":
-		// Google Sheets backend (default)
-		sheetID := os.Getenv("SHEET_ID")
-		if sheetID == "" {
-			logrus.Fatal("SHEET_ID must be defined for sheets backend")
-		}
-
-		auditSheetID := os.Getenv("AUDIT_SHEET_ID")
-		if auditSheetID == "" {
-			logrus.Fatal("AUDIT_SHEET_ID must be defined for sheets backend")
-		}
-
+		// Google Sheets backend for audit (default)
 		srv := recipes.SheetsService()
-
-		audit = &acnil.Audit{
-			AuditDB:   acnil.NewSheetAuditDatabase(srv, auditSheetID),
-			GameDB:    acnil.NewGameDatabase(srv, sheetID),
-			MembersDB: acnil.NewMembersDatabase(srv, sheetID),
-			Bot:       b,
-		}
-		logrus.Info("Using Google Sheets backend")
+		auditDB = acnil.NewSheetAuditDatabase(srv, auditSheetID)
+		logrus.Info("Using Google Sheets backend for audit")
 
 	default:
-		logrus.Fatalf("Unknown backend: %s. Supported backends: sheets, postgres", backend)
+		logrus.Fatalf("Unknown audit backend: %s. Supported backends: sheets, postgres", auditBackend)
+	}
+
+	// Game and member data always comes from Google Sheets (read-only for audit)
+	srv := recipes.SheetsService()
+
+	audit := &acnil.Audit{
+		AuditDB:   auditDB,                                // PostgreSQL or Sheets
+		GameDB:    acnil.NewGameDatabase(srv, sheetID),    // Google Sheets (read-only)
+		MembersDB: acnil.NewMembersDatabase(srv, sheetID), // Google Sheets (for notifications)
+		Bot:       b,
 	}
 
 	logrus.Println("starting lambda")
