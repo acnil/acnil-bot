@@ -87,6 +87,48 @@ variable "sheets_email" {
   sensitive   = false
 }
 
+variable "audit_backend" {
+  description = "Backend to use for audit: sheets or postgres"
+  type        = string
+  default     = "sheets"
+}
+
+variable "db_host" {
+  description = "PostgreSQL database host for audit"
+  type        = string
+  default     = "localhost"
+}
+
+variable "db_port" {
+  description = "PostgreSQL database port for audit"
+  type        = string
+  default     = "5432"
+}
+
+variable "db_user" {
+  description = "PostgreSQL database user for audit"
+  type        = string
+  sensitive   = true
+}
+
+variable "db_password" {
+  description = "PostgreSQL database password for audit"
+  type        = string
+  sensitive   = true
+}
+
+variable "db_name" {
+  description = "PostgreSQL database name for audit"
+  type        = string
+  default     = "acnil_audit"
+}
+
+variable "db_sslmode" {
+  description = "PostgreSQL SSL mode for audit"
+  type        = string
+  default     = "disable"
+}
+
 
 //https://github.com/terraform-aws-modules/terraform-aws-lambda/tree/v6.0.0
 module "bot_handler" {
@@ -105,14 +147,28 @@ module "bot_handler" {
   local_existing_package = "../cmd/lambda/package.zip"
 
   environment_variables = {
-    AUDIT_SHEET_ID : var.audit_sheet_id,
-    SHEET_ID : var.sheet_id,
+    # Audit backend configuration
+    AUDIT_BACKEND : var.audit_backend,
+    
+    # Telegram configuration
     TOKEN : var.bot_token,
-    SHEETS_PRIVATE_KEY_ID : var.sheets_private_key_id
-    SHEETS_PRIVATE_KEY : var.sheets_private_key
-    SHEETS_EMAIL : var.sheets_email
-    WEBHOOK_SECRET_TOKEN : var.webhook_secret_token
-    JUEGATRON_SHEET_ID : var.juegatron_sheet_id
+    WEBHOOK_SECRET_TOKEN : var.webhook_secret_token,
+    
+    # Google Sheets configuration (always required for games, members, juegatron)
+    SHEET_ID : var.sheet_id,
+    AUDIT_SHEET_ID : var.audit_sheet_id,
+    JUEGATRON_SHEET_ID : var.juegatron_sheet_id,
+    SHEETS_PRIVATE_KEY_ID : var.sheets_private_key_id,
+    SHEETS_PRIVATE_KEY : var.sheets_private_key,
+    SHEETS_EMAIL : var.sheets_email,
+    
+    # PostgreSQL configuration (only used if audit_backend = "postgres")
+    DB_HOST : var.db_host,
+    DB_PORT : var.db_port,
+    DB_USER : var.db_user,
+    DB_PASSWORD : var.db_password,
+    DB_NAME : var.db_name,
+    DB_SSLMODE : var.db_sslmode,
   }
   cloudwatch_logs_retention_in_days = 14
 }
@@ -133,12 +189,26 @@ module "audit_handler" {
   local_existing_package = "../cmd/auditLambda/package.zip"
 
   environment_variables = {
-    AUDIT_SHEET_ID : var.audit_sheet_id,
-    SHEET_ID : var.sheet_id,
+    # Audit backend configuration
+    AUDIT_BACKEND : var.audit_backend,
+    
+    # Telegram configuration (for notifications)
     TOKEN : var.bot_token,
-    SHEETS_PRIVATE_KEY_ID : var.sheets_private_key_id
-    SHEETS_PRIVATE_KEY : var.sheets_private_key
-    SHEETS_EMAIL : var.sheets_email
+    
+    # Google Sheets configuration (always required for games, members)
+    SHEET_ID : var.sheet_id,
+    AUDIT_SHEET_ID : var.audit_sheet_id,
+    SHEETS_PRIVATE_KEY_ID : var.sheets_private_key_id,
+    SHEETS_PRIVATE_KEY : var.sheets_private_key,
+    SHEETS_EMAIL : var.sheets_email,
+    
+    # PostgreSQL configuration (only used if audit_backend = "postgres")
+    DB_HOST : var.db_host,
+    DB_PORT : var.db_port,
+    DB_USER : var.db_user,
+    DB_PASSWORD : var.db_password,
+    DB_NAME : var.db_name,
+    DB_SSLMODE : var.db_sslmode,
   }
   cloudwatch_logs_retention_in_days = 14
 
